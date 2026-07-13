@@ -105,7 +105,16 @@ export default function Home() {
         id="how-we-vet"
         className="relative scroll-mt-24 overflow-hidden py-16 sm:py-28"
       >
-        <div className="spotlight pointer-events-none absolute inset-0 -z-10 opacity-70" />
+        {/* Centered bloom that fades to transparent well before the top/bottom
+            edges, so the section blends seamlessly into its neighbors. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10"
+          style={{
+            background:
+              "radial-gradient(62% 55% at 50% 50%, rgb(var(--glow) / 0.09), transparent 72%)",
+          }}
+        />
         <Container>
           <Reveal>
             <SectionHeading
