@@ -9,11 +9,10 @@ import { Aurora } from "@/components/shared/aurora";
 import { Icon } from "@/components/shared/icon";
 import { OracleModel } from "@/components/home/oracle-model";
 import { useCommandMenu } from "@/components/layout/command-menu";
-import type { SiteStats } from "@/lib/content";
 
 gsap.registerPlugin(ScrollTrigger);
 
-export function OracleHero({ stats }: { stats: SiteStats }) {
+export function OracleHero() {
   const root = useRef<HTMLElement>(null);
   const { setOpen } = useCommandMenu();
 
@@ -126,20 +125,6 @@ export function OracleHero({ stats }: { stats: SiteStats }) {
             <Icon name="ArrowRight" className="size-4" />
           </Link>
         </div>
-
-        <dl
-          data-hero-reveal
-          className="mt-12 flex items-center gap-8 font-mono text-sm"
-        >
-          <Stat value={`${stats.toolCount}`} label="Tools vetted" />
-          <span aria-hidden className="h-8 w-px bg-border" />
-          <Stat value={`${stats.categoryCount}`} label="Categories" />
-          <span aria-hidden className="h-8 w-px bg-border" />
-          <Stat
-            value={`${(stats.reviewCount / 1000).toFixed(1)}k`}
-            label="Reviews"
-          />
-        </dl>
       </div>
 
       {/* Scroll cue */}
@@ -151,19 +136,5 @@ export function OracleHero({ stats }: { stats: SiteStats }) {
         <Icon name="ChevronDown" className="size-5 animate-float" />
       </div>
     </section>
-  );
-}
-
-function Stat({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="flex flex-col items-center gap-1">
-      <dt className="sr-only">{label}</dt>
-      <dd className="text-2xl font-semibold text-foreground tabular-nums">
-        {value}
-      </dd>
-      <span className="text-[0.7rem] tracking-wide text-muted-foreground uppercase">
-        {label}
-      </span>
-    </div>
   );
 }

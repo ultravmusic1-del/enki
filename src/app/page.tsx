@@ -39,7 +39,7 @@ export default function Home() {
 
   return (
     <>
-      <OracleHero stats={stats} />
+      <OracleHero />
 
       {/* Featured tools */}
       <section className="py-16 sm:py-24">
