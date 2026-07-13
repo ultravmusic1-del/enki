@@ -364,6 +364,170 @@
 }
 
 /* =========================================================================
+   Dimensional cards — 3D "shape system" (home showcase only)
+   Adapted from a neon 3D-card lab: layered glass plane with a scooped corner,
+   depth-stacked corner discs, forward-projected content, and a hover tilt —
+   retinted to Enki (teal, dark, no neon).
+   ========================================================================= */
+.dim {
+  display: block;
+  height: 100%;
+  perspective: 1200px;
+  perspective-origin: 50% 35%;
+}
+
+.dim__card {
+  position: relative;
+  height: 100%;
+  min-height: 15rem;
+  border-radius: 26px;
+  transform-style: preserve-3d;
+  background:
+    radial-gradient(
+      130% 90% at 88% -5%,
+      color-mix(in oklab, var(--brand-teal) 10%, transparent),
+      transparent 55%
+    ),
+    linear-gradient(
+      160deg,
+      color-mix(in oklab, var(--card) 86%, var(--brand-mist) 5%),
+      var(--card) 60%
+    );
+  box-shadow:
+    0 20px 42px -26px rgb(0 0 0 / 0.55),
+    inset 0 0 0 1px var(--border);
+  transition:
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.55s ease;
+}
+
+.dim--compact .dim__card {
+  min-height: 13rem;
+}
+
+.dim:hover .dim__card {
+  transform: rotate3d(1, 1, 0, 11deg);
+  box-shadow:
+    0 44px 64px -34px rgb(0 0 0 / 0.7),
+    0 0 60px -14px rgb(var(--glow) / 0.28),
+    inset 0 0 0 1px color-mix(in oklab, var(--brand-teal) 45%, var(--border));
+}
+
+.dim:focus-visible {
+  outline: none;
+}
+.dim:focus-visible .dim__card {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+
+/* Inset glass plane with the signature scooped top-right corner */
+.dim__glass {
+  position: absolute;
+  inset: 7px;
+  z-index: 1;
+  border-radius: 20px;
+  border-top-right-radius: 58%;
+  background: linear-gradient(
+    158deg,
+    rgb(255 255 255 / 0.12) 0%,
+    rgb(255 255 255 / 0.03) 40%,
+    transparent 68%
+  );
+  border-top: 1px solid rgb(255 255 255 / 0.14);
+  border-left: 1px solid rgb(255 255 255 / 0.08);
+  transform: translate3d(0, 0, 22px);
+  pointer-events: none;
+}
+
+/* Faceted "crystal" glass edge (categories variant) */
+.dim__glass--facet {
+  border-top-right-radius: 20px;
+  clip-path: polygon(
+    24px 0,
+    100% 0,
+    100% calc(100% - 24px),
+    calc(100% - 24px) 100%,
+    0 100%,
+    0 24px
+  );
+}
+
+/* Depth-stacked corner discs — hold the monogram / category icon */
+.dim__orbit {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.dim__disc {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: grid;
+  aspect-ratio: 1;
+  place-content: center;
+  border-radius: 50%;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.dim__disc--1 {
+  width: 88px;
+  top: 12px;
+  right: 12px;
+  transform: translate3d(0, 0, 8px);
+}
+.dim__disc--2 {
+  width: 62px;
+  top: 18px;
+  right: 18px;
+  transform: translate3d(0, 0, 24px);
+}
+.dim__disc--3 {
+  width: 42px;
+  top: 27px;
+  right: 27px;
+  transform: translate3d(0, 0, 46px);
+}
+
+.dim:hover .dim__disc--1 {
+  transform: translate3d(0, 0, 26px);
+}
+.dim:hover .dim__disc--2 {
+  transform: translate3d(0, 0, 52px);
+}
+.dim:hover .dim__disc--3 {
+  transform: translate3d(0, 0, 84px);
+}
+
+/* Content floats above the glass */
+.dim__content {
+  position: relative;
+  z-index: 3;
+  height: 100%;
+  transform: translate3d(0, 0, 26px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dim:hover .dim__card {
+    transform: none;
+  }
+  .dim:hover .dim__disc--1 {
+    transform: translate3d(0, 0, 8px);
+  }
+  .dim:hover .dim__disc--2 {
+    transform: translate3d(0, 0, 24px);
+  }
+  .dim:hover .dim__disc--3 {
+    transform: translate3d(0, 0, 46px);
+  }
+}
+
+/* =========================================================================
    Keyframes
    ========================================================================= */
 @keyframes aurora {

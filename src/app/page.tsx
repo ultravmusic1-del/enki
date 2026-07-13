@@ -2,8 +2,8 @@ import Link from "next/link";
 import { OracleHero } from "@/components/home/oracle-hero";
 import { Container } from "@/components/shared/container";
 import { SectionHeading } from "@/components/shared/section-heading";
-import { ToolCard } from "@/components/shared/tool-card";
-import { CategoryCard } from "@/components/shared/category-card";
+import { FeaturedToolCard } from "@/components/home/featured-tool-card";
+import { CategoryTile } from "@/components/home/category-tile";
 import { Reveal } from "@/components/shared/reveal";
 import { Icon } from "@/components/shared/icon";
 import { getFeaturedTools, getCategories, getStats } from "@/lib/content";
@@ -64,13 +64,12 @@ export default function Home() {
             </div>
           </Reveal>
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {featured.map((tool, i) => (
-              <Reveal key={tool.slug} index={i}>
-                <ToolCard
+              <Reveal key={tool.slug} index={i} className="h-full">
+                <FeaturedToolCard
                   tool={tool}
                   categoryName={categoryName.get(tool.categorySlug)}
-                  className="h-full"
                 />
               </Reveal>
             ))}
@@ -91,10 +90,10 @@ export default function Home() {
             />
           </Reveal>
 
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {categories.map((category, i) => (
-              <Reveal key={category.slug} index={i}>
-                <CategoryCard category={category} className="h-full" />
+              <Reveal key={category.slug} index={i} className="h-full">
+                <CategoryTile category={category} />
               </Reveal>
             ))}
           </div>
