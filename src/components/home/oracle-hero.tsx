@@ -94,10 +94,19 @@ export function OracleHero() {
       <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-5 text-center">
         <span
           data-hero-reveal
-          className="mb-6 inline-flex items-center gap-2 rounded-full border border-border glass px-3 py-1 font-mono text-xs tracking-wide text-muted-foreground"
+          className="tagline-pill relative mb-6 inline-flex items-center gap-2.5 overflow-hidden rounded-full px-4 py-1.5 font-mono text-xs tracking-wide text-mist/85"
         >
-          <span className="inline-block size-1.5 animate-pulse rounded-full bg-teal" />
-          Human-vetted AI tool intelligence
+          {/* light that glints across the pill */}
+          <span aria-hidden className="tagline-glint" />
+          {/* live status dot */}
+          <span
+            aria-hidden
+            className="relative inline-flex size-1.5 items-center justify-center"
+          >
+            <span className="absolute size-full animate-ping rounded-full bg-teal opacity-60" />
+            <span className="size-1.5 rounded-full bg-teal-bright shadow-[0_0_8px_var(--brand-teal)]" />
+          </span>
+          <span className="relative">Human-vetted AI tool intelligence</span>
         </span>
 
         <h1
