@@ -43,7 +43,7 @@ export function SiteFooter() {
   };
 
   return (
-    <footer className="relative mt-24 border-t border-border">
+    <footer className="relative mt-20 border-t border-border">
       {/* Soft centered bloom that fades to transparent before the top edge, so
           the footer blends into the section above instead of banding. */}
       <div

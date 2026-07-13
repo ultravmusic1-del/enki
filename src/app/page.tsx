@@ -42,7 +42,7 @@ export default function Home() {
       <OracleHero />
 
       {/* Featured tools */}
-      <section className="py-16 sm:py-24">
+      <section className="py-16 sm:py-20">
         <Container>
           <Reveal>
             <div className="flex flex-wrap items-end justify-between gap-4">
@@ -78,7 +78,7 @@ export default function Home() {
       </section>
 
       {/* Categories */}
-      <section className="py-16 sm:py-24">
+      <section className="py-16 sm:py-20">
         <Container>
           <Reveal>
             <SectionHeading
@@ -90,7 +90,7 @@ export default function Home() {
             />
           </Reveal>
 
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {categories.map((category, i) => (
               <Reveal key={category.slug} index={i} className="h-full">
                 <CategoryTile category={category} />
@@ -100,10 +100,10 @@ export default function Home() {
         </Container>
       </section>
 
-      {/* How we vet */}
+      {/* How we vet — with trust stats */}
       <section
         id="how-we-vet"
-        className="relative scroll-mt-24 overflow-hidden py-16 sm:py-28"
+        className="relative scroll-mt-24 overflow-hidden py-16 sm:py-20"
       >
         {/* Centered bloom that fades to transparent well before the top/bottom
             edges, so the section blends seamlessly into its neighbors. */}
@@ -126,7 +126,7 @@ export default function Home() {
             />
           </Reveal>
 
-          <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {vetSteps.map((step, i) => (
               <Reveal key={step.title} index={i}>
                 <div className="group relative flex h-full flex-col gap-4 rounded-2xl border border-border bg-card/60 p-6 ring-hairline transition-colors hover:border-teal/40">
@@ -148,14 +148,10 @@ export default function Home() {
               </Reveal>
             ))}
           </div>
-        </Container>
-      </section>
 
-      {/* Stats band */}
-      <section className="py-10">
-        <Container>
+          {/* Trust stats reinforce the vetting story */}
           <Reveal>
-            <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border ring-hairline md:grid-cols-4">
+            <div className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border ring-hairline md:grid-cols-4">
               <StatCell value={`${stats.toolCount}`} label="Tools vetted" />
               <StatCell value={`${stats.categoryCount}`} label="Categories" />
               <StatCell
@@ -172,7 +168,7 @@ export default function Home() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 sm:py-24">
+      <section className="py-16 sm:py-20">
         <Container>
           <Reveal>
             <div className="relative overflow-hidden rounded-3xl border border-border bg-card px-6 py-16 text-center ring-hairline sm:px-16">
@@ -219,7 +215,7 @@ export default function Home() {
 
 function StatCell({ value, label }: { value: string; label: string }) {
   return (
-    <div className="flex flex-col items-center gap-1 bg-card px-4 py-8 text-center">
+    <div className="flex flex-col items-center gap-1 bg-card px-4 py-7 text-center">
       <span className="font-display text-3xl font-semibold text-foreground tabular-nums sm:text-4xl">
         {value}
       </span>
