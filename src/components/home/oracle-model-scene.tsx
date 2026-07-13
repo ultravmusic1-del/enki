@@ -31,7 +31,13 @@ function usePointer() {
   return pointer;
 }
 
-function OracleTablet({ reduce }: { reduce: boolean }) {
+function OracleTablet({
+  active,
+  reduce,
+}: {
+  active: boolean;
+  reduce: boolean;
+}) {
   const { scene } = useGLTF(MODEL_URL, false, true);
   const group = useRef<THREE.Group>(null);
   const pointer = usePointer();
@@ -92,6 +98,25 @@ function OracleTablet({ reduce }: { reduce: boolean }) {
     }
   }, [viewport.width, viewport.height, aspect, reduce, invalidate]);
 
+  // Drive rendering ourselves in "demand" mode: a rAF loop of invalidate()
+  // while the hero is on screen, stopped when it scrolls away. This avoids
+  // R3F's frameloop never->always restart bug (which left the canvas blank
+  // after scrolling back) and re-renders on return so the model reappears.
+  useEffect(() => {
+    if (!active) return;
+    if (reduce) {
+      invalidate();
+      return;
+    }
+    let raf = 0;
+    const loop = () => {
+      invalidate();
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [active, reduce, invalidate]);
+
   useFrame((state) => {
     const g = group.current;
     if (!g || reduce) return;
@@ -125,12 +150,9 @@ export function OracleModelScene({ active }: { active: boolean }) {
     return () => mq.removeEventListener("change", update);
   }, []);
 
-  // Only run the render loop while the hero is in view (and motion is allowed).
-  const frameloop = reduce ? "demand" : active ? "always" : "never";
-
   return (
     <Canvas
-      frameloop={frameloop}
+      frameloop="demand"
       dpr={[1, 1.75]}
       gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
       camera={{ position: [0, 0, 6], fov: 34 }}
@@ -147,7 +169,7 @@ export function OracleModelScene({ active }: { active: boolean }) {
         color="#00c2cb"
       />
       <Suspense fallback={null}>
-        <OracleTablet reduce={reduce} />
+        <OracleTablet active={active} reduce={reduce} />
       </Suspense>
     </Canvas>
   );

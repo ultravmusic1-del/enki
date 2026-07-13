@@ -37,18 +37,26 @@ export function OracleHero() {
           "-=0.7",
         );
 
-      // Parallax drift + fade as the hero scrolls away (depth).
-      gsap.to("[data-halo]", {
-        yPercent: 16,
-        opacity: 0.35,
-        ease: "none",
-        scrollTrigger: {
-          trigger: root.current,
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
+      // Parallax drift + fade as the hero scrolls away (depth). Explicit
+      // fromTo (opacity 1 -> 0.35) with immediateRender:false so it never
+      // captures the intro's opacity:0 as its start — otherwise scrubbing back
+      // to the top would leave the model hidden.
+      gsap.fromTo(
+        "[data-halo]",
+        { yPercent: 0, opacity: 1 },
+        {
+          yPercent: 16,
+          opacity: 0.35,
+          ease: "none",
+          immediateRender: false,
+          scrollTrigger: {
+            trigger: root.current,
+            start: "top top",
+            end: "bottom top",
+            scrub: true,
+          },
         },
-      });
+      );
     },
     { scope: root },
   );
