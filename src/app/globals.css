@@ -10,59 +10,12 @@
    ========================================================================= */
 
 :root {
+  /* Dark is the only theme. The `.dark` class stays on <html> so Tailwind
+     `dark:` variant utilities keep resolving; these token values now live
+     directly on :root. */
+  color-scheme: dark;
   --radius: 0.85rem;
 
-  /* Light theme (secondary) */
-  --background: #eef0f1;
-  --foreground: #191d23;
-
-  --card: #ffffff;
-  --card-foreground: #191d23;
-
-  --popover: #ffffff;
-  --popover-foreground: #191d23;
-
-  --primary: #00868d;
-  --primary-foreground: #ffffff;
-
-  --secondary: #e4e7ea;
-  --secondary-foreground: #232a33;
-
-  --muted: #e7eaec;
-  --muted-foreground: #566069;
-
-  --accent: #dfe3e6;
-  --accent-foreground: #16191d;
-
-  --destructive: #d83a3f;
-  --destructive-foreground: #ffffff;
-
-  --border: #d5d9dd;
-  --input: #cfd4d9;
-  --ring: #00adb5;
-
-  /* Brand primitives (theme-independent identity) */
-  --brand-teal: #00adb5;
-  --brand-teal-bright: #35e4ec;
-  --brand-teal-deep: #007a80;
-  --brand-void: #16191d;
-  --brand-surface: #222831;
-  --brand-slate: #393e46;
-  --brand-mist: #eeeeee;
-
-  /* Ambient glow tint used by aurora/emblem (light) */
-  --glow: 0 134 141;
-  --grain-opacity: 0.03;
-
-  --chart-1: #00adb5;
-  --chart-2: #35e4ec;
-  --chart-3: #5b7a80;
-  --chart-4: #8bd4d9;
-  --chart-5: #00868d;
-}
-
-.dark {
-  /* Dark theme (primary / default) */
   --background: #16191d;
   --foreground: #eeeeee;
 
@@ -91,6 +44,16 @@
   --input: #2d353f;
   --ring: #00adb5;
 
+  /* Brand primitives (theme-independent identity) */
+  --brand-teal: #00adb5;
+  --brand-teal-bright: #35e4ec;
+  --brand-teal-deep: #007a80;
+  --brand-void: #16191d;
+  --brand-surface: #222831;
+  --brand-slate: #393e46;
+  --brand-mist: #eeeeee;
+
+  /* Ambient glow tint used by aurora/emblem */
   --glow: 0 173 181;
   --grain-opacity: 0.05;
 
@@ -264,19 +227,6 @@
    glare instead of rainbow/white, mist/void glass instead of pure white.
    ========================================================================= */
 :root {
-  --nav-glass: color-mix(in oklab, var(--card) 55%, transparent);
-  --nav-highlight: rgba(255, 255, 255, 0.85);
-  --nav-caustic: rgb(var(--glow) / 0.2);
-  --nav-hairline: color-mix(in oklab, var(--foreground) 14%, transparent);
-  --nav-reflection: rgba(255, 255, 255, 0.5);
-  --nav-glare: rgb(var(--glow) / 0.3);
-  --nav-pill: color-mix(in oklab, var(--foreground) 8%, transparent);
-  --nav-pill-ring: rgb(var(--glow) / 0.32);
-  --nav-shadow:
-    0 20px 50px -22px rgb(0 0 0 / 0.35), 0 6px 18px -10px rgb(0 0 0 / 0.22);
-}
-
-.dark {
   --nav-glass: color-mix(in oklab, var(--card) 60%, transparent);
   --nav-highlight: rgba(255, 255, 255, 0.16);
   --nav-caustic: rgb(var(--glow) / 0.14);
@@ -625,6 +575,37 @@
 @keyframes marquee {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
+}
+
+/* Editor score dial — the teal arc sweeps in from empty on load */
+@keyframes score-draw {
+  from {
+    stroke-dashoffset: var(--dash-start);
+  }
+}
+.score-arc {
+  animation: score-draw 1.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* =========================================================================
+   Route transition — every client navigation fades + lifts its page in,
+   reusing the Reveal easing so the whole site shares one entrance language.
+   A `from`-only keyframe leaves NO lingering transform once it settles, so
+   sticky sidebars and the home hero's ScrollTrigger parallax stay intact.
+   `prefers-reduced-motion` (block below) neutralizes it to an instant show.
+   ========================================================================= */
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+.page-transition {
+  /* `backwards` fill applies the from-frame at t=0 (no first-paint flash) but,
+     unlike `both`, does NOT hold a transform after settling — the resting state
+     reverts to `transform: none`, so the page tree isn't left permanently
+     promoted to a compositor layer above the WebGL hero. */
+  animation: page-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 
 @media (prefers-reduced-motion: reduce) {

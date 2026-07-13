@@ -20,7 +20,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Icon } from "@/components/shared/icon";
-import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { useCommandMenu } from "@/components/layout/command-menu";
 
 export function SiteHeader() {
@@ -171,8 +170,6 @@ export function SiteHeader() {
           >
             <Icon name="Search" className="size-4" />
           </Button>
-
-          <ThemeToggle />
 
           <button
             type="button"

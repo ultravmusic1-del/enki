@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { CommandMenuProvider } from "@/components/layout/command-menu";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -45,10 +44,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#16191d" },
-    { media: "(prefers-color-scheme: light)", color: "#eef0f1" },
-  ],
+  themeColor: "#16191d",
 };
 
 export default function RootLayout({
@@ -57,31 +53,20 @@ export default function RootLayout({
   const searchDocs = getSearchDocs();
 
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${fontVariables} h-full antialiased`}
-    >
+    <html lang="en" className={`dark ${fontVariables} h-full antialiased`}>
       <body className="relative min-h-full">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <div aria-hidden className="grain" />
-          <CommandMenuProvider docs={searchDocs}>
-            <SiteHeader />
-            <main className="relative z-10 flex min-h-screen flex-col">
-              <div className="flex-1">{children}</div>
-              <SiteFooter />
-            </main>
-          </CommandMenuProvider>
-          <Toaster
-            position="bottom-right"
-            toastOptions={{ className: "font-sans" }}
-          />
-        </ThemeProvider>
+        <div aria-hidden className="grain" />
+        <CommandMenuProvider docs={searchDocs}>
+          <SiteHeader />
+          <main className="relative z-10 flex min-h-screen flex-col">
+            <div className="flex-1">{children}</div>
+            <SiteFooter />
+          </main>
+        </CommandMenuProvider>
+        <Toaster
+          position="bottom-right"
+          toastOptions={{ className: "font-sans" }}
+        />
         <Analytics />
         <SpeedInsights />
       </body>

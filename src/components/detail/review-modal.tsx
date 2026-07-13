@@ -21,7 +21,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Icon } from "@/components/shared/icon";
 import { cn } from "@/lib/utils";
 
-export function ReviewModal({ toolName }: { toolName: string }) {
+export function ReviewModal({
+  toolName,
+  triggerClassName,
+}: {
+  toolName: string;
+  triggerClassName?: string;
+}) {
   const [open, setOpen] = useState(false);
   const [hover, setHover] = useState(0);
 
@@ -58,7 +64,7 @@ export function ReviewModal({ toolName }: { toolName: string }) {
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2">
+        <Button variant="outline" className={cn("gap-2", triggerClassName)}>
           <Icon name="Star" className="size-4 text-teal" />
           Write a review
         </Button>

@@ -49,8 +49,15 @@ export default async function CategoryDetailPage({
   return (
     <div className="pb-16">
       {/* Hero */}
-      <div className="relative overflow-hidden border-b border-border pt-28 pb-12">
+      <div className="relative overflow-hidden pt-28 pb-14">
         <div className="spotlight pointer-events-none absolute inset-0 opacity-70" />
+        {/* Dissolve the masthead into the page: a soft, center-weighted hairline
+            that fades to transparent at both edges, replacing the hard full-width
+            rule that used to hard-cut the flow into the content below. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-border to-transparent"
+        />
         <Container className="relative">
           <nav
             aria-label="Breadcrumb"

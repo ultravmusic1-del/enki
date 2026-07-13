@@ -63,8 +63,15 @@ export default async function ToolDetailPage({
   return (
     <article className="pb-16">
       {/* Hero */}
-      <div className="relative overflow-hidden border-b border-border pt-28 pb-12">
+      <div className="relative overflow-hidden pt-28 pb-14">
         <div className="spotlight pointer-events-none absolute inset-0 opacity-70" />
+        {/* Dissolve the masthead into the page: a soft, center-weighted hairline
+            that fades to transparent at both edges, replacing the hard full-width
+            rule that used to hard-cut the flow into the content below. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-border to-transparent"
+        />
         <Container className="relative">
           <nav
             aria-label="Breadcrumb"
@@ -160,39 +167,55 @@ export default async function ToolDetailPage({
           />
         </section>
 
-        {/* Editor score + actions */}
+        {/* Editor score + actions — the Oracle's verdict */}
         <section className="mt-12">
-          <div className="flex flex-col gap-5 rounded-2xl border border-border bg-card p-6 ring-hairline sm:flex-row sm:items-center sm:justify-between">
-            <div className="w-full sm:max-w-sm">
-              <div className="flex items-baseline justify-between gap-3">
-                <span className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
-                  Editor score
-                </span>
-                <span className="flex items-baseline gap-0.5">
-                  <span className="font-display text-3xl font-semibold text-teal">
-                    {tool.editorScore.toFixed(1)}
-                  </span>
-                  <span className="text-sm text-muted-foreground">/10</span>
-                </span>
+          <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 ring-hairline sm:p-8">
+            {/* ambient teal bloom anchored to the dial */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -top-20 -left-12 size-56 rounded-full opacity-70 blur-3xl"
+              style={{
+                background:
+                  "radial-gradient(circle, rgb(var(--glow) / 0.16), transparent 70%)",
+              }}
+            />
+            <div className="relative flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+              {/* Score cluster */}
+              <div className="flex items-center gap-5 sm:gap-6">
+                <ScoreDial score={tool.editorScore} />
+                <div className="min-w-0">
+                  <p className="font-mono text-[0.7rem] tracking-[0.22em] text-teal uppercase">
+                    Enki editor score
+                  </p>
+                  <p className="mt-2 font-display text-3xl leading-none font-semibold sm:text-4xl">
+                    {scoreVerdict(tool.editorScore)}
+                  </p>
+                  <p className="mt-2.5 flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Icon name="BadgeCheck" className="size-4 text-teal" />
+                    Human-vetted editorial rating
+                  </p>
+                </div>
               </div>
-              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-teal"
-                  style={{ width: `${tool.editorScore * 10}%` }}
+
+              {/* Actions */}
+              <div className="flex flex-col gap-3 sm:flex-row md:shrink-0">
+                <a
+                  href={tool.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex h-11 items-center justify-center gap-2 rounded-full bg-teal px-6 text-sm font-semibold whitespace-nowrap text-[#04171a] shadow-glow-sm transition-all hover:-translate-y-0.5 hover:bg-teal-bright hover:shadow-glow"
+                >
+                  Visit {tool.name}
+                  <Icon
+                    name="ArrowUpRight"
+                    className="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                  />
+                </a>
+                <ReviewModal
+                  toolName={tool.name}
+                  triggerClassName="h-11 rounded-full px-6 text-sm font-medium whitespace-nowrap"
                 />
               </div>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <a
-                href={tool.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-1.5 rounded-full bg-mist px-5 py-2.5 text-sm font-medium text-[#16191d] transition-transform hover:-translate-y-px hover:shadow-glow-sm"
-              >
-                Visit {tool.name}
-                <Icon name="ExternalLink" className="size-3.5" />
-              </a>
-              <ReviewModal toolName={tool.name} />
             </div>
           </div>
         </section>
@@ -371,6 +394,73 @@ export default async function ToolDetailPage({
 }
 
 /* ---------------------------------------------------------------- helpers */
+
+/** Radial editor-score dial. Pure SVG, server-rendered; the teal arc sweeps
+ *  in from empty via the `.score-arc` keyframe (neutralized by reduced-motion). */
+function ScoreDial({ score }: { score: number }) {
+  const r = 52;
+  const circumference = 2 * Math.PI * r;
+  const pct = Math.max(0, Math.min(1, score / 10));
+  const offset = circumference * (1 - pct);
+
+  return (
+    <div className="relative grid size-28 shrink-0 place-items-center sm:size-32">
+      <svg viewBox="0 0 120 120" className="size-full -rotate-90">
+        <defs>
+          <linearGradient id="score-grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="var(--brand-teal-deep)" />
+            <stop offset="55%" stopColor="var(--brand-teal)" />
+            <stop offset="100%" stopColor="var(--brand-teal-bright)" />
+          </linearGradient>
+        </defs>
+        <circle
+          cx="60"
+          cy="60"
+          r={r}
+          fill="none"
+          stroke="var(--muted)"
+          strokeWidth="8"
+        />
+        <circle
+          className="score-arc"
+          cx="60"
+          cy="60"
+          r={r}
+          fill="none"
+          stroke="url(#score-grad)"
+          strokeWidth="8"
+          strokeLinecap="round"
+          style={
+            {
+              strokeDasharray: circumference,
+              strokeDashoffset: offset,
+              "--dash-start": `${circumference}px`,
+              filter: "drop-shadow(0 0 5px rgb(var(--glow) / 0.4))",
+            } as React.CSSProperties
+          }
+        />
+      </svg>
+      <div className="absolute inset-0 grid place-content-center text-center">
+        <span className="font-display text-3xl leading-none font-semibold sm:text-4xl">
+          {score.toFixed(1)}
+        </span>
+        <span className="mt-1 font-mono text-[0.6rem] tracking-[0.15em] text-muted-foreground">
+          OUT OF 10
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/** Qualitative label so the number carries meaning at a glance. */
+function scoreVerdict(score: number): string {
+  if (score >= 9) return "Exceptional";
+  if (score >= 8) return "Excellent";
+  if (score >= 7) return "Great";
+  if (score >= 6) return "Solid";
+  if (score >= 5) return "Fair";
+  return "Mixed";
+}
 
 function SectionLabel({
   icon,
