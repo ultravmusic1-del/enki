@@ -121,15 +121,15 @@ export type Review = z.infer<typeof reviewSchema>;
 
 /* ------------------------------------------------- client-side review form */
 
-/** Schema for the "Write a review" modal (RHF + Zod, client-only). */
+/**
+ * Schema for the "Write a review" modal (RHF + Zod, client-only). Only the
+ * star rating and name are required; the title and comments are optional.
+ */
 export const reviewFormSchema = z.object({
   name: z.string().min(2, "Please enter your name").max(60),
   rating: z.number().int().min(1, "Please choose a rating").max(5),
-  title: z.string().min(4, "Give your review a short title").max(80),
-  body: z
-    .string()
-    .min(20, "Tell us a little more (at least 20 characters)")
-    .max(1000),
+  title: z.string().max(80, "Keep the title under 80 characters").optional(),
+  body: z.string().max(1000, "Keep it under 1000 characters").optional(),
 });
 
 export type ReviewFormValues = z.infer<typeof reviewFormSchema>;

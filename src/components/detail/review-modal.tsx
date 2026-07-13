@@ -69,7 +69,8 @@ export function ReviewModal({ toolName }: { toolName: string }) {
             Review {toolName}
           </DialogTitle>
           <DialogDescription>
-            Share your experience to help others adopt with confidence.
+            Share your experience to help others adopt with confidence. Only a
+            rating and your name are required.
           </DialogDescription>
         </DialogHeader>
 
@@ -84,7 +85,12 @@ export function ReviewModal({ toolName }: { toolName: string }) {
             name="rating"
             render={({ field }) => (
               <div className="flex flex-col gap-2">
-                <Label>Your rating</Label>
+                <Label>
+                  Your rating{" "}
+                  <span aria-hidden className="text-teal">
+                    *
+                  </span>
+                </Label>
                 <div
                   className="flex items-center gap-1"
                   onMouseLeave={() => setHover(0)}
@@ -124,7 +130,12 @@ export function ReviewModal({ toolName }: { toolName: string }) {
 
           {/* Name */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="review-name">Name</Label>
+            <Label htmlFor="review-name">
+              Name{" "}
+              <span aria-hidden className="text-teal">
+                *
+              </span>
+            </Label>
             <Input
               id="review-name"
               placeholder="How should we credit you?"
@@ -140,7 +151,12 @@ export function ReviewModal({ toolName }: { toolName: string }) {
 
           {/* Title */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="review-title">Title</Label>
+            <Label htmlFor="review-title">
+              Title{" "}
+              <span className="font-normal text-muted-foreground">
+                (optional)
+              </span>
+            </Label>
             <Input
               id="review-title"
               placeholder="Sum up your experience"
@@ -156,7 +172,12 @@ export function ReviewModal({ toolName }: { toolName: string }) {
 
           {/* Body */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="review-body">Review</Label>
+            <Label htmlFor="review-body">
+              Review{" "}
+              <span className="font-normal text-muted-foreground">
+                (optional)
+              </span>
+            </Label>
             <Textarea
               id="review-body"
               rows={4}
