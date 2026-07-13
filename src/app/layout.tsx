@@ -3,8 +3,12 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { CommandMenuProvider } from "@/components/layout/command-menu";
+import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { fontVariables } from "@/lib/fonts";
 import { siteConfig } from "@/lib/site";
+import { getSearchDocs } from "@/lib/content";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -50,6 +54,8 @@ export const viewport: Viewport = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const searchDocs = getSearchDocs();
+
   return (
     <html
       lang="en"
@@ -64,7 +70,13 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <div aria-hidden className="grain" />
-          {children}
+          <CommandMenuProvider docs={searchDocs}>
+            <SiteHeader />
+            <main className="relative z-10 flex min-h-screen flex-col">
+              <div className="flex-1">{children}</div>
+              <SiteFooter />
+            </main>
+          </CommandMenuProvider>
           <Toaster
             position="bottom-right"
             toastOptions={{ className: "font-sans" }}

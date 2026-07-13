@@ -234,6 +234,8 @@ export type SearchDoc = {
   tags: string[];
   accent: string;
   rating?: number;
+  /** Lucide icon name (categories only). */
+  icon?: string;
   href: string;
 };
 
@@ -262,6 +264,7 @@ export function getSearchDocs(): SearchDoc[] {
     description: c.description,
     tags: [],
     accent: c.accent,
+    icon: c.icon,
     href: `/categories/${c.slug}`,
   }));
 
