@@ -1,0 +1,300 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* =========================================================================
+   ENKI — Design tokens
+   Oracle-meets-AI. Deep charcoal canvas, single teal accent, mist type.
+   Brand palette: #222831 #393E46 #00ADB5 #EEEEEE
+   ========================================================================= */
+
+:root {
+  --radius: 0.85rem;
+
+  /* Light theme (secondary) */
+  --background: #eef0f1;
+  --foreground: #191d23;
+
+  --card: #ffffff;
+  --card-foreground: #191d23;
+
+  --popover: #ffffff;
+  --popover-foreground: #191d23;
+
+  --primary: #00868d;
+  --primary-foreground: #ffffff;
+
+  --secondary: #e4e7ea;
+  --secondary-foreground: #232a33;
+
+  --muted: #e7eaec;
+  --muted-foreground: #566069;
+
+  --accent: #dfe3e6;
+  --accent-foreground: #16191d;
+
+  --destructive: #d83a3f;
+  --destructive-foreground: #ffffff;
+
+  --border: #d5d9dd;
+  --input: #cfd4d9;
+  --ring: #00adb5;
+
+  /* Brand primitives (theme-independent identity) */
+  --brand-teal: #00adb5;
+  --brand-teal-bright: #35e4ec;
+  --brand-teal-deep: #007a80;
+  --brand-void: #16191d;
+  --brand-surface: #222831;
+  --brand-slate: #393e46;
+  --brand-mist: #eeeeee;
+
+  /* Ambient glow tint used by aurora/emblem (light) */
+  --glow: 0 134 141;
+  --grain-opacity: 0.03;
+
+  --chart-1: #00adb5;
+  --chart-2: #35e4ec;
+  --chart-3: #5b7a80;
+  --chart-4: #8bd4d9;
+  --chart-5: #00868d;
+}
+
+.dark {
+  /* Dark theme (primary / default) */
+  --background: #16191d;
+  --foreground: #eeeeee;
+
+  --card: #1b2028;
+  --card-foreground: #eeeeee;
+
+  --popover: #191e25;
+  --popover-foreground: #eeeeee;
+
+  --primary: #00adb5;
+  --primary-foreground: #04171a;
+
+  --secondary: #222831;
+  --secondary-foreground: #eeeeee;
+
+  --muted: #20262e;
+  --muted-foreground: #8b96a2;
+
+  --accent: #232b34;
+  --accent-foreground: #eeeeee;
+
+  --destructive: #f0575c;
+  --destructive-foreground: #1a0507;
+
+  --border: #2a313b;
+  --input: #2d353f;
+  --ring: #00adb5;
+
+  --glow: 0 173 181;
+  --grain-opacity: 0.05;
+
+  --chart-1: #00adb5;
+  --chart-2: #35e4ec;
+  --chart-3: #6f8b91;
+  --chart-4: #0a3d42;
+  --chart-5: #a7e6ea;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-teal: var(--brand-teal);
+  --color-teal-bright: var(--brand-teal-bright);
+  --color-teal-deep: var(--brand-teal-deep);
+  --color-void: var(--brand-void);
+  --color-surface: var(--brand-surface);
+  --color-slate: var(--brand-slate);
+  --color-mist: var(--brand-mist);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), Georgia, serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
+
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 3px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 10px);
+
+  --shadow-glow-sm: 0 0 20px -4px rgb(var(--glow) / 0.35);
+  --shadow-glow: 0 0 45px -8px rgb(var(--glow) / 0.45);
+  --shadow-glow-lg: 0 0 90px -10px rgb(var(--glow) / 0.5);
+
+  --animate-aurora: aurora 22s ease-in-out infinite;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-shimmer: shimmer 2.4s linear infinite;
+  --animate-pulse-ring: pulse-ring 3.2s ease-out infinite;
+  --animate-marquee: marquee 38s linear infinite;
+}
+
+/* =========================================================================
+   Base
+   ========================================================================= */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: "ss01", "cv01";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    background-color: rgb(var(--glow) / 0.28);
+    color: var(--foreground);
+  }
+
+  /* Scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--brand-slate) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--brand-slate) 80%, transparent);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--brand-slate);
+    background-clip: padding-box;
+  }
+}
+
+/* =========================================================================
+   Atmosphere utilities
+   ========================================================================= */
+
+/* Fine film grain overlay — apply to a fixed full-bleed layer */
+@utility grain {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Teal text with a soft glow */
+@utility text-glow {
+  color: var(--brand-teal-bright);
+  text-shadow: 0 0 24px rgb(var(--glow) / 0.55);
+}
+
+/* Frosted panel */
+@utility glass {
+  background-color: color-mix(in oklab, var(--card) 62%, transparent);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+}
+
+/* The Enki emblem rendered as a tintable mask */
+@utility emblem {
+  -webkit-mask: url("/brand/logo-mask.png") center / contain no-repeat;
+  mask: url("/brand/logo-mask.png") center / contain no-repeat;
+  background-color: currentColor;
+}
+
+/* Hairline gradient border helper */
+@utility ring-hairline {
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--brand-mist) 8%, transparent);
+}
+
+/* Radial spotlight background */
+@utility spotlight {
+  background:
+    radial-gradient(60% 55% at 50% 0%, rgb(var(--glow) / 0.16), transparent 70%),
+    radial-gradient(50% 40% at 50% 100%, rgb(var(--glow) / 0.08), transparent 70%);
+}
+
+/* =========================================================================
+   Keyframes
+   ========================================================================= */
+@keyframes aurora {
+  0%, 100% { transform: translate3d(-2%, 0, 0) rotate(0deg) scale(1.05); opacity: 0.75; }
+  33% { transform: translate3d(3%, -2%, 0) rotate(4deg) scale(1.12); opacity: 1; }
+  66% { transform: translate3d(-1%, 2%, 0) rotate(-3deg) scale(1.08); opacity: 0.85; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.85); opacity: 0.6; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  html { scroll-behavior: auto; }
+}
