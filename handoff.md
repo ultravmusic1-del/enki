@@ -12,24 +12,33 @@ top-to-bottom before writing code.
 
 ## 1. Current status (as of this handoff)
 
-The project is **partway through initial implementation**. Foundation is done and
-verified running; content + pages are not yet built.
+The project is **complete through the planned MVP**. All six tasks are done and verified.
 
 | # | Task | Status |
 |---|------|--------|
 | 1 | Scaffold Next.js 16 app + install all dependencies | ✅ Done |
 | 2 | Design system: fonts, tokens, theme, atmosphere | ✅ Done |
-| 3 | Data layer + seed content (Sanity-shaped) | 🚧 **In progress — START HERE** |
-| 4 | Shared chrome (header/footer/⌘K) + landing page | ⬜ Not started |
-| 5 | Directory, tool-detail, category pages | ⬜ Not started |
-| 6 | Motion polish, tests (Vitest + Playwright), browser verification | ⬜ Not started |
+| 3 | Data layer + seed content (Sanity-shaped) | ✅ Done |
+| 4 | Shared chrome (header/footer/⌘K) + landing page | ✅ Done |
+| 5 | Directory, tool-detail, category pages | ✅ Done |
+| 6 | Motion polish, tests (Vitest + Playwright), browser verification | ✅ Done |
 
-**Verified working:** `pnpm dev` compiles clean (Next 16 + Turbopack), homepage returns
-HTTP 200, dark theme + custom fonts load, zero console errors. The current
-`src/app/page.tsx` is still the default create-next-app page (placeholder — to be replaced in Task 4).
+**Verified working:** clean `pnpm build` (40 static pages: 27 tool pages + 8 category pages
++ core routes), `pnpm typecheck`, `pnpm lint`, and `pnpm test` (31 unit tests) all pass.
+Driven in a browser in both dark and light themes with zero console errors: landing (GSAP
+oracle hero), directory (search + filters + URL sync), tool detail (carousel, rating
+distribution, review modal validation), categories, and ⌘K command palette.
 
-**Immediate next step:** write `src/lib/schemas.ts` (Zod), then the seed data files, then
-the content-access layer. See §7 (Data model) and §8 (Remaining plan).
+**What was built on top of the foundation:**
+- `src/lib/schemas.ts` — Zod schemas mirroring Sanity documents.
+- `src/data/*` — 27 tools, 8 categories, 6 authors, 27 authored reviews.
+- `src/lib/content.ts` — GROQ-shaped access layer with load-time validation, referential
+  integrity checks, deterministic rating-distribution synthesis, and search docs.
+- `src/lib/filters.ts` — pure, tested filter/sort helpers.
+- Full page set under `src/app/` and components under `src/components/{shared,layout,home,directory,detail}`.
+
+**To deploy:** the user runs `vercel` (or connects the repo in the Vercel dashboard) — deploy
+needs their Vercel auth. No env vars are required; content is local seed data.
 
 ---
 
