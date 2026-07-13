@@ -7,12 +7,11 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@/lib/use-gsap";
 import { Aurora } from "@/components/shared/aurora";
 import { Icon } from "@/components/shared/icon";
+import { OracleModel } from "@/components/home/oracle-model";
 import { useCommandMenu } from "@/components/layout/command-menu";
 import type { SiteStats } from "@/lib/content";
 
 gsap.registerPlugin(ScrollTrigger);
-
-const RAY_COUNT = 32;
 
 export function OracleHero({ stats }: { stats: SiteStats }) {
   const root = useRef<HTMLElement>(null);
@@ -26,63 +25,23 @@ export function OracleHero({ stats }: { stats: SiteStats }) {
 
       // Static end-state for reduced motion — everything simply visible.
       if (reduce) {
-        gsap.set("[data-hero-reveal]", { opacity: 1, y: 0 });
-        gsap.set("[data-ray]", { opacity: 0.5, scaleY: 1 });
-        gsap.set("[data-emblem]", { opacity: 1, scale: 1 });
+        gsap.set("[data-hero-reveal], [data-halo]", { opacity: 1, y: 0 });
         return;
       }
 
-      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-
-      tl.from("[data-emblem]", {
-        opacity: 0,
-        scale: 0.6,
-        duration: 1.1,
-        ease: "power2.out",
-      })
-        .from(
-          "[data-ray]",
-          {
-            opacity: 0,
-            scaleY: 0,
-            duration: 0.9,
-            stagger: { each: 0.018, from: "random" },
-            ease: "power2.out",
-          },
-          "-=0.7",
-        )
+      gsap
+        .timeline({ defaults: { ease: "power3.out" } })
+        .from("[data-halo]", { opacity: 0, duration: 1.3, ease: "power2.out" })
         .from(
           "[data-hero-reveal]",
-          {
-            opacity: 0,
-            y: 24,
-            duration: 0.8,
-            stagger: 0.12,
-          },
-          "-=0.5",
+          { opacity: 0, y: 24, duration: 0.8, stagger: 0.12 },
+          "-=0.7",
         );
 
-      // Slow, continuous rotation of the ray halo.
-      gsap.to("[data-rays]", {
-        rotate: 360,
-        duration: 240,
-        repeat: -1,
-        ease: "none",
-      });
-
-      // Gentle breathing glow on the emblem.
-      gsap.to("[data-emblem]", {
-        scale: 1.04,
-        duration: 4,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-      });
-
-      // Parallax drift as the hero scrolls away.
+      // Parallax drift + fade as the hero scrolls away (depth).
       gsap.to("[data-halo]", {
-        yPercent: 18,
-        opacity: 0.4,
+        yPercent: 16,
+        opacity: 0.35,
         ease: "none",
         scrollTrigger: {
           trigger: root.current,
@@ -91,22 +50,6 @@ export function OracleHero({ stats }: { stats: SiteStats }) {
           scrub: true,
         },
       });
-
-      // Pointer parallax.
-      const onMove = (e: PointerEvent) => {
-        const cx = window.innerWidth / 2;
-        const cy = window.innerHeight / 2;
-        const dx = (e.clientX - cx) / cx;
-        const dy = (e.clientY - cy) / cy;
-        gsap.to("[data-halo]", {
-          x: dx * 26,
-          y: dy * 26,
-          duration: 0.8,
-          ease: "power2.out",
-        });
-      };
-      window.addEventListener("pointermove", onMove);
-      return () => window.removeEventListener("pointermove", onMove);
     },
     { scope: root },
   );
@@ -118,39 +61,27 @@ export function OracleHero({ stats }: { stats: SiteStats }) {
     >
       <Aurora intensity="strong" />
 
-      {/* Oracle halo — emblem + radiating rays, behind the copy */}
+      {/* Oracle — 3D model of the Enki emblem, behind the copy */}
       <div
         data-halo
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-0 grid place-items-center"
+        className="pointer-events-none absolute inset-0 z-0"
       >
-        <div className="relative grid size-[min(80vw,620px)] place-items-center">
-          <div data-rays className="absolute inset-0">
-            {Array.from({ length: RAY_COUNT }).map((_, i) => (
-              <span
-                key={i}
-                data-ray
-                className="absolute top-1/2 left-1/2 h-[46%] w-px origin-top"
-                style={{
-                  transform: `translate(-50%, 0) rotate(${(360 / RAY_COUNT) * i}deg)`,
-                  background:
-                    "linear-gradient(to bottom, rgb(var(--glow) / 0.55), transparent)",
-                  opacity: 0.5,
-                }}
-              />
-            ))}
-          </div>
-
-          <div
-            data-emblem
-            className="emblem size-40 sm:size-52"
-            style={{
-              color: "var(--brand-teal)",
-              filter: "drop-shadow(0 0 40px rgb(var(--glow) / 0.55))",
-            }}
-          />
-        </div>
+        <OracleModel />
       </div>
+
+      {/* Contrast scrim so the copy stays legible over the model — a soft pool
+          of background behind the text plus a lower-band darkening. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-[1]"
+        style={{
+          background: [
+            "radial-gradient(52% 42% at 50% 60%, color-mix(in oklab, var(--background) 82%, transparent) 0%, transparent 72%)",
+            "linear-gradient(to bottom, transparent 26%, color-mix(in oklab, var(--background) 55%, transparent) 66%, transparent 100%)",
+          ].join(","),
+        }}
+      />
 
       {/* Copy */}
       <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-5 text-center">
