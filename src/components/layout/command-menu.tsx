@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/command";
 import type { SearchDoc } from "@/lib/content";
 import { Icon } from "@/components/shared/icon";
-import { Monogram } from "@/components/shared/monogram";
+import { ToolLogo } from "@/components/shared/tool-logo";
 
 type CommandMenuContext = {
   open: boolean;
@@ -167,7 +167,12 @@ export function CommandMenuProvider({
                     onSelect={() => go(doc.href)}
                     className="gap-3 py-2"
                   >
-                    <Monogram name={doc.name} accent={doc.accent} size="sm" />
+                    <ToolLogo
+                      name={doc.name}
+                      accent={doc.accent}
+                      logo={doc.logo}
+                      size="sm"
+                    />
                     <span className="flex min-w-0 flex-col">
                       <span className="truncate font-medium">{doc.name}</span>
                       <span className="truncate text-xs text-muted-foreground">

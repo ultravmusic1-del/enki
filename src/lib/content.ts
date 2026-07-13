@@ -236,6 +236,8 @@ export type SearchDoc = {
   rating?: number;
   /** Lucide icon name (categories only). */
   icon?: string;
+  /** Brand logo path (tools only). */
+  logo?: string;
   href: string;
 };
 
@@ -253,6 +255,7 @@ export function getSearchDocs(): SearchDoc[] {
     tags: t.tags,
     accent: t.accent,
     rating: t.rating,
+    logo: t.logo,
     href: `/tools/${t.slug}`,
   }));
 

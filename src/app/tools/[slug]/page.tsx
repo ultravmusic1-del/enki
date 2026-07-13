@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/shared/container";
-import { Monogram } from "@/components/shared/monogram";
+import { ToolLogo } from "@/components/shared/tool-logo";
 import { StarRating } from "@/components/shared/star-rating";
 import { PricingBadge } from "@/components/shared/pricing-badge";
 import { ToolCard } from "@/components/shared/tool-card";
@@ -85,7 +85,12 @@ export default async function ToolDetailPage({
             {/* Identity */}
             <div className="flex flex-col gap-5">
               <div className="flex items-start gap-4">
-                <Monogram name={tool.name} accent={tool.accent} size="lg" />
+                <ToolLogo
+                  name={tool.name}
+                  accent={tool.accent}
+                  logo={tool.logo}
+                  size="lg"
+                />
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     {category && (

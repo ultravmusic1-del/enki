@@ -13,6 +13,7 @@ export const tools: Tool[] = [
   /* ============================================================ WRITING */
   {
     slug: "jasper",
+    logo: "/logos/jasper.png",
     name: "Jasper",
     tagline: "Marketing copy that stays on brand",
     description:
@@ -76,6 +77,7 @@ export const tools: Tool[] = [
   },
   {
     slug: "copy-ai",
+    logo: "/logos/copy-ai.png",
     name: "Copy.ai",
     tagline: "Go-to-market work on autopilot",
     description:
@@ -136,6 +138,7 @@ export const tools: Tool[] = [
   },
   {
     slug: "sudowrite",
+    logo: "/logos/sudowrite.png",
     name: "Sudowrite",
     tagline: "The AI writing partner for fiction",
     description:
@@ -196,6 +199,7 @@ export const tools: Tool[] = [
   },
   {
     slug: "grammarly",
+    logo: "/logos/grammarly.png",
     name: "Grammarly",
     tagline: "Writing help everywhere you type",
     description:
@@ -257,6 +261,7 @@ export const tools: Tool[] = [
   /* ============================================================== IMAGE */
   {
     slug: "midjourney",
+    logo: "/logos/midjourney.png",
     name: "Midjourney",
     tagline: "The gold standard for AI aesthetics",
     description:
@@ -317,6 +322,7 @@ export const tools: Tool[] = [
   },
   {
     slug: "dall-e-3",
+    logo: "/logos/dall-e-3.png",
     name: "DALL·E 3",
     tagline: "Prompt-faithful images inside ChatGPT",
     description:
@@ -376,6 +382,7 @@ export const tools: Tool[] = [
   },
   {
     slug: "stable-diffusion",
+    logo: "/logos/stable-diffusion.png",
     name: "Stable Diffusion",
     tagline: "Open-source image generation you control",
     description:
@@ -435,6 +442,7 @@ export const tools: Tool[] = [
   },
   {
     slug: "adobe-firefly",
+    logo: "/logos/adobe-firefly.png",
     name: "Adobe Firefly",
     tagline: "Commercially safe generation, built into Creative Cloud",
     description:
@@ -496,6 +504,7 @@ export const tools: Tool[] = [
   /* ============================================================= CODING */
   {
     slug: "github-copilot",
+    logo: "/logos/github-copilot.png",
     name: "GitHub Copilot",
     tagline: "The AI pair programmer, in your editor",
     description:
@@ -556,6 +565,7 @@ export const tools: Tool[] = [
   },
   {
     slug: "cursor",
+    logo: "/logos/cursor.png",
     name: "Cursor",
     tagline: "The AI-first code editor",
     description:
@@ -616,6 +626,7 @@ export const tools: Tool[] = [
   },
   {
     slug: "windsurf",
+    logo: "/logos/windsurf.png",
     name: "Windsurf",
     tagline: "Agentic IDE with flow-state focus",
     description:
@@ -675,6 +686,7 @@ export const tools: Tool[] = [
   },
   {
     slug: "replit-agent",
+    logo: "/logos/replit-agent.png",
     name: "Replit Agent",
     tagline: "Describe an app; it builds and deploys it",
     description:
@@ -736,6 +748,7 @@ export const tools: Tool[] = [
   /* ======================================================== PRODUCTIVITY */
   {
     slug: "notion-ai",
+    logo: "/logos/notion-ai.png",
     name: "Notion AI",
     tagline: "Your workspace, now with a brain",
     description:
@@ -795,6 +808,7 @@ export const tools: Tool[] = [
   },
   {
     slug: "mem",
+    logo: "/logos/mem.png",
     name: "Mem",
     tagline: "The self-organizing notes app",
     description:
@@ -854,6 +868,7 @@ export const tools: Tool[] = [
   },
   {
     slug: "motion",
+    logo: "/logos/motion.png",
     name: "Motion",
     tagline: "AI that plans your day for you",
     description:
@@ -915,6 +930,7 @@ export const tools: Tool[] = [
   /* =============================================================== VIDEO */
   {
     slug: "runway",
+    logo: "/logos/runway.png",
     name: "Runway",
     tagline: "A creative suite for AI video",
     description:
@@ -975,6 +991,7 @@ export const tools: Tool[] = [
   },
   {
     slug: "pika",
+    logo: "/logos/pika.png",
     name: "Pika",
     tagline: "Playful, fast AI video for social",
     description:
@@ -1034,6 +1051,7 @@ export const tools: Tool[] = [
   },
   {
     slug: "synthesia",
+    logo: "/logos/synthesia.png",
     name: "Synthesia",
     tagline: "AI avatars for training and comms video",
     description:
@@ -1095,6 +1113,7 @@ export const tools: Tool[] = [
   /* =============================================================== AUDIO */
   {
     slug: "elevenlabs",
+    logo: "/logos/elevenlabs.png",
     name: "ElevenLabs",
     tagline: "The most lifelike AI voices",
     description:
@@ -1155,6 +1174,7 @@ export const tools: Tool[] = [
   },
   {
     slug: "murf",
+    logo: "/logos/murf.png",
     name: "Murf",
     tagline: "Studio-quality voiceovers for teams",
     description:
@@ -1214,6 +1234,7 @@ export const tools: Tool[] = [
   },
   {
     slug: "suno",
+    logo: "/logos/suno.png",
     name: "Suno",
     tagline: "Full songs from a single prompt",
     description:
@@ -1275,6 +1296,7 @@ export const tools: Tool[] = [
   /* ============================================================ RESEARCH */
   {
     slug: "perplexity",
+    logo: "/logos/perplexity.png",
     name: "Perplexity",
     tagline: "The answer engine you can cite",
     description:
@@ -1334,6 +1356,7 @@ export const tools: Tool[] = [
   },
   {
     slug: "elicit",
+    logo: "/logos/elicit.png",
     name: "Elicit",
     tagline: "AI research assistant for the literature",
     description:
@@ -1393,6 +1416,7 @@ export const tools: Tool[] = [
   },
   {
     slug: "consensus",
+    logo: "/logos/consensus.png",
     name: "Consensus",
     tagline: "Evidence-based answers from science",
     description:
@@ -1454,6 +1478,7 @@ export const tools: Tool[] = [
   /* =========================================================== MARKETING */
   {
     slug: "surfer-seo",
+    logo: "/logos/surfer-seo.png",
     name: "Surfer SEO",
     tagline: "Write content that ranks",
     description:
@@ -1513,6 +1538,7 @@ export const tools: Tool[] = [
   },
   {
     slug: "adcreative-ai",
+    logo: "/logos/adcreative-ai.png",
     name: "AdCreative.ai",
     tagline: "High-converting ad creative, generated",
     description:
@@ -1572,6 +1598,7 @@ export const tools: Tool[] = [
   },
   {
     slug: "clay",
+    logo: "/logos/clay.png",
     name: "Clay",
     tagline: "AI-powered data and outbound at scale",
     description:

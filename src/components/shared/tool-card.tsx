@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { Tool } from "@/lib/schemas";
-import { Monogram } from "@/components/shared/monogram";
+import { ToolLogo } from "@/components/shared/tool-logo";
 import { StarRating } from "@/components/shared/star-rating";
 import { PricingBadge } from "@/components/shared/pricing-badge";
 import { Icon } from "@/components/shared/icon";
@@ -33,7 +33,12 @@ export function ToolCard({ tool, categoryName, className }: ToolCardProps) {
 
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <Monogram name={tool.name} accent={tool.accent} size="md" />
+          <ToolLogo
+            name={tool.name}
+            accent={tool.accent}
+            logo={tool.logo}
+            size="md"
+          />
           <div className="min-w-0">
             <h3 className="truncate font-display text-lg leading-tight font-semibold">
               {tool.name}

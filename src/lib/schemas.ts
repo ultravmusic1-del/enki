@@ -62,6 +62,8 @@ export const screenshotSchema = z.object({
 
 export const toolSchema = z.object({
   slug,
+  /** Path to the brand logo under /public (optional; falls back to a monogram). */
+  logo: z.string().optional(),
   name: z.string().min(1),
   tagline: z.string().min(1),
   description: z.string().min(1),

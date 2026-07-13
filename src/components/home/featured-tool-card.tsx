@@ -41,15 +41,31 @@ export function FeaturedToolCard({
             }}
           />
           <span
-            className="dim__disc dim__disc--3 font-display text-lg font-semibold"
-            style={{
-              background: `color-mix(in oklab, ${a} 26%, transparent)`,
-              color: a,
-              textShadow: `0 0 14px ${a}88`,
-              boxShadow: `-4px 8px 16px rgb(0 0 0 / 0.3), inset 0 0 0 1px color-mix(in oklab, ${a} 42%, transparent)`,
-            }}
+            className="dim__disc dim__disc--3 overflow-hidden font-display text-lg font-semibold"
+            style={
+              tool.logo
+                ? {
+                    background: "#fff",
+                    boxShadow: `-4px 8px 16px rgb(0 0 0 / 0.3), inset 0 0 0 1px ${a}55`,
+                  }
+                : {
+                    background: `color-mix(in oklab, ${a} 26%, transparent)`,
+                    color: a,
+                    textShadow: `0 0 14px ${a}88`,
+                    boxShadow: `-4px 8px 16px rgb(0 0 0 / 0.3), inset 0 0 0 1px color-mix(in oklab, ${a} 42%, transparent)`,
+                  }
+            }
           >
-            {initial}
+            {tool.logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={tool.logo}
+                alt=""
+                className="size-3/4 object-contain"
+              />
+            ) : (
+              initial
+            )}
           </span>
         </span>
 
