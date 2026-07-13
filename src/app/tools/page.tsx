@@ -8,7 +8,7 @@ import { getAllTags } from "@/lib/filters";
 export const metadata: Metadata = {
   title: "AI Tool Directory",
   description:
-    "Browse and filter Enki's curated directory of human-vetted AI tools — search by name, use case, category, pricing, and rating.",
+    "Browse and filter Enki's curated directory of human-vetted AI tools: search by name, use case, category, pricing, and rating.",
 };
 
 export default function ToolsPage() {

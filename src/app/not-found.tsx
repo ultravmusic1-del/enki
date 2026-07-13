@@ -14,7 +14,7 @@ export default function NotFound() {
         aria-hidden
       />
       <p className="mt-6 font-mono text-xs tracking-[0.3em] text-teal uppercase">
-        404 — Lost to the ether
+        404: Lost to the ether
       </p>
       <h1 className="mt-3 text-balance font-display text-4xl font-semibold sm:text-5xl">
         Even the oracle can&apos;t find this

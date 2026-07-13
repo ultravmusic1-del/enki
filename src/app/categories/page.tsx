@@ -9,7 +9,7 @@ import { getCategories, getStats } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Categories",
   description:
-    "Browse Enki's AI tools by category — writing, image, coding, productivity, video, audio, research, and marketing.",
+    "Browse Enki's AI tools by category: writing, image, coding, productivity, video, audio, research, and marketing.",
 };
 
 export default function CategoriesPage() {

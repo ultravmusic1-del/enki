@@ -10,7 +10,7 @@ export const categories: Category[] = [
     name: "Writing & Content",
     tagline: "Draft, edit, and refine at the speed of thought",
     description:
-      "Assistants that help you outline, draft, rewrite, and polish everything from marketing copy to long-form fiction — without losing your voice.",
+      "Assistants that help you outline, draft, rewrite, and polish everything from marketing copy to long-form fiction, without losing your voice.",
     icon: "PenLine",
     accent: "#00ADB5",
   },

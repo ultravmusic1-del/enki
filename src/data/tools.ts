@@ -70,7 +70,7 @@ export const tools: Tool[] = [
       { title: "Document editor", caption: "Long-form writing with inline commands", hue: 176 },
     ],
     verdict:
-      "The strongest pick for marketing teams that need consistent, on-brand output at volume — less compelling for solo, occasional writers.",
+      "The strongest pick for marketing teams that need consistent, on-brand output at volume, less compelling for solo, occasional writers.",
     editorScore: 8.4,
     rating: 4.3,
     reviewCount: 1284,
@@ -160,7 +160,7 @@ export const tools: Tool[] = [
       "Purpose-built tools for scenes and description",
     ],
     cons: [
-      "Niche — little use outside fiction",
+      "Niche: little use outside fiction",
       "Word-credit model can feel limiting on lower tiers",
     ],
     keyFeatures: [
@@ -192,7 +192,7 @@ export const tools: Tool[] = [
       { title: "Editor", caption: "Inline creative tools", hue: 250 },
     ],
     verdict:
-      "The best AI companion for fiction writers, full stop — as long as prose, not marketing, is your goal.",
+      "The best AI companion for fiction writers, full stop, as long as prose, not marketing, is your goal.",
     editorScore: 8.1,
     rating: 4.4,
     reviewCount: 613,
@@ -205,7 +205,7 @@ export const tools: Tool[] = [
     description:
       "A ubiquitous writing assistant for grammar, clarity, tone, and now generative drafting across every app.",
     longDescription:
-      "Grammarly is the most widely deployed writing assistant, living in the browser, desktop, and mobile keyboards. Beyond its long-standing grammar and clarity checks, GrammarlyGO adds generative drafting and rewriting tuned to your goals and tone. Its reach — it works in nearly every text field you touch — is its real superpower.",
+      "Grammarly is the most widely deployed writing assistant, living in the browser, desktop, and mobile keyboards. Beyond its long-standing grammar and clarity checks, GrammarlyGO adds generative drafting and rewriting tuned to your goals and tone. Its reach (it works in nearly every text field you touch) is its real superpower.",
     website: "https://www.grammarly.com",
     categorySlug: "writing",
     tags: ["grammar", "editing", "tone", "proofreading", "clarity"],
@@ -328,7 +328,7 @@ export const tools: Tool[] = [
     description:
       "OpenAI's image model, tuned for prompt adherence and legible text, available directly in ChatGPT.",
     longDescription:
-      "DALL·E 3 trades some of Midjourney's painterly flair for exceptional prompt adherence and the convenience of living inside ChatGPT. It handles complex, multi-part prompts and in-image text better than most, and the conversational interface lets you refine an image by simply describing what to change — no prompt syntax required.",
+      "DALL·E 3 trades some of Midjourney's painterly flair for exceptional prompt adherence and the convenience of living inside ChatGPT. It handles complex, multi-part prompts and in-image text better than most, and the conversational interface lets you refine an image by simply describing what to change, no prompt syntax required.",
     website: "https://openai.com/dall-e-3",
     categorySlug: "image",
     tags: ["text-to-image", "openai", "chatgpt", "prompt adherence"],
@@ -375,7 +375,7 @@ export const tools: Tool[] = [
       { title: "Refinement", caption: "Describe a change, get a revision", hue: 158 },
     ],
     verdict:
-      "The most convenient way to get an image that matches a fussy prompt — reach for it when accuracy beats artistry.",
+      "The most convenient way to get an image that matches a fussy prompt. Reach for it when accuracy beats artistry.",
     editorScore: 8.2,
     rating: 4.3,
     reviewCount: 1670,
@@ -495,7 +495,7 @@ export const tools: Tool[] = [
       { title: "Firefly web", caption: "Text-to-image with content controls", hue: 38 },
     ],
     verdict:
-      "The obvious choice for teams already in Creative Cloud that need commercially safe assets — less so as a standalone art tool.",
+      "The obvious choice for teams already in Creative Cloud that need commercially safe assets, less so as a standalone art tool.",
     editorScore: 7.9,
     rating: 4.2,
     reviewCount: 1440,
@@ -510,7 +510,7 @@ export const tools: Tool[] = [
     description:
       "Autocomplete, chat, and agentic coding help inside VS Code, JetBrains, and the GitHub workflow.",
     longDescription:
-      "GitHub Copilot popularized AI pair programming and remains the most widely adopted assistant. Beyond inline completions it now offers chat, an agent mode that can edit across files, and pull-request summaries — all wired into the editors and the GitHub platform developers already live in. Its model choice and enterprise controls have matured considerably.",
+      "GitHub Copilot popularized AI pair programming and remains the most widely adopted assistant. Beyond inline completions it now offers chat, an agent mode that can edit across files, and pull-request summaries, all wired into the editors and the GitHub platform developers already live in. Its model choice and enterprise controls have matured considerably.",
     website: "https://github.com/features/copilot",
     categorySlug: "coding",
     tags: ["autocomplete", "pair programming", "vscode", "chat", "agents"],
@@ -558,7 +558,7 @@ export const tools: Tool[] = [
       { title: "Agent mode", caption: "Multi-file edits with review", hue: 204 },
     ],
     verdict:
-      "The safe default for most developers — deeply integrated, reliable, and improving fast, even if purpose-built agents edge it on ambitious tasks.",
+      "The safe default for most developers: deeply integrated, reliable, and improving fast, even if purpose-built agents edge it on ambitious tasks.",
     editorScore: 8.7,
     rating: 4.5,
     reviewCount: 3890,
@@ -619,7 +619,7 @@ export const tools: Tool[] = [
       { title: "Codebase chat", caption: "Repo-aware answers", hue: 172 },
     ],
     verdict:
-      "The most capable agentic editor available today — the tool to beat if you want AI at the center of your workflow.",
+      "The most capable agentic editor available today, the tool to beat if you want AI at the center of your workflow.",
     editorScore: 9.1,
     rating: 4.6,
     reviewCount: 2210,
@@ -632,7 +632,7 @@ export const tools: Tool[] = [
     description:
       "An AI-native editor whose Cascade agent keeps context across your codebase and terminal.",
     longDescription:
-      "Windsurf (formerly Codeium's editor) is an agentic IDE designed around uninterrupted flow. Its Cascade agent maintains a running understanding of your project — files, edits, and terminal — so it can carry out multi-step tasks with minimal hand-holding. Free-tier completions remain generous, making it an accessible on-ramp to agentic coding.",
+      "Windsurf (formerly Codeium's editor) is an agentic IDE designed around uninterrupted flow. Its Cascade agent maintains a running understanding of your project (files, edits, and terminal) so it can carry out multi-step tasks with minimal hand-holding. Free-tier completions remain generous, making it an accessible on-ramp to agentic coding.",
     website: "https://windsurf.com",
     categorySlug: "coding",
     tags: ["editor", "agents", "cascade", "completions", "flow"],
@@ -679,7 +679,7 @@ export const tools: Tool[] = [
       { title: "Editor", caption: "Flow-focused workspace", hue: 208 },
     ],
     verdict:
-      "A strong, more affordable rival to Cursor — especially compelling if the free tier covers your needs.",
+      "A strong, more affordable rival to Cursor, especially compelling if the free tier covers your needs.",
     editorScore: 8.5,
     rating: 4.4,
     reviewCount: 1120,
@@ -692,7 +692,7 @@ export const tools: Tool[] = [
     description:
       "A cloud IDE whose agent scaffolds, codes, and ships full applications from a prompt.",
     longDescription:
-      "Replit pairs a zero-setup cloud development environment with an agent that can build and deploy full apps from a natural-language description. Because everything runs in the browser — editor, database, hosting — it's uniquely friendly to beginners and prototypers who want to go from idea to running URL without touching local tooling.",
+      "Replit pairs a zero-setup cloud development environment with an agent that can build and deploy full apps from a natural-language description. Because everything runs in the browser (editor, database, hosting), it's uniquely friendly to beginners and prototypers who want to go from idea to running URL without touching local tooling.",
     website: "https://replit.com",
     categorySlug: "coding",
     tags: ["cloud ide", "agents", "deploy", "prototyping", "beginner-friendly"],
@@ -703,7 +703,7 @@ export const tools: Tool[] = [
       note: "Free tier to explore; Core adds agent usage and deployments.",
     },
     pros: [
-      "Zero local setup — code and host in the browser",
+      "Zero local setup: code and host in the browser",
       "Agent scaffolds and deploys full apps",
       "Great for beginners and rapid prototypes",
     ],
@@ -754,7 +754,7 @@ export const tools: Tool[] = [
     description:
       "AI woven into Notion that drafts, summarizes, and answers questions across your connected workspace.",
     longDescription:
-      "Notion AI brings generative help directly into the docs, wikis, and databases teams already keep in Notion. It can draft and edit inline, autofill database properties, and — via connected apps and Q&A — answer questions using your organization's own knowledge. Because it lives where your content already is, there's no context to copy-paste.",
+      "Notion AI brings generative help directly into the docs, wikis, and databases teams already keep in Notion. It can draft and edit inline, autofill database properties, and, via connected apps and Q&A, answer questions using your organization's own knowledge. Because it lives where your content already is, there's no context to copy-paste.",
     website: "https://www.notion.so/product/ai",
     categorySlug: "productivity",
     tags: ["workspace", "notes", "summarization", "q&a", "databases"],
@@ -825,7 +825,7 @@ export const tools: Tool[] = [
       note: "Free plan available; paid unlocks full AI features.",
     },
     pros: [
-      "No manual foldering — AI organizes for you",
+      "No manual foldering: AI organizes for you",
       "Fast, natural-language search over notes",
       "Surfaces relevant past context automatically",
     ],
@@ -936,7 +936,7 @@ export const tools: Tool[] = [
     description:
       "Generative video models plus a full editing toolkit for filmmakers and motion designers.",
     longDescription:
-      "Runway is the most complete AI video studio, pairing its Gen-series text- and image-to-video models with a deep toolkit — motion brush, camera controls, inpainting, and green-screen. It's used on real productions for previsualization, effects, and short-form content, and its steady model releases keep it near the frontier of generative motion.",
+      "Runway is the most complete AI video studio, pairing its Gen-series text- and image-to-video models with a deep toolkit: motion brush, camera controls, inpainting, and green-screen. It's used on real productions for previsualization, effects, and short-form content, and its steady model releases keep it near the frontier of generative motion.",
     website: "https://runwayml.com",
     categorySlug: "video",
     tags: ["text-to-video", "image-to-video", "editing", "vfx", "filmmaking"],
@@ -984,7 +984,7 @@ export const tools: Tool[] = [
       { title: "Editor", caption: "Compositing and cleanup", hue: 256 },
     ],
     verdict:
-      "The pick for creators who want generation plus real editing control in one place — the credit meter is the only real drawback.",
+      "The pick for creators who want generation plus real editing control in one place. The credit meter is the only real drawback.",
     editorScore: 8.6,
     rating: 4.4,
     reviewCount: 1330,
@@ -1057,7 +1057,7 @@ export const tools: Tool[] = [
     description:
       "Turn a script into a polished presenter-led video with realistic AI avatars in 140+ languages.",
     longDescription:
-      "Synthesia is the leader in AI avatar video, built for enterprise learning, onboarding, and internal comms. Paste a script, pick from 230+ avatars (or clone your own), and it renders a professional presenter video in minutes — then re-render instantly when the script changes. Its multilingual reach makes localizing training content trivial.",
+      "Synthesia is the leader in AI avatar video, built for enterprise learning, onboarding, and internal comms. Paste a script, pick from 230+ avatars (or clone your own), and it renders a professional presenter video in minutes, then re-render instantly when the script changes. Its multilingual reach makes localizing training content trivial.",
     website: "https://www.synthesia.io",
     categorySlug: "video",
     tags: ["avatars", "training", "localization", "enterprise", "explainer"],
@@ -1167,7 +1167,7 @@ export const tools: Tool[] = [
       { title: "Dubbing", caption: "Localize while keeping the voice", hue: 172 },
     ],
     verdict:
-      "The clear leader in AI voice — realistic, flexible, and developer-friendly. The obvious first pick for any speech project.",
+      "The clear leader in AI voice: realistic, flexible, and developer-friendly. The obvious first pick for any speech project.",
     editorScore: 9.0,
     rating: 4.7,
     reviewCount: 2040,
@@ -1180,7 +1180,7 @@ export const tools: Tool[] = [
     description:
       "A voiceover studio with polished voices, sync tools, and collaboration for videos and e-learning.",
     longDescription:
-      "Murf targets teams making voiceovers for videos, presentations, and e-learning. Alongside a large library of professional voices it provides a full studio — timing sync with video, pronunciation controls, and collaboration — plus features to voice-change your own recordings. It trades ElevenLabs' cutting-edge realism for a smoother production workflow.",
+      "Murf targets teams making voiceovers for videos, presentations, and e-learning. Alongside a large library of professional voices it provides a full studio (timing sync with video, pronunciation controls, and collaboration), plus features to voice-change your own recordings. It trades ElevenLabs' cutting-edge realism for a smoother production workflow.",
     website: "https://murf.ai",
     categorySlug: "audio",
     tags: ["voiceover", "text-to-speech", "e-learning", "collaboration"],
@@ -1238,7 +1238,7 @@ export const tools: Tool[] = [
     name: "Suno",
     tagline: "Full songs from a single prompt",
     description:
-      "Generate complete, radio-ready songs — vocals, lyrics, and instruments — from a text description.",
+      "Generate complete, radio-ready songs (vocals, lyrics, and instruments) from a text description.",
     longDescription:
       "Suno generates complete songs, not just backing tracks: describe a style and topic and it writes lyrics, sings them, and produces a full arrangement. Its coherence and audio quality have made AI music genuinely fun and usable for demos, jingles, and social content. Custom-lyrics mode and personas give creators more direction over the result.",
     website: "https://suno.com",
@@ -1287,7 +1287,7 @@ export const tools: Tool[] = [
       { title: "Library", caption: "Your generated tracks", hue: 344 },
     ],
     verdict:
-      "The most impressive AI music tool for full songs — magical for demos and fun, still short on granular control.",
+      "The most impressive AI music tool for full songs, magical for demos and fun, still short on granular control.",
     editorScore: 8.2,
     rating: 4.3,
     reviewCount: 990,
@@ -1349,7 +1349,7 @@ export const tools: Tool[] = [
       { title: "Pro Search", caption: "Deeper multi-step research", hue: 192 },
     ],
     verdict:
-      "The best everyday answer engine — fast, cited, and trustworthy enough to replace a lot of traditional searching.",
+      "The best everyday answer engine: fast, cited, and trustworthy enough to replace a lot of traditional searching.",
     editorScore: 8.8,
     rating: 4.6,
     reviewCount: 2260,
@@ -1469,7 +1469,7 @@ export const tools: Tool[] = [
       { title: "Results", caption: "Findings with source links", hue: 192 },
     ],
     verdict:
-      "A trustworthy shortcut to what the research actually says — best kept to questions science can answer.",
+      "A trustworthy shortcut to what the research actually says, best kept to questions science can answer.",
     editorScore: 7.8,
     rating: 4.2,
     reviewCount: 380,
@@ -1484,7 +1484,7 @@ export const tools: Tool[] = [
     description:
       "A content-optimization platform that guides writing to match what actually ranks on Google.",
     longDescription:
-      "Surfer analyzes the top-ranking pages for a keyword and turns them into a concrete content brief — target terms, structure, length, and questions to cover. Its Content Editor scores your draft in real time, and an AI writer can generate optimized drafts to start from. It's the bridge between good writing and content that actually earns search traffic.",
+      "Surfer analyzes the top-ranking pages for a keyword and turns them into a concrete content brief: target terms, structure, length, and questions to cover. Its Content Editor scores your draft in real time, and an AI writer can generate optimized drafts to start from. It's the bridge between good writing and content that actually earns search traffic.",
     website: "https://surferseo.com",
     categorySlug: "marketing",
     tags: ["seo", "content", "optimization", "keywords", "serp"],
@@ -1544,7 +1544,7 @@ export const tools: Tool[] = [
     description:
       "Generate and score ad creatives, banners, and product photos tuned for conversion across channels.",
     longDescription:
-      "AdCreative.ai produces on-brand ad creatives and banners at scale, then scores each for likely conversion based on trained performance data. It pulls your brand kit, generates variations across sizes and platforms, and even creates AI product photography — aimed at performance marketers who need volume without a design bottleneck.",
+      "AdCreative.ai produces on-brand ad creatives and banners at scale, then scores each for likely conversion based on trained performance data. It pulls your brand kit, generates variations across sizes and platforms, and even creates AI product photography, aimed at performance marketers who need volume without a design bottleneck.",
     website: "https://www.adcreative.ai",
     categorySlug: "marketing",
     tags: ["ads", "creative", "banners", "conversion", "design"],

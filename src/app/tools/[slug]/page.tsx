@@ -36,10 +36,10 @@ export async function generateMetadata({
   if (!tool) return { title: "Tool not found" };
 
   return {
-    title: `${tool.name} review — ${tool.tagline}`,
+    title: `${tool.name} review: ${tool.tagline}`,
     description: tool.description,
     openGraph: {
-      title: `${tool.name} — reviewed on Enki`,
+      title: `${tool.name}, reviewed on Enki`,
       description: tool.description,
       type: "article",
     },
@@ -81,77 +81,90 @@ export default async function ToolDetailPage({
             <span className="text-foreground">{tool.name}</span>
           </nav>
 
-          <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
-            {/* Identity */}
-            <div className="flex flex-col gap-5">
-              <div className="flex items-start gap-4">
-                <ToolLogo
-                  name={tool.name}
-                  accent={tool.accent}
-                  logo={tool.logo}
-                  size="lg"
-                />
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    {category && (
-                      <Link
-                        href={`/categories/${category.slug}`}
-                        className="font-mono text-xs tracking-wide text-teal uppercase hover:underline"
-                      >
-                        {category.name}
-                      </Link>
-                    )}
-                    {tool.featured && (
-                      <Badge className="gap-1 bg-teal/15 text-teal-bright">
-                        <Icon name="Sparkles" className="size-3" />
-                        Featured
-                      </Badge>
-                    )}
-                  </div>
-                  <h1 className="mt-1 font-display text-4xl leading-tight font-semibold sm:text-5xl">
-                    {tool.name}
-                  </h1>
-                  <p className="mt-2 text-lg text-pretty text-muted-foreground">
-                    {tool.tagline}
-                  </p>
+          {/* Identity */}
+          <div className="flex max-w-3xl flex-col gap-5">
+            <div className="flex items-start gap-4">
+              <ToolLogo
+                name={tool.name}
+                accent={tool.accent}
+                logo={tool.logo}
+                size="lg"
+              />
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  {category && (
+                    <Link
+                      href={`/categories/${category.slug}`}
+                      className="font-mono text-xs tracking-wide text-teal uppercase hover:underline"
+                    >
+                      {category.name}
+                    </Link>
+                  )}
+                  {tool.featured && (
+                    <Badge className="gap-1 bg-teal/15 text-teal-bright">
+                      <Icon name="Sparkles" className="size-3" />
+                      Featured
+                    </Badge>
+                  )}
                 </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-                <div className="flex items-center gap-2">
-                  <StarRating value={tool.rating} size={16} />
-                  <span className="font-mono text-sm">
-                    {tool.rating.toFixed(1)}
-                    <span className="text-muted-foreground">
-                      {" "}
-                      ({tool.reviewCount.toLocaleString()} reviews)
-                    </span>
-                  </span>
-                </div>
-                <PricingBadge model={tool.pricing.model} />
-                {tool.pricing.startingPrice && (
-                  <span className="font-mono text-xs text-muted-foreground">
-                    from {tool.pricing.startingPrice}
-                  </span>
-                )}
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {tool.tags.map((tag) => (
-                  <Link
-                    key={tag}
-                    href={`/tools?tags=${encodeURIComponent(tag)}`}
-                    className="rounded-full border border-border px-2.5 py-0.5 font-mono text-[0.7rem] text-muted-foreground transition-colors hover:border-teal/40 hover:text-foreground"
-                  >
-                    {tag}
-                  </Link>
-                ))}
+                <h1 className="mt-1 font-display text-4xl leading-tight font-semibold sm:text-5xl">
+                  {tool.name}
+                </h1>
+                <p className="mt-2 text-lg text-pretty text-muted-foreground">
+                  {tool.tagline}
+                </p>
               </div>
             </div>
 
-            {/* Score card */}
-            <aside className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 ring-hairline">
-              <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <div className="flex items-center gap-2">
+                <StarRating value={tool.rating} size={16} />
+                <span className="font-mono text-sm">
+                  {tool.rating.toFixed(1)}
+                  <span className="text-muted-foreground">
+                    {" "}
+                    ({tool.reviewCount.toLocaleString()} reviews)
+                  </span>
+                </span>
+              </div>
+              <PricingBadge model={tool.pricing.model} />
+              {tool.pricing.startingPrice && (
+                <span className="font-mono text-xs text-muted-foreground">
+                  from {tool.pricing.startingPrice}
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {tool.tags.map((tag) => (
+                <Link
+                  key={tag}
+                  href={`/tools?tags=${encodeURIComponent(tag)}`}
+                  className="rounded-full border border-border px-2.5 py-0.5 font-mono text-[0.7rem] text-muted-foreground transition-colors hover:border-teal/40 hover:text-foreground"
+                >
+                  {tag}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </Container>
+      </div>
+
+      <Container className="mt-12">
+        {/* Screenshots */}
+        <section>
+          <SectionLabel icon="Image">Screenshots</SectionLabel>
+          <ScreenshotCarousel
+            screenshots={tool.screenshots}
+            accent={tool.accent}
+          />
+        </section>
+
+        {/* Editor score + actions */}
+        <section className="mt-12">
+          <div className="flex flex-col gap-5 rounded-2xl border border-border bg-card p-6 ring-hairline sm:flex-row sm:items-center sm:justify-between">
+            <div className="w-full sm:max-w-sm">
+              <div className="flex items-baseline justify-between gap-3">
                 <span className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
                   Editor score
                 </span>
@@ -162,29 +175,29 @@ export default async function ToolDetailPage({
                   <span className="text-sm text-muted-foreground">/10</span>
                 </span>
               </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
                 <div
                   className="h-full rounded-full bg-teal"
                   style={{ width: `${tool.editorScore * 10}%` }}
                 />
               </div>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <a
                 href={tool.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-1.5 rounded-full bg-mist px-4 py-2.5 text-sm font-medium text-[#16191d] transition-transform hover:-translate-y-px hover:shadow-glow-sm"
+                className="inline-flex items-center justify-center gap-1.5 rounded-full bg-mist px-5 py-2.5 text-sm font-medium text-[#16191d] transition-transform hover:-translate-y-px hover:shadow-glow-sm"
               >
                 Visit {tool.name}
                 <Icon name="ExternalLink" className="size-3.5" />
               </a>
               <ReviewModal toolName={tool.name} />
-            </aside>
+            </div>
           </div>
-        </Container>
-      </div>
+        </section>
 
-      <Container className="mt-12">
-        <div className="grid gap-12 lg:grid-cols-[1fr_300px]">
+        <div className="mt-12 grid gap-12 lg:grid-cols-[1fr_300px]">
           {/* Main column */}
           <div className="flex min-w-0 flex-col gap-14">
             {/* Overview */}
@@ -263,15 +276,6 @@ export default async function ToolDetailPage({
                   </ul>
                 </div>
               </div>
-            </section>
-
-            {/* Screenshots */}
-            <section>
-              <SectionLabel icon="Image">Screenshots</SectionLabel>
-              <ScreenshotCarousel
-                screenshots={tool.screenshots}
-                accent={tool.accent}
-              />
             </section>
 
             {/* Reviews */}

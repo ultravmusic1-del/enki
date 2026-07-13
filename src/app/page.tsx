@@ -17,7 +17,7 @@ const vetSteps = [
   {
     icon: "Eye",
     title: "Test",
-    body: "Every tool is used in real workflows by our editors — not judged from a landing page. We probe strengths, limits, and edge cases.",
+    body: "Every tool is used in real workflows by our editors, not judged from a landing page. We probe strengths, limits, and edge cases.",
   },
   {
     icon: "Scale",
@@ -27,7 +27,7 @@ const vetSteps = [
   {
     icon: "BadgeCheck",
     title: "Vet",
-    body: "Only tools that earn it are published with our mark. When something slips, we revisit and revise — the oracle stays current.",
+    body: "Only tools that earn it are published with our mark. When something slips, we revisit and revise. The oracle stays current.",
   },
 ] as const;
 
@@ -49,7 +49,7 @@ export default function Home() {
               <SectionHeading
                 eyebrow="Editor's picks"
                 title="Featured tools"
-                description="The standouts our editors keep coming back to — vetted, scored, and worth your attention."
+                description="The standouts our editors keep coming back to, vetted, scored, and worth your attention."
               />
               <Link
                 href="/tools"
@@ -85,7 +85,7 @@ export default function Home() {
               align="center"
               eyebrow="Browse by need"
               title="Explore every category"
-              description="From writing to research to autonomous agents — find the right class of tool, then the right tool within it."
+              description="From writing to research to autonomous agents. Find the right class of tool, then the right tool within it."
               className="mx-auto max-w-2xl"
             />
           </Reveal>

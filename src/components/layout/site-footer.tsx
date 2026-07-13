@@ -94,7 +94,7 @@ export function SiteFooter() {
           {/* Newsletter */}
           <div className="flex flex-col gap-4">
             <span className="font-mono text-xs tracking-[0.2em] text-muted-foreground uppercase">
-              The Tablet — our newsletter
+              The Tablet: our newsletter
             </span>
             <p className="text-sm text-muted-foreground">
               A monthly dispatch of the most worthwhile new AI tools. No noise.

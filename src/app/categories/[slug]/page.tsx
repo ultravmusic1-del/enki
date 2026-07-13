@@ -27,7 +27,7 @@ export async function generateMetadata({
   if (!category) return { title: "Category not found" };
 
   return {
-    title: `${category.name} — AI tools`,
+    title: `${category.name}: AI tools`,
     description: category.description,
   };
 }
