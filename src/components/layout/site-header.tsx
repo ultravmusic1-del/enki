@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { toast } from "sonner";
@@ -20,36 +26,81 @@ import { useCommandMenu } from "@/components/layout/command-menu";
 export function SiteHeader() {
   const pathname = usePathname();
   const { setOpen } = useCommandMenu();
-  const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+  const navRef = useRef<HTMLElement>(null);
+  const linkEls = useRef<(HTMLAnchorElement | null)[]>([]);
+  const hasPlaced = useRef(false);
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [pill, setPill] = useState({ x: 0, w: 0, show: false, instant: true });
+
+  const isActive = useCallback(
+    (href: string) =>
+      href === "/"
+        ? pathname === "/"
+        : pathname === href || pathname.startsWith(`${href}/`),
+    [pathname],
+  );
+
+  const activeIndex = siteConfig.nav.findIndex((item) => isActive(item.href));
+
+  // Position the springy pill behind the hovered (or active) nav item.
+  const placePill = useCallback((index: number, instant: boolean) => {
+    const el = index >= 0 ? linkEls.current[index] : null;
+    if (!el) {
+      setPill((p) => ({ ...p, show: false }));
+      return;
+    }
+    setPill({ x: el.offsetLeft, w: el.offsetWidth, show: true, instant });
   }, []);
 
-  const isActive = (href: string) =>
-    href === "/"
-      ? pathname === "/"
-      : pathname === href || pathname.startsWith(`${href}/`);
+  useLayoutEffect(() => {
+    const target = hoverIndex !== null ? hoverIndex : activeIndex;
+    placePill(target, !hasPlaced.current);
+    hasPlaced.current = true;
+
+    const onResize = () =>
+      placePill(hoverIndex !== null ? hoverIndex : activeIndex, true);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [hoverIndex, activeIndex, placePill]);
+
+  // Re-measure once webfonts settle (label widths can shift on swap).
+  useEffect(() => {
+    if (typeof document === "undefined" || !document.fonts) return;
+    let active = true;
+    void document.fonts.ready.then(() => {
+      if (active) placePill(activeIndex, true);
+    });
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Feed the cursor-following glare its position via CSS variables.
+  const onNavMouseMove = useCallback((e: React.MouseEvent) => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const rect = nav.getBoundingClientRect();
+    nav.style.setProperty("--glare-x", `${e.clientX - rect.left}px`);
+    nav.style.setProperty("--glare-y", `${e.clientY - rect.top}px`);
+  }, []);
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-3 sm:pt-4">
       <nav
+        ref={navRef}
         aria-label="Primary"
-        className={cn(
-          "flex w-full max-w-4xl items-center gap-2 rounded-full border px-2 py-2 transition-all duration-300",
-          scrolled
-            ? "glass border-border/80 shadow-lg shadow-black/20"
-            : "border-transparent bg-transparent",
-        )}
+        onMouseMove={onNavMouseMove}
+        className="liquid-nav flex w-full max-w-4xl items-center gap-2 rounded-full px-2 py-2"
       >
+        <span className="liquid-glare" aria-hidden />
+
         {/* Brand */}
         <Link
           href="/"
-          className="ml-1 flex items-center gap-2 rounded-full px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="relative z-10 ml-1 flex items-center gap-2 rounded-full px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <span
             className="emblem size-6"
@@ -62,13 +113,32 @@ export function SiteHeader() {
         </Link>
 
         {/* Desktop nav */}
-        <div className="mx-auto hidden items-center gap-1 md:flex">
-          {siteConfig.nav.map((item) => (
+        <div
+          className="relative z-10 mx-auto hidden items-center gap-1 md:flex"
+          onMouseLeave={() => setHoverIndex(null)}
+        >
+          {/* Sliding liquid pill */}
+          <span
+            aria-hidden
+            className="nav-pill"
+            data-instant={pill.instant}
+            style={{
+              width: pill.w,
+              transform: `translate(${pill.x}px, -50%)`,
+              opacity: pill.show ? 1 : 0,
+            }}
+          />
+
+          {siteConfig.nav.map((item, i) => (
             <Link
               key={item.href}
               href={item.href}
+              ref={(el) => {
+                linkEls.current[i] = el;
+              }}
+              onMouseEnter={() => setHoverIndex(i)}
               className={cn(
-                "rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground",
+                "relative z-10 flex h-8 items-center rounded-full px-3.5 text-sm text-muted-foreground transition-colors hover:text-foreground",
                 isActive(item.href) && "text-foreground",
               )}
             >
@@ -78,7 +148,7 @@ export function SiteHeader() {
         </div>
 
         {/* Actions */}
-        <div className="ml-auto flex items-center gap-1 md:ml-0">
+        <div className="relative z-10 ml-auto flex items-center gap-1 md:ml-0">
           <Button
             variant="ghost"
             size="sm"
