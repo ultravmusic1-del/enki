@@ -44,7 +44,16 @@ export function SiteFooter() {
 
   return (
     <footer className="relative mt-24 border-t border-border">
-      <div className="spotlight pointer-events-none absolute inset-x-0 top-0 h-40 opacity-60" />
+      {/* Soft centered bloom that fades to transparent before the top edge, so
+          the footer blends into the section above instead of banding. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(62% 50% at 50% 50%, rgb(var(--glow) / 0.06), transparent 72%)",
+        }}
+      />
       <div className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1.4fr]">
           {/* Brand + blurb */}
