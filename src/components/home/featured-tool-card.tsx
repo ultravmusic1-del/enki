@@ -24,47 +24,42 @@ export function FeaturedToolCard({
       <div className="dim__card">
         <span className="dim__glass" aria-hidden />
 
-        {/* Depth-stacked monogram orbit */}
+        {/* Logo chip with a depth-stacked accent halo behind it */}
         <span className="dim__orbit" aria-hidden>
           <span
             className="dim__disc dim__disc--1"
             style={{
-              background: `color-mix(in oklab, ${a} 12%, transparent)`,
-              boxShadow: `-8px 12px 24px rgb(0 0 0 / 0.28), inset 0 0 0 1px color-mix(in oklab, ${a} 20%, transparent)`,
+              background: `color-mix(in oklab, ${a} 26%, transparent)`,
+              boxShadow: `-8px 14px 30px rgb(0 0 0 / 0.32), 0 0 34px -6px ${a}66, inset 0 0 0 1px color-mix(in oklab, ${a} 40%, transparent)`,
             }}
           />
           <span
             className="dim__disc dim__disc--2"
             style={{
-              background: `color-mix(in oklab, ${a} 16%, transparent)`,
-              boxShadow: `-6px 10px 20px rgb(0 0 0 / 0.26), inset 0 0 0 1px color-mix(in oklab, ${a} 26%, transparent)`,
+              background: `color-mix(in oklab, ${a} 34%, transparent)`,
+              boxShadow: `inset 0 0 0 1px color-mix(in oklab, ${a} 50%, transparent)`,
             }}
           />
           <span
-            className="dim__disc dim__disc--3 overflow-hidden font-display text-lg font-semibold"
+            className="dim__logo"
             style={
               tool.logo
-                ? {
-                    background: "#fff",
-                    boxShadow: `-4px 8px 16px rgb(0 0 0 / 0.3), inset 0 0 0 1px ${a}55`,
-                  }
+                ? { background: "#fff" }
                 : {
-                    background: `color-mix(in oklab, ${a} 26%, transparent)`,
-                    color: a,
-                    textShadow: `0 0 14px ${a}88`,
-                    boxShadow: `-4px 8px 16px rgb(0 0 0 / 0.3), inset 0 0 0 1px color-mix(in oklab, ${a} 42%, transparent)`,
+                    background: `color-mix(in oklab, ${a} 30%, transparent)`,
                   }
             }
           >
             {tool.logo ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={tool.logo}
-                alt=""
-                className="size-3/4 object-contain"
-              />
+              <img src={tool.logo} alt="" />
             ) : (
-              initial
+              <span
+                className="font-display text-2xl font-semibold"
+                style={{ color: a, textShadow: `0 0 16px ${a}88` }}
+              >
+                {initial}
+              </span>
             )}
           </span>
         </span>
@@ -72,13 +67,13 @@ export function FeaturedToolCard({
         {/* Content */}
         <div className="dim__content flex flex-col p-5">
           {categoryName && (
-            <span className="pr-24 font-mono text-[0.65rem] tracking-wide text-muted-foreground uppercase">
+            <span className="pr-28 font-mono text-[0.65rem] tracking-wide text-muted-foreground uppercase">
               {categoryName}
             </span>
           )}
 
-          <div className="mt-[58px]">
-            <h3 className="font-display text-lg leading-tight font-semibold">
+          <div className="mt-[62px]">
+            <h3 className="pr-4 font-display text-lg leading-tight font-semibold">
               {tool.name}
             </h3>
             <p className="mt-1.5 line-clamp-2 pr-4 text-sm text-pretty text-muted-foreground">

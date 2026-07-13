@@ -504,6 +504,35 @@
   transform: translate3d(0, 0, 84px);
 }
 
+/* Featured-card logo chip — large and legible, the front of the depth stack.
+   Tinted discs sit behind it as a glowing accent halo. */
+.dim__logo {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 68px;
+  padding: 12px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow:
+    -6px 10px 22px rgb(0 0 0 / 0.32),
+    0 0 0 1px rgb(0 0 0 / 0.06);
+  transform: translate3d(0, 0, 56px);
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.dim:hover .dim__logo {
+  transform: translate3d(0, 0, 96px);
+}
+.dim__logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 /* Content floats above the glass */
 .dim__content {
   position: relative;
@@ -524,6 +553,9 @@
   }
   .dim:hover .dim__disc--3 {
     transform: translate3d(0, 0, 46px);
+  }
+  .dim:hover .dim__logo {
+    transform: translate3d(0, 0, 56px);
   }
 }
 
