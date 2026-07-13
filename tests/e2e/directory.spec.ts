@@ -63,7 +63,8 @@ test.describe("Enki critical flow", () => {
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await dialog.getByPlaceholder(/Search tools/).fill("perplexity");
-    await page.getByText("Perplexity").first().click();
+    // Scope to the dialog — "Perplexity" also appears on the page behind the overlay.
+    await dialog.getByText("Perplexity").first().click();
     await expect(page).toHaveURL(/\/tools\/perplexity/);
   });
 });
