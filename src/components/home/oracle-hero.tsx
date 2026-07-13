@@ -77,8 +77,8 @@ export function OracleHero({ stats }: { stats: SiteStats }) {
         className="pointer-events-none absolute inset-0 z-[1]"
         style={{
           background: [
-            "radial-gradient(52% 42% at 50% 60%, color-mix(in oklab, var(--background) 82%, transparent) 0%, transparent 72%)",
-            "linear-gradient(to bottom, transparent 26%, color-mix(in oklab, var(--background) 55%, transparent) 66%, transparent 100%)",
+            "radial-gradient(48% 40% at 50% 46%, color-mix(in oklab, var(--background) 80%, transparent) 0%, transparent 72%)",
+            "linear-gradient(to bottom, transparent 42%, color-mix(in oklab, var(--background) 50%, transparent) 74%, transparent 100%)",
           ].join(","),
         }}
       />
@@ -101,15 +101,6 @@ export function OracleHero({ stats }: { stats: SiteStats }) {
           <br />
           <span className="text-glow">AI tools</span>
         </h1>
-
-        <p
-          data-hero-reveal
-          className="mt-6 max-w-xl text-pretty text-lg text-muted-foreground"
-        >
-          Enki curates and reviews the tools shaping the future of work — so you
-          can discover, compare, and trust what you adopt. Wisdom for the age of
-          AI.
-        </p>
 
         <div
           data-hero-reveal
@@ -138,7 +129,7 @@ export function OracleHero({ stats }: { stats: SiteStats }) {
 
         <dl
           data-hero-reveal
-          className="mt-14 flex items-center gap-8 font-mono text-sm"
+          className="mt-12 flex items-center gap-8 font-mono text-sm"
         >
           <Stat value={`${stats.toolCount}`} label="Tools vetted" />
           <span aria-hidden className="h-8 w-px bg-border" />

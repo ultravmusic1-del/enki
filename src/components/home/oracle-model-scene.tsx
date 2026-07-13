@@ -79,11 +79,12 @@ function OracleTablet({ reduce }: { reduce: boolean }) {
   useLayoutEffect(() => {
     const g = group.current;
     if (!g) return;
-    const maxHeight = viewport.height * 0.94;
-    const maxWidth = viewport.width * 0.92;
+    const maxHeight = viewport.height * 0.72;
+    const maxWidth = viewport.width * 0.78;
     const height = Math.min(maxHeight, maxWidth / aspect);
     g.scale.setScalar(height);
-    lift.current = height * 0.22;
+    // Small downward bias so the crown clears the fixed header.
+    lift.current = -height * 0.04;
     if (reduce) {
       g.position.set(0, lift.current, 0);
       g.rotation.set(0, 0, 0);
