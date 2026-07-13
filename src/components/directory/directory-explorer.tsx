@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type FuseType from "fuse.js";
 import type { Tool } from "@/lib/schemas";
@@ -76,30 +76,35 @@ export function DirectoryExplorer({ tools, categories, tags }: Props) {
   );
 
   // Lazy-load Fuse for fuzzy search (per plan: dynamic import).
-  const fuseRef = useRef<FuseType<Tool> | null>(null);
-  const [fuseReady, setFuseReady] = useState(false);
+  const [fuse, setFuse] = useState<FuseType<Tool> | null>(null);
   useEffect(() => {
     let active = true;
     void import("fuse.js").then(({ default: Fuse }) => {
       if (!active) return;
-      fuseRef.current = new Fuse(tools, {
-        includeScore: true,
-        ignoreLocation: true,
-        threshold: 0.4,
-        keys: [
-          { name: "name", weight: 0.4 },
-          { name: "tagline", weight: 0.2 },
-          { name: "tags", weight: 0.2 },
-          { name: "description", weight: 0.1 },
-          { name: "company", weight: 0.1 },
-        ],
-      });
-      setFuseReady(true);
+      setFuse(
+        new Fuse(tools, {
+          includeScore: true,
+          ignoreLocation: true,
+          threshold: 0.4,
+          keys: [
+            { name: "name", weight: 0.35 },
+            { name: "tagline", weight: 0.2 },
+            { name: "tags", weight: 0.2 },
+            {
+              name: "categoryName",
+              weight: 0.15,
+              getFn: (t) => categoryName.get(t.categorySlug) ?? "",
+            },
+            { name: "description", weight: 0.05 },
+            { name: "company", weight: 0.05 },
+          ],
+        }),
+      );
     });
     return () => {
       active = false;
     };
-  }, [tools]);
+  }, [tools, categoryName]);
 
   // Sync state → URL (shallow, no scroll jump).
   useEffect(() => {
@@ -124,8 +129,8 @@ export function DirectoryExplorer({ tools, categories, tags }: Props) {
 
     let base: Tool[];
     const q = query.trim();
-    if (q && fuseRef.current) {
-      base = fuseRef.current.search(q).map((r) => r.item);
+    if (q && fuse) {
+      base = fuse.search(q).map((r) => r.item);
     } else if (q) {
       const lower = q.toLowerCase();
       base = tools.filter(
@@ -143,8 +148,7 @@ export function DirectoryExplorer({ tools, categories, tags }: Props) {
     const effectiveSort: SortKey =
       sort === "relevance" && !q ? "rating" : sort;
     return sortTools(filtered, effectiveSort);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, category, pricing, minRating, selectedTags, sort, tools, fuseReady]);
+  }, [query, category, pricing, minRating, selectedTags, sort, tools, fuse]);
 
   const togglePricing = useCallback((model: PricingModel) => {
     setPricing((prev) =>

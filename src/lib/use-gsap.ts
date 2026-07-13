@@ -22,6 +22,5 @@ export function useGSAP(
   useIsomorphicLayoutEffect(() => {
     const ctx = gsap.context(callback, scope.current ?? undefined);
     return () => ctx.revert();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 }

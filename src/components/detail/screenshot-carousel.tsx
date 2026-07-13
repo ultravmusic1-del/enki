@@ -32,7 +32,8 @@ export function ScreenshotCarousel({
 
   useEffect(() => {
     if (!emblaApi) return;
-    onSelect();
+    // Embla starts on slide 0, matching our initial state — updates arrive via
+    // the select/reInit events (in callbacks, not synchronously here).
     emblaApi.on("select", onSelect);
     emblaApi.on("reInit", onSelect);
     return () => {

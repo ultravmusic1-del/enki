@@ -6,7 +6,6 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
@@ -53,12 +52,18 @@ export function CommandMenuProvider({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [openState, setOpenState] = useState(false);
   const [query, setQuery] = useState("");
-  const fuseRef = useRef<FuseType<SearchDoc> | null>(null);
-  const [fuseReady, setFuseReady] = useState(false);
+  const [fuse, setFuse] = useState<FuseType<SearchDoc> | null>(null);
 
-  const toggle = useCallback(() => setOpen((o) => !o), []);
+  // Reset the query whenever the palette closes (no setState-in-effect).
+  const setOpen = useCallback((next: boolean) => {
+    setOpenState(next);
+    if (!next) setQuery("");
+  }, []);
+  const open = openState;
+
+  const toggle = useCallback(() => setOpen(!openState), [openState, setOpen]);
 
   // Global ⌘K / Ctrl-K shortcut.
   useEffect(() => {
@@ -74,34 +79,35 @@ export function CommandMenuProvider({
 
   // Lazy-load Fuse the first time the palette opens.
   useEffect(() => {
-    if (!open || fuseRef.current) return;
+    if (!open || fuse) return;
     let active = true;
     void import("fuse.js").then(({ default: Fuse }) => {
       if (!active) return;
-      fuseRef.current = new Fuse(docs, {
-        includeScore: true,
-        ignoreLocation: true,
-        threshold: 0.4,
-        keys: [
-          { name: "name", weight: 0.5 },
-          { name: "tagline", weight: 0.2 },
-          { name: "tags", weight: 0.15 },
-          { name: "category", weight: 0.1 },
-          { name: "description", weight: 0.05 },
-        ],
-      });
-      setFuseReady(true);
+      setFuse(
+        new Fuse(docs, {
+          includeScore: true,
+          ignoreLocation: true,
+          threshold: 0.4,
+          keys: [
+            { name: "name", weight: 0.5 },
+            { name: "tagline", weight: 0.2 },
+            { name: "tags", weight: 0.15 },
+            { name: "category", weight: 0.1 },
+            { name: "description", weight: 0.05 },
+          ],
+        }),
+      );
     });
     return () => {
       active = false;
     };
-  }, [open, docs]);
+  }, [open, docs, fuse]);
 
   const results = useMemo(() => {
     const q = query.trim();
     if (!q) return docs;
-    if (fuseRef.current) {
-      return fuseRef.current.search(q).map((r) => r.item);
+    if (fuse) {
+      return fuse.search(q).map((r) => r.item);
     }
     // Fallback substring match while Fuse is still loading.
     const lower = q.toLowerCase();
@@ -111,7 +117,7 @@ export function CommandMenuProvider({
         d.tagline.toLowerCase().includes(lower) ||
         d.tags.some((t) => t.toLowerCase().includes(lower)),
     );
-  }, [query, docs, fuseReady]);
+  }, [query, docs, fuse]);
 
   const tools = results.filter((d) => d.type === "tool");
   const cats = results.filter((d) => d.type === "category");
@@ -119,20 +125,14 @@ export function CommandMenuProvider({
   const go = useCallback(
     (href: string) => {
       setOpen(false);
-      setQuery("");
       router.push(href);
     },
-    [router],
+    [router, setOpen],
   );
-
-  // Reset the query whenever the dialog closes.
-  useEffect(() => {
-    if (!open) setQuery("");
-  }, [open]);
 
   const value = useMemo(
     () => ({ open, setOpen, toggle }),
-    [open, toggle],
+    [open, setOpen, toggle],
   );
 
   return (

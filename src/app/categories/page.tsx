@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Container } from "@/components/shared/container";
 import { CategoryCard } from "@/components/shared/category-card";
 import { SectionHeading } from "@/components/shared/section-heading";
@@ -50,12 +51,12 @@ export default function CategoriesPage() {
             className="mx-auto max-w-xl"
           />
           <div className="mt-6 flex justify-center">
-            <a
+            <Link
               href="/tools"
               className="inline-flex items-center gap-1.5 rounded-full bg-mist px-6 py-2.5 text-sm font-medium text-[#16191d] transition-transform hover:-translate-y-px hover:shadow-glow"
             >
               Browse all tools
-            </a>
+            </Link>
           </div>
         </div>
       </Container>

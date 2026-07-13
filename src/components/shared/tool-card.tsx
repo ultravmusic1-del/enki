@@ -5,6 +5,7 @@ import { Monogram } from "@/components/shared/monogram";
 import { StarRating } from "@/components/shared/star-rating";
 import { PricingBadge } from "@/components/shared/pricing-badge";
 import { Icon } from "@/components/shared/icon";
+import { BorderBeam } from "@/components/shared/border-beam";
 
 type ToolCardProps = {
   tool: Tool;
@@ -28,12 +29,7 @@ export function ToolCard({ tool, categoryName, className }: ToolCardProps) {
         className,
       )}
     >
-      {tool.featured && (
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-teal to-transparent opacity-70"
-        />
-      )}
+      {tool.featured && <BorderBeam />}
 
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
