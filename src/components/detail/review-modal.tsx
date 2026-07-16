@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { reviewFormSchema, type ReviewFormValues } from "@/lib/schemas";
+import { useAuth } from "@/components/auth/auth-provider";
+import { createClient } from "@/lib/supabase/client";
+import { REVIEWS_UPDATED_EVENT } from "@/components/detail/community-reviews";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,11 +27,14 @@ import { cn } from "@/lib/utils";
 
 export function ReviewModal({
   toolName,
+  toolSlug,
   triggerClassName,
 }: {
   toolName: string;
+  toolSlug: string;
   triggerClassName?: string;
 }) {
+  const { user, displayName } = useAuth();
   const [open, setOpen] = useState(false);
   const [hover, setHover] = useState(0);
 
@@ -36,21 +43,72 @@ export function ReviewModal({
     handleSubmit,
     control,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ReviewFormValues>({
     resolver: zodResolver(reviewFormSchema),
     defaultValues: { name: "", rating: 0, title: "", body: "" },
   });
 
-  const onSubmit = (values: ReviewFormValues) => {
-    // Client-only demo — no persistence. Acknowledge with a toast.
-    toast.success("Thanks for your review", {
-      description: `Your ${values.rating}★ review of ${toolName} has been submitted for moderation.`,
+  // Pre-fill the credit name from the signed-in account when opening.
+  useEffect(() => {
+    if (open && displayName) setValue("name", displayName);
+  }, [open, displayName, setValue]);
+
+  const onSubmit = async (values: ReviewFormValues) => {
+    if (!user) return;
+    const supabase = createClient();
+    const name = values.name.trim();
+
+    // Keep the account's display name in sync with what they typed.
+    if (name && name !== displayName) {
+      await supabase.auth.updateUser({ data: { display_name: name } });
+      await supabase.from("profiles").update({ display_name: name }).eq("id", user.id);
+    }
+
+    const { error } = await supabase.from("reviews").upsert(
+      {
+        tool_slug: toolSlug,
+        user_id: user.id,
+        rating: values.rating,
+        title: values.title?.trim() || null,
+        body: values.body?.trim() || null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "tool_slug,user_id" },
+    );
+
+    if (error) {
+      toast.error("Couldn't post your review", { description: error.message });
+      return;
+    }
+
+    toast.success("Review posted", {
+      description: `Thanks for reviewing ${toolName}.`,
     });
+    window.dispatchEvent(
+      new CustomEvent(REVIEWS_UPDATED_EVENT, { detail: { toolSlug } }),
+    );
     reset();
     setHover(0);
     setOpen(false);
   };
+
+  // Signed-out users are routed to sign in first.
+  if (!user) {
+    return (
+      <Button
+        asChild
+        variant="outline"
+        className={cn("gap-2", triggerClassName)}
+      >
+        <Link href={`/login?redirect=/tools/${toolSlug}`}>
+          <Icon name="Star" className="size-4 text-teal" />
+          Sign in to review
+        </Link>
+      </Button>
+    );
+  }
 
   return (
     <Dialog

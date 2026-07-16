@@ -31,6 +31,42 @@ type CommandMenuContext = {
 
 const Ctx = createContext<CommandMenuContext | null>(null);
 
+// Primary destinations, surfaced as quick-nav in the palette.
+const PAGES: { label: string; href: string; icon: string; keywords: string }[] =
+  [
+    { label: "Home", href: "/", icon: "House", keywords: "home start" },
+    {
+      label: "Directory",
+      href: "/tools",
+      icon: "LayoutGrid",
+      keywords: "tools browse directory all",
+    },
+    {
+      label: "Categories",
+      href: "/categories",
+      icon: "Layers",
+      keywords: "categories browse groups",
+    },
+    {
+      label: "Compare",
+      href: "/compare",
+      icon: "Scale",
+      keywords: "compare versus vs side by side",
+    },
+    {
+      label: "Leaderboards",
+      href: "/leaderboards",
+      icon: "Trophy",
+      keywords: "leaderboard top ranked best rankings",
+    },
+    {
+      label: "Saved",
+      href: "/saved",
+      icon: "Bookmark",
+      keywords: "saved bookmarks shortlist favorites",
+    },
+  ];
+
 export function useCommandMenu() {
   const ctx = useContext(Ctx);
   if (!ctx) {
@@ -87,7 +123,9 @@ export function CommandMenuProvider({
         new Fuse(docs, {
           includeScore: true,
           ignoreLocation: true,
-          threshold: 0.4,
+          // Match the directory's tightened relevance (see directory-explorer).
+          threshold: 0.3,
+          minMatchCharLength: 2,
           keys: [
             { name: "name", weight: 0.5 },
             { name: "tagline", weight: 0.2 },
@@ -121,6 +159,14 @@ export function CommandMenuProvider({
 
   const tools = results.filter((d) => d.type === "tool");
   const cats = results.filter((d) => d.type === "category");
+
+  const pages = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return PAGES;
+    return PAGES.filter(
+      (p) => p.label.toLowerCase().includes(q) || p.keywords.includes(q),
+    );
+  }, [query]);
 
   const go = useCallback(
     (href: string) => {
@@ -157,6 +203,27 @@ export function CommandMenuProvider({
                 No results for “{query}”.
               </span>
             </CommandEmpty>
+
+            {pages.length > 0 && (
+              <CommandGroup heading="Go to">
+                {pages.map((p) => (
+                  <CommandItem
+                    key={p.href}
+                    value={`page:${p.href}`}
+                    onSelect={() => go(p.href)}
+                    className="gap-3 py-2"
+                  >
+                    <span className="grid size-8 place-items-center rounded-lg bg-muted text-muted-foreground">
+                      <Icon name={p.icon} className="size-4" />
+                    </span>
+                    <span className="font-medium">{p.label}</span>
+                    <span className="ml-auto shrink-0 font-mono text-[0.6rem] tracking-wide text-muted-foreground uppercase">
+                      Page
+                    </span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
 
             {tools.length > 0 && (
               <CommandGroup heading="Tools">

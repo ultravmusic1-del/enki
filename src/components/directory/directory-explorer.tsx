@@ -14,7 +14,7 @@ import {
   type ToolFilters,
 } from "@/lib/filters";
 import type { PricingModel } from "@/lib/schemas";
-import { ToolCard } from "@/components/shared/tool-card";
+import { SavableToolCard } from "@/components/shared/savable-tool-card";
 import { Reveal } from "@/components/shared/reveal";
 import { Icon } from "@/components/shared/icon";
 import { Button } from "@/components/ui/button";
@@ -85,7 +85,11 @@ export function DirectoryExplorer({ tools, categories, tags }: Props) {
         new Fuse(tools, {
           includeScore: true,
           ignoreLocation: true,
-          threshold: 0.4,
+          // Tighter than the Fuse default (0.6): 0.3 keeps fuzzy typo-tolerance
+          // but rejects loose matches like "voice"→"video". minMatchCharLength
+          // stops single stray characters from matching.
+          threshold: 0.3,
+          minMatchCharLength: 2,
           keys: [
             { name: "name", weight: 0.35 },
             { name: "tagline", weight: 0.2 },
@@ -292,10 +296,9 @@ export function DirectoryExplorer({ tools, categories, tags }: Props) {
           <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {results.map((tool, i) => (
               <Reveal key={tool.slug} index={Math.min(i, 6)}>
-                <ToolCard
+                <SavableToolCard
                   tool={tool}
                   categoryName={categoryName.get(tool.categorySlug)}
-                  className="h-full"
                 />
               </Reveal>
             ))}

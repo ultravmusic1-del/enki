@@ -56,7 +56,13 @@ export const keyFeatureSchema = z.object({
 export const screenshotSchema = z.object({
   title: z.string().min(1),
   caption: z.string().min(1),
-  /** Hue (0–360) used to synthesize the gradient placeholder "screen". */
+  /**
+   * Path to a real product screenshot under /public (optional). All captures
+   * are a fixed 1280×800 (16:10) for visual consistency across tool pages.
+   * When absent, the carousel synthesizes a gradient "screen" from `hue`.
+   */
+  src: z.string().optional(),
+  /** Hue (0–360) used to synthesize the gradient placeholder when `src` is absent. */
   hue: z.number().min(0).max(360),
 });
 

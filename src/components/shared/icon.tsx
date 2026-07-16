@@ -64,6 +64,13 @@ import {
   Camera,
   Images,
   AudioWaveform,
+  Crown,
+  Trophy,
+  Medal,
+  TrendingDown,
+  Bookmark,
+  BookmarkCheck,
+  House,
   // UI / chrome icons
   ArrowRight,
   ArrowLeft,
@@ -167,6 +174,13 @@ const registry = {
   Camera,
   Images,
   AudioWaveform,
+  Crown,
+  Trophy,
+  Medal,
+  TrendingDown,
+  Bookmark,
+  BookmarkCheck,
+  House,
   ArrowRight,
   ArrowLeft,
   ArrowUpRight,
@@ -195,6 +209,8 @@ const registry = {
   LayoutGrid,
   List,
   Sprout,
+  // Lucide renamed Home → House; alias so a stored "Home" name still resolves.
+  Home: House,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof registry;

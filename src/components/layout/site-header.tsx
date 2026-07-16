@@ -9,7 +9,6 @@ import {
 } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/lib/site";
 import { Button } from "@/components/ui/button";
@@ -21,10 +20,15 @@ import {
 } from "@/components/ui/sheet";
 import { Icon } from "@/components/shared/icon";
 import { useCommandMenu } from "@/components/layout/command-menu";
+import { useSavedTools } from "@/components/saved/saved-tools";
+import { AccountMenu } from "@/components/auth/account-menu";
+import { useAuth } from "@/components/auth/auth-provider";
 
 export function SiteHeader() {
   const pathname = usePathname();
   const { setOpen } = useCommandMenu();
+  const { count, ready } = useSavedTools();
+  const { user, displayName, signOut } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navRef = useRef<HTMLElement>(null);
@@ -171,17 +175,28 @@ export function SiteHeader() {
             <Icon name="Search" className="size-4" />
           </Button>
 
-          <button
-            type="button"
-            onClick={() =>
-              toast("Accounts are coming soon", {
-                description: "Enki is in preview — browsing is fully open.",
-              })
-            }
-            className="hidden rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground lg:inline-flex"
+          <Link
+            href="/saved"
+            aria-label={`Saved tools${ready && count > 0 ? ` (${count})` : ""}`}
+            className={cn(
+              "relative grid size-9 place-items-center rounded-full transition-colors",
+              isActive("/saved")
+                ? "text-foreground"
+                : "text-muted-foreground hover:text-foreground",
+            )}
           >
-            Log In
-          </button>
+            <Icon
+              name={ready && count > 0 ? "BookmarkCheck" : "Bookmark"}
+              className="size-4"
+            />
+            {ready && count > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 grid min-w-4 place-items-center rounded-full bg-teal px-1 font-mono text-[0.6rem] leading-4 font-semibold text-[#04171a]">
+                {count}
+              </span>
+            )}
+          </Link>
+
+          <AccountMenu />
 
           <Link
             href="/tools"
@@ -227,6 +242,45 @@ export function SiteHeader() {
                     {item.title}
                   </Link>
                 ))}
+                <Link
+                  href="/saved"
+                  onClick={() => setMobileOpen(false)}
+                  className={cn(
+                    "rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                    isActive("/saved") && "text-foreground",
+                  )}
+                >
+                  Saved
+                </Link>
+
+                <div className="my-2 h-px bg-border" />
+
+                {user ? (
+                  <>
+                    <span className="px-3 py-1 font-mono text-xs tracking-wide text-muted-foreground uppercase">
+                      {displayName}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void signOut();
+                        setMobileOpen(false);
+                      }}
+                      className="rounded-lg px-3 py-2.5 text-left text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    >
+                      Sign out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  >
+                    Log in
+                  </Link>
+                )}
+
                 <Link
                   href="/tools"
                   onClick={() => setMobileOpen(false)}

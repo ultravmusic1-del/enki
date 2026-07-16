@@ -113,7 +113,7 @@ export function OracleHero() {
           data-hero-reveal
           className="text-balance text-5xl leading-[1.05] font-semibold sm:text-6xl lg:text-7xl"
         >
-          The oracle for
+          The oracle for{" "}
           <br />
           <span className="text-glow">AI tools</span>
         </h1>

@@ -8,7 +8,8 @@ export const siteConfig = {
   nav: [
     { title: "Directory", href: "/tools" },
     { title: "Categories", href: "/categories" },
-    { title: "How we vet", href: "/#how-we-vet" },
+    { title: "Compare", href: "/compare" },
+    { title: "Leaderboards", href: "/leaderboards" },
   ],
   social: {
     twitter: "https://twitter.com",

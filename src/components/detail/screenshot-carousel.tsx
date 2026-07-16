@@ -111,6 +111,23 @@ export function ScreenshotCarousel({
 
 function Screen({ shot }: { shot: Screenshot }) {
   const { hue } = shot;
+
+  // Real product screenshot: captured at a fixed 1280×800 (16:10), so it drops
+  // straight into the carousel's aspect box with no cropping or letterboxing.
+  if (shot.src) {
+    return (
+      <div className="relative aspect-[16/10] w-full bg-black/40">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={shot.src}
+          alt={shot.title}
+          loading="lazy"
+          className="size-full object-cover object-top"
+        />
+      </div>
+    );
+  }
+
   return (
     <div
       className="relative aspect-[16/10] w-full"

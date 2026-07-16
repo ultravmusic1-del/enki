@@ -201,6 +201,128 @@ export function getRatingDistribution(
   }));
 }
 
+/* ------------------------------------------------------------ leaderboards */
+
+export type LeaderboardEntry = {
+  rank: number;
+  slug: string;
+  name: string;
+  tagline: string;
+  logo?: string;
+  accent: string;
+  categoryName: string;
+  editorScore: number;
+  rating: number;
+  reviewCount: number;
+  /** 1-based standing in the editor-score ordering across ALL tools. */
+  editorRank: number;
+  /** 1-based standing in the user-rating ordering across ALL tools. */
+  userRank: number;
+};
+
+export type Leaderboards = {
+  /** Top tools by our editors' score (out of 10). */
+  editor: LeaderboardEntry[];
+  /** Top tools by aggregate community rating (out of 5). */
+  user: LeaderboardEntry[];
+};
+
+/**
+ * Two rankings of the same tool set — the editors' scores and the community
+ * ratings shown on each tool page. Full orderings are computed first (so every
+ * entry can carry its standing on the *other* board), then sliced to `limit`.
+ * Tie-breaks cascade to the other metric, then review volume, then name, so the
+ * order is deterministic and stable.
+ */
+export function getLeaderboards(limit = 15): Leaderboards {
+  const categoryName = new Map(categories.map((c) => [c.slug, c.name]));
+
+  const byEditor = [...tools].sort(
+    (a, b) =>
+      b.editorScore - a.editorScore ||
+      b.rating - a.rating ||
+      b.reviewCount - a.reviewCount ||
+      a.name.localeCompare(b.name),
+  );
+  const byUser = [...tools].sort(
+    (a, b) =>
+      b.rating - a.rating ||
+      b.reviewCount - a.reviewCount ||
+      b.editorScore - a.editorScore ||
+      a.name.localeCompare(b.name),
+  );
+
+  const editorRankOf = new Map(byEditor.map((t, i) => [t.slug, i + 1]));
+  const userRankOf = new Map(byUser.map((t, i) => [t.slug, i + 1]));
+
+  const toEntry = (t: Tool, rank: number): LeaderboardEntry => ({
+    rank,
+    slug: t.slug,
+    name: t.name,
+    tagline: t.tagline,
+    logo: t.logo,
+    accent: t.accent,
+    categoryName: categoryName.get(t.categorySlug) ?? "",
+    editorScore: t.editorScore,
+    rating: t.rating,
+    reviewCount: t.reviewCount,
+    editorRank: editorRankOf.get(t.slug) ?? 0,
+    userRank: userRankOf.get(t.slug) ?? 0,
+  });
+
+  return {
+    editor: byEditor.slice(0, limit).map((t, i) => toEntry(t, i + 1)),
+    user: byUser.slice(0, limit).map((t, i) => toEntry(t, i + 1)),
+  };
+}
+
+/* --------------------------------------------------------------- comparison */
+
+export type CompareTool = {
+  slug: string;
+  name: string;
+  tagline: string;
+  logo?: string;
+  accent: string;
+  categoryName: string;
+  editorScore: number;
+  rating: number;
+  reviewCount: number;
+  pricingModel: Tool["pricing"]["model"];
+  startingPrice?: string;
+  hasFreeTrial: boolean;
+  platforms: string[];
+  /** Top few pros/cons — enough for an at-a-glance comparison. */
+  pros: string[];
+  cons: string[];
+  website: string;
+};
+
+/** Compact, serializable rows for the /compare table (all tools, A→Z). */
+export function getCompareTools(): CompareTool[] {
+  const categoryName = new Map(categories.map((c) => [c.slug, c.name]));
+  return [...tools]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((t) => ({
+      slug: t.slug,
+      name: t.name,
+      tagline: t.tagline,
+      logo: t.logo,
+      accent: t.accent,
+      categoryName: categoryName.get(t.categorySlug) ?? "",
+      editorScore: t.editorScore,
+      rating: t.rating,
+      reviewCount: t.reviewCount,
+      pricingModel: t.pricing.model,
+      startingPrice: t.pricing.startingPrice,
+      hasFreeTrial: t.pricing.hasFreeTrial ?? false,
+      platforms: t.platforms,
+      pros: t.pros.slice(0, 3),
+      cons: t.cons.slice(0, 3),
+      website: t.website,
+    }));
+}
+
 /* -------------------------------------------------------------------- stats */
 
 export type SiteStats = {

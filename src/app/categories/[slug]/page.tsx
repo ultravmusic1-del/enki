@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/shared/container";
-import { ToolCard } from "@/components/shared/tool-card";
+import { SavableToolCard } from "@/components/shared/savable-tool-card";
 import { CategoryCard } from "@/components/shared/category-card";
 import { Reveal } from "@/components/shared/reveal";
 import { Icon } from "@/components/shared/icon";
@@ -105,11 +105,7 @@ export default async function CategoryDetailPage({
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {tools.map((tool, i) => (
             <Reveal key={tool.slug} index={Math.min(i, 6)}>
-              <ToolCard
-                tool={tool}
-                categoryName={category.name}
-                className="h-full"
-              />
+              <SavableToolCard tool={tool} categoryName={category.name} />
             </Reveal>
           ))}
         </div>

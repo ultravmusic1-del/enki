@@ -5,7 +5,7 @@ import { Container } from "@/components/shared/container";
 import { ToolLogo } from "@/components/shared/tool-logo";
 import { StarRating } from "@/components/shared/star-rating";
 import { PricingBadge } from "@/components/shared/pricing-badge";
-import { ToolCard } from "@/components/shared/tool-card";
+import { SavableToolCard } from "@/components/shared/savable-tool-card";
 import { Reveal } from "@/components/shared/reveal";
 import { Icon } from "@/components/shared/icon";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,11 @@ import { ScreenshotCarousel } from "@/components/detail/screenshot-carousel";
 import { RatingDistribution } from "@/components/detail/rating-distribution";
 import { ReviewList } from "@/components/detail/review-list";
 import { ReviewModal } from "@/components/detail/review-modal";
+import { CommunityReviews } from "@/components/detail/community-reviews";
+import { SaveButton } from "@/components/saved/save-button";
+import { CompareToggle } from "@/components/compare/compare-toggle";
+import { JsonLd } from "@/components/seo/json-ld";
+import { toolJsonLd } from "@/lib/structured-data";
 import {
   getAllTools,
   getToolBySlug,
@@ -62,6 +67,13 @@ export default async function ToolDetailPage({
 
   return (
     <article className="pb-16">
+      <JsonLd
+        data={toolJsonLd({
+          tool,
+          categoryName: category?.name,
+          reviews,
+        })}
+      />
       {/* Hero */}
       <div className="relative overflow-hidden pt-28 pb-14">
         <div className="spotlight pointer-events-none absolute inset-0 opacity-70" />
@@ -213,8 +225,11 @@ export default async function ToolDetailPage({
                 </a>
                 <ReviewModal
                   toolName={tool.name}
+                  toolSlug={tool.slug}
                   triggerClassName="h-11 rounded-full px-6 text-sm font-medium whitespace-nowrap"
                 />
+                <SaveButton slug={tool.slug} name={tool.name} />
+                <CompareToggle slug={tool.slug} name={tool.name} />
               </div>
             </div>
           </div>
@@ -307,7 +322,7 @@ export default async function ToolDetailPage({
                 <SectionLabel icon="MessagesSquare" className="mb-0">
                   Reviews
                 </SectionLabel>
-                <ReviewModal toolName={tool.name} />
+                <ReviewModal toolName={tool.name} toolSlug={tool.slug} />
               </div>
               <div className="mt-6 rounded-2xl border border-border bg-card/40 p-6">
                 <RatingDistribution
@@ -317,6 +332,7 @@ export default async function ToolDetailPage({
                 />
               </div>
               <div className="mt-6">
+                <CommunityReviews toolSlug={tool.slug} />
                 <ReviewList reviews={reviews} />
               </div>
             </section>
@@ -382,7 +398,7 @@ export default async function ToolDetailPage({
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {related.map((rel, i) => (
                 <Reveal key={rel.slug} index={i}>
-                  <ToolCard tool={rel} className="h-full" />
+                  <SavableToolCard tool={rel} />
                 </Reveal>
               ))}
             </div>

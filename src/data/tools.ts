@@ -65,9 +65,9 @@ export const tools: Tool[] = [
     foundedYear: 2021,
     company: "Jasper AI, Inc.",
     screenshots: [
-      { title: "Campaign builder", caption: "One brief, a full campaign of assets", hue: 184 },
-      { title: "Brand Voice", caption: "Tone and vocabulary controls", hue: 190 },
-      { title: "Document editor", caption: "Long-form writing with inline commands", hue: 176 },
+      { title: "Homepage", caption: "AI agents built for end-to-end marketing workflows", src: "/screenshots/jasper/hero.png", hue: 184 },
+      { title: "Platform", caption: "Why modern marketing teams choose Jasper", src: "/screenshots/jasper/features.png", hue: 190 },
+      { title: "GEO & optimization", caption: "AI-visibility scoring across your content", src: "/screenshots/jasper/workflow.png", hue: 176 },
     ],
     verdict:
       "The strongest pick for marketing teams that need consistent, on-brand output at volume, less compelling for solo, occasional writers.",
@@ -127,8 +127,9 @@ export const tools: Tool[] = [
     foundedYear: 2020,
     company: "Copy.ai, Inc.",
     screenshots: [
-      { title: "Workflow canvas", caption: "Chained steps for GTM automation", hue: 170 },
-      { title: "Chat", caption: "Ad-hoc drafting with brand context", hue: 178 },
+      { title: "The first AI-native GTM platform", caption: "One system to replace point solutions", src: "/screenshots/copy-ai/hero.png", hue: 170 },
+      { title: "GTM AI playbook", caption: "Prospecting, content, and coaching in one flow", src: "/screenshots/copy-ai/features.png", hue: 178 },
+      { title: "Proven with revenue teams", caption: "Personalized outreach at scale", src: "/screenshots/copy-ai/detail.png", hue: 174 },
     ],
     verdict:
       "Best when you treat it as a workflow engine for revenue teams; as a pure writing tool it's merely fine.",
@@ -188,8 +189,9 @@ export const tools: Tool[] = [
     foundedYear: 2020,
     company: "Sudowrite, Inc.",
     screenshots: [
-      { title: "Story Bible", caption: "Canon tracking for long manuscripts", hue: 258 },
-      { title: "Editor", caption: "Inline creative tools", hue: 250 },
+      { title: "Built for story smarts", caption: "An AI writing tool tuned for fiction", src: "/screenshots/sudowrite/hero.png", hue: 258 },
+      { title: "Chat built with novelists in mind", caption: "Craft-aware help, not generic prose", src: "/screenshots/sudowrite/features.png", hue: 250 },
+      { title: "Story Bible", caption: "Take a novel from idea to finish", src: "/screenshots/sudowrite/detail.png", hue: 254 },
     ],
     verdict:
       "The best AI companion for fiction writers, full stop, as long as prose, not marketing, is your goal.",
@@ -248,8 +250,9 @@ export const tools: Tool[] = [
     foundedYear: 2009,
     company: "Grammarly, Inc.",
     screenshots: [
-      { title: "Inline suggestions", caption: "Corrections as you type", hue: 152 },
-      { title: "Tone insights", caption: "How your message reads", hue: 160 },
+      { title: "We'll handle the details", caption: "Rewrites, tone, and proofreading in place", src: "/screenshots/grammarly/hero.png", hue: 152 },
+      { title: "Better writing, faster", caption: "Clear, correct, and convincing in a few clicks", src: "/screenshots/grammarly/features.png", hue: 160 },
+      { title: "See how your message lands", caption: "Reader reactions before you hit send", src: "/screenshots/grammarly/detail.png", hue: 156 },
     ],
     verdict:
       "Indispensable as a correctness and clarity layer everywhere; think of the generative side as a bonus, not the reason to buy.",
@@ -310,9 +313,8 @@ export const tools: Tool[] = [
     foundedYear: 2022,
     company: "Midjourney, Inc.",
     screenshots: [
-      { title: "Explore feed", caption: "Community generations and prompts", hue: 186 },
-      { title: "Create view", caption: "Prompt bar with style controls", hue: 192 },
-      { title: "Editor", caption: "Inpainting and variations", hue: 200 },
+      { title: "The Midjourney homepage", caption: "Explore, sign up, and start creating", src: "/screenshots/midjourney/hero.png", hue: 186 },
+      { title: "A showcase of generated imagery", caption: "The signature Midjourney aesthetic", src: "/screenshots/midjourney/features.png", hue: 192 },
     ],
     verdict:
       "If you want the most beautiful result with the least fuss, Midjourney is still the one to beat.",
@@ -371,8 +373,9 @@ export const tools: Tool[] = [
     foundedYear: 2023,
     company: "OpenAI",
     screenshots: [
-      { title: "ChatGPT image", caption: "Generate inside a conversation", hue: 150 },
-      { title: "Refinement", caption: "Describe a change, get a revision", hue: 158 },
+      { title: "DALL-E 3", caption: "OpenAI's text-to-image model", src: "/screenshots/dall-e-3/hero.png", hue: 150 },
+      { title: "Available in ChatGPT and the API", caption: "Generate images inside a conversation", src: "/screenshots/dall-e-3/features.png", hue: 158 },
+      { title: "A leap over DALL-E 2", caption: "Sharper results on the same prompt", src: "/screenshots/dall-e-3/detail.png", hue: 154 },
     ],
     verdict:
       "The most convenient way to get an image that matches a fussy prompt. Reach for it when accuracy beats artistry.",
@@ -431,8 +434,9 @@ export const tools: Tool[] = [
     foundedYear: 2022,
     company: "Stability AI",
     screenshots: [
-      { title: "ComfyUI graph", caption: "Node-based generation pipeline", hue: 212 },
-      { title: "ControlNet", caption: "Pose and depth guidance", hue: 220 },
+      { title: "Creative production for brands", caption: "Powered by Stability's open models", src: "/screenshots/stable-diffusion/hero.png", hue: 212 },
+      { title: "Marketing, gaming, and film", caption: "Purpose-built creative workflows", src: "/screenshots/stable-diffusion/features.png", hue: 220 },
+      { title: "The latest from Stability AI", caption: "New models and research", src: "/screenshots/stable-diffusion/detail.png", hue: 216 },
     ],
     verdict:
       "Unbeatable for control, cost, and privacy if you're willing to tinker; not for anyone who wants one-click polish.",
@@ -553,9 +557,9 @@ export const tools: Tool[] = [
     foundedYear: 2021,
     company: "GitHub (Microsoft)",
     screenshots: [
-      { title: "Inline suggestion", caption: "Ghost-text completions", hue: 188 },
-      { title: "Copilot Chat", caption: "Ask about your code", hue: 196 },
-      { title: "Agent mode", caption: "Multi-file edits with review", hue: 204 },
+      { title: "Command your craft", caption: "AI woven into your everyday workflow", src: "/screenshots/github-copilot/hero.png", hue: 188 },
+      { title: "Use your agents your way", caption: "Chat, edit, and agent modes", src: "/screenshots/github-copilot/features.png", hue: 196 },
+      { title: "Ship faster with AI", caption: "Your most powerful accelerator, in-editor", src: "/screenshots/github-copilot/detail.png", hue: 204 },
     ],
     verdict:
       "The safe default for most developers: deeply integrated, reliable, and improving fast, even if purpose-built agents edge it on ambitious tasks.",
@@ -614,9 +618,9 @@ export const tools: Tool[] = [
     foundedYear: 2023,
     company: "Anysphere",
     screenshots: [
-      { title: "Agent panel", caption: "Plan-and-execute across files", hue: 184 },
-      { title: "Tab model", caption: "Next-edit prediction", hue: 178 },
-      { title: "Codebase chat", caption: "Repo-aware answers", hue: 172 },
+      { title: "The AI coding agent", caption: "For building ambitious software", src: "/screenshots/cursor/hero.png", hue: 184 },
+      { title: "Agents turn ideas into code", caption: "Plan and execute across the repo", src: "/screenshots/cursor/features.png", hue: 178 },
+      { title: "Mission control for agents", caption: "Run and review work in parallel", src: "/screenshots/cursor/detail.png", hue: 172 },
     ],
     verdict:
       "The most capable agentic editor available today, the tool to beat if you want AI at the center of your workflow.",
@@ -735,8 +739,9 @@ export const tools: Tool[] = [
     foundedYear: 2016,
     company: "Replit, Inc.",
     screenshots: [
-      { title: "Agent build", caption: "Prompt to running app", hue: 32 },
-      { title: "Workspace", caption: "Editor, shell, and preview", hue: 40 },
+      { title: "What will you build?", caption: "Describe an app and watch it run", src: "/screenshots/replit-agent/hero.png", hue: 32 },
+      { title: "Design, build, and ship", caption: "From prompt to deployed product", src: "/screenshots/replit-agent/features.png", hue: 40 },
+      { title: "Full-stack in the browser", caption: "Auth, storage, and hosting built in", src: "/screenshots/replit-agent/detail.png", hue: 36 },
     ],
     verdict:
       "The fastest path from idea to a deployed app for beginners and prototypers; reach for a local setup once projects grow serious.",
@@ -797,8 +802,9 @@ export const tools: Tool[] = [
     foundedYear: 2023,
     company: "Notion Labs, Inc.",
     screenshots: [
-      { title: "Workspace Q&A", caption: "Answers from your own docs", hue: 150 },
-      { title: "Inline AI", caption: "Draft and edit in place", hue: 156 },
+      { title: "Meet your 24/7 AI team", caption: "Agents that work across your workspace", src: "/screenshots/notion-ai/hero.png", hue: 150 },
+      { title: "Works where your team works", caption: "Answers drawn from your own docs", src: "/screenshots/notion-ai/features.png", hue: 156 },
+      { title: "Custom agents", caption: "Automate the work that repeats", src: "/screenshots/notion-ai/detail.png", hue: 152 },
     ],
     verdict:
       "A no-brainer add-on if your team already runs on Notion; not a reason to switch to it on its own.",
@@ -857,8 +863,9 @@ export const tools: Tool[] = [
     foundedYear: 2019,
     company: "Mem Labs",
     screenshots: [
-      { title: "Smart Search", caption: "Answers from your notes", hue: 262 },
-      { title: "Timeline", caption: "Auto-organized capture", hue: 254 },
+      { title: "Your world, organized", caption: "Notes and ideas connected automatically", src: "/screenshots/mem/hero.png", hue: 262 },
+      { title: "Mem remembers so you move", caption: "It tracks what matters, you keep going", src: "/screenshots/mem/features.png", hue: 254 },
+      { title: "Every capture becomes context", caption: "Surfaced right when you need it", src: "/screenshots/mem/detail.png", hue: 258 },
     ],
     verdict:
       "A refreshing take for capture-heavy thinkers who resent organizing; structure lovers may miss the folders.",
@@ -917,8 +924,9 @@ export const tools: Tool[] = [
     foundedYear: 2019,
     company: "Motion (Labs, Inc.)",
     screenshots: [
-      { title: "Auto-schedule", caption: "Tasks placed into open time", hue: 184 },
-      { title: "Projects", caption: "AI-planned timelines", hue: 190 },
+      { title: "Double productivity with AI", caption: "An unfair advantage on your calendar", src: "/screenshots/motion/hero.png", hue: 184 },
+      { title: "Built for individuals and teams", caption: "One platform for tasks and projects", src: "/screenshots/motion/features.png", hue: 190 },
+      { title: "Replace your stack of tools", caption: "AI planning versus manual juggling", src: "/screenshots/motion/detail.png", hue: 186 },
     ],
     verdict:
       "Genuinely transformative for the over-committed who'll cede control to the algorithm; a poor fit for manual planners.",
@@ -979,9 +987,9 @@ export const tools: Tool[] = [
     foundedYear: 2018,
     company: "Runway AI, Inc.",
     screenshots: [
-      { title: "Generate", caption: "Text- and image-to-video", hue: 262 },
-      { title: "Motion Brush", caption: "Paint motion onto a still", hue: 270 },
-      { title: "Editor", caption: "Compositing and cleanup", hue: 256 },
+      { title: "Building AI to simulate the world", caption: "Frontier models for generative video", src: "/screenshots/runway/hero.png", hue: 262 },
+      { title: "Gen-4.5 and world models", caption: "Robotics, avatars, and general video", src: "/screenshots/runway/features.png", hue: 270 },
+      { title: "The latest research and products", caption: "Runway Characters and beyond", src: "/screenshots/runway/detail.png", hue: 256 },
     ],
     verdict:
       "The pick for creators who want generation plus real editing control in one place. The credit meter is the only real drawback.",
@@ -1040,8 +1048,8 @@ export const tools: Tool[] = [
     foundedYear: 2023,
     company: "Pika Labs",
     screenshots: [
-      { title: "Effects", caption: "Signature Pikaffects", hue: 336 },
-      { title: "Create", caption: "Prompt to short clip", hue: 344 },
+      { title: "Welcome to the Pika universe", caption: "Make AI videos and creative agents", src: "/screenshots/pika/hero.png", hue: 336 },
+      { title: "Pikaffects and creative agents", caption: "Signature effects on any clip", src: "/screenshots/pika/features.png", hue: 344 },
     ],
     verdict:
       "The most fun way to make short, social-ready clips; look elsewhere for precise, production-grade control.",
@@ -1100,8 +1108,9 @@ export const tools: Tool[] = [
     foundedYear: 2017,
     company: "Synthesia Ltd.",
     screenshots: [
-      { title: "Avatar studio", caption: "Presenter-led video from a script", hue: 214 },
-      { title: "Languages", caption: "One video, many languages", hue: 220 },
+      { title: "All-in-one AI video platform", caption: "Studio-quality video from a script", src: "/screenshots/synthesia/hero.png", hue: 214 },
+      { title: "Trusted across the Fortune 100", caption: "Train, market, and sell with video", src: "/screenshots/synthesia/features.png", hue: 220 },
+      { title: "Rated 4.7/5 by 2,000+ reviews", caption: "A category leader for AI video", src: "/screenshots/synthesia/detail.png", hue: 216 },
     ],
     verdict:
       "The category leader for training and corporate comms video; the wrong tool if you want storytelling or cinematic footage.",
@@ -1162,9 +1171,9 @@ export const tools: Tool[] = [
     foundedYear: 2022,
     company: "ElevenLabs Inc.",
     screenshots: [
-      { title: "Voice library", caption: "Browse and audition voices", hue: 184 },
-      { title: "Speech synthesis", caption: "Text to lifelike audio", hue: 178 },
-      { title: "Dubbing", caption: "Localize while keeping the voice", hue: 172 },
+      { title: "Bringing technology to life", caption: "The leading AI voice generator", src: "/screenshots/elevenlabs/hero.png", hue: 184 },
+      { title: "One research foundation", caption: "Voices, agents, and APIs in one place", src: "/screenshots/elevenlabs/features.png", hue: 178 },
+      { title: "Create, edit, and localize", caption: "Lifelike audio in many languages", src: "/screenshots/elevenlabs/detail.png", hue: 172 },
     ],
     verdict:
       "The clear leader in AI voice: realistic, flexible, and developer-friendly. The obvious first pick for any speech project.",
@@ -1223,8 +1232,9 @@ export const tools: Tool[] = [
     foundedYear: 2020,
     company: "Murf AI",
     screenshots: [
-      { title: "Studio", caption: "Timing and emphasis controls", hue: 32 },
-      { title: "Voices", caption: "Library of professional reads", hue: 40 },
+      { title: "Natural, scalable AI voice", caption: "Production-ready conversational audio", src: "/screenshots/murf/hero.png", hue: 32 },
+      { title: "The choice of 300+ Forbes firms", caption: "Expressive, usable voice agents", src: "/screenshots/murf/features.png", hue: 40 },
+      { title: "Conversational agents for teams", caption: "Enterprise-grade voice experiences", src: "/screenshots/murf/detail.png", hue: 36 },
     ],
     verdict:
       "A dependable choice for teams that value a smooth voiceover workflow over bleeding-edge realism.",
@@ -1283,8 +1293,7 @@ export const tools: Tool[] = [
     foundedYear: 2023,
     company: "Suno, Inc.",
     screenshots: [
-      { title: "Create", caption: "Prompt to a full song", hue: 336 },
-      { title: "Library", caption: "Your generated tracks", hue: 344 },
+      { title: "Make a song from a prompt", caption: "Describe it and Suno writes the track", src: "/screenshots/suno/hero.png", hue: 336 },
     ],
     verdict:
       "The most impressive AI music tool for full songs, magical for demos and fun, still short on granular control.",
@@ -1345,8 +1354,7 @@ export const tools: Tool[] = [
     foundedYear: 2022,
     company: "Perplexity AI, Inc.",
     screenshots: [
-      { title: "Answer", caption: "Synthesized response with citations", hue: 186 },
-      { title: "Pro Search", caption: "Deeper multi-step research", hue: 192 },
+      { title: "The answer engine", caption: "Ask anything and get fast, cited answers", src: "/screenshots/perplexity/app.png", hue: 186 },
     ],
     verdict:
       "The best everyday answer engine: fast, cited, and trustworthy enough to replace a lot of traditional searching.",
@@ -1405,8 +1413,9 @@ export const tools: Tool[] = [
     foundedYear: 2021,
     company: "Elicit (Ought)",
     screenshots: [
-      { title: "Search", caption: "Semantic search over papers", hue: 150 },
-      { title: "Extraction table", caption: "Structured findings across studies", hue: 156 },
+      { title: "AI for scientific research", caption: "Move 10x faster on evidence review", src: "/screenshots/elicit/hero.png", hue: 150 },
+      { title: "Stand on the shoulders of giants", caption: "Understand what science already knows", src: "/screenshots/elicit/features.png", hue: 156 },
+      { title: "Automated literature reviews", caption: "Structured findings across studies", src: "/screenshots/elicit/detail.png", hue: 152 },
     ],
     verdict:
       "An outstanding accelerator for anyone doing serious literature review; irrelevant if you're not working with papers.",
@@ -1465,8 +1474,9 @@ export const tools: Tool[] = [
     foundedYear: 2021,
     company: "Consensus NLP, Inc.",
     screenshots: [
-      { title: "Consensus Meter", caption: "How much the science agrees", hue: 186 },
-      { title: "Results", caption: "Findings with source links", hue: 192 },
+      { title: "Research starts here", caption: "The AI-powered academic search engine", src: "/screenshots/consensus/hero.png", hue: 186 },
+      { title: "Built with leading universities", caption: "Trusted for evidence-based answers", src: "/screenshots/consensus/features.png", hue: 192 },
+      { title: "See where research agrees", caption: "Natural-language filters over papers", src: "/screenshots/consensus/detail.png", hue: 188 },
     ],
     verdict:
       "A trustworthy shortcut to what the research actually says, best kept to questions science can answer.",
@@ -1527,8 +1537,9 @@ export const tools: Tool[] = [
     foundedYear: 2017,
     company: "Surfer (Colline sp. z o.o.)",
     screenshots: [
-      { title: "Content Editor", caption: "Live optimization scoring", hue: 336 },
-      { title: "SERP analyzer", caption: "What ranks and why", hue: 344 },
+      { title: "Be the answer buyers search for", caption: "Rank across search and AI engines", src: "/screenshots/surfer-seo/hero.png", hue: 336 },
+      { title: "Don't just rank, be the answer", caption: "Data and workflow for AI search", src: "/screenshots/surfer-seo/features.png", hue: 344 },
+      { title: "The era of artificial influence", caption: "Get surfaced by ChatGPT and Claude", src: "/screenshots/surfer-seo/detail.png", hue: 340 },
     ],
     verdict:
       "The go-to for teams serious about ranking; watch that its scores guide, not dictate, your writing.",
@@ -1587,8 +1598,9 @@ export const tools: Tool[] = [
     foundedYear: 2021,
     company: "AdCreative.ai",
     screenshots: [
-      { title: "Generator", caption: "On-brand ad variants at scale", hue: 32 },
-      { title: "Scoring", caption: "Conversion prediction per variant", hue: 40 },
+      { title: "The most-used AI ad tool", caption: "Banners, text, and photoshoots at scale", src: "/screenshots/adcreative-ai/hero.png", hue: 32 },
+      { title: "An all-in-one marketing powerhouse", caption: "From generation to product shoots", src: "/screenshots/adcreative-ai/features.png", hue: 40 },
+      { title: "Scoring and competitor insight", caption: "Predict conversions per variant", src: "/screenshots/adcreative-ai/detail.png", hue: 36 },
     ],
     verdict:
       "A real productivity win for performance marketers who need creative volume; expect to art-direct away the templated feel.",
@@ -1647,8 +1659,9 @@ export const tools: Tool[] = [
     foundedYear: 2017,
     company: "Clay Labs, Inc.",
     screenshots: [
-      { title: "Enrichment table", caption: "Waterfall data in a spreadsheet", hue: 214 },
-      { title: "Claygent", caption: "AI research and copy per row", hue: 220 },
+      { title: "Build systems to grow revenue", caption: "Infrastructure for agentic GTM", src: "/screenshots/clay/hero.png", hue: 214 },
+      { title: "GTM engineers build on Clay", caption: "Enrich, score, and route every lead", src: "/screenshots/clay/features.png", hue: 220 },
+      { title: "The most complete data marketplace", caption: "Waterfall enrichment in a spreadsheet", src: "/screenshots/clay/detail.png", hue: 216 },
     ],
     verdict:
       "Extraordinarily powerful for modern outbound if you invest in learning it; overkill for simple list-building.",
