@@ -36,6 +36,7 @@ export type Database = {
           created_at: string
           id: string
           rating: number
+          status: string
           title: string | null
           tool_slug: string
           updated_at: string
@@ -46,6 +47,7 @@ export type Database = {
           created_at?: string
           id?: string
           rating: number
+          status?: string
           title?: string | null
           tool_slug: string
           updated_at?: string
@@ -56,11 +58,18 @@ export type Database = {
           created_at?: string
           id?: string
           rating?: number
+          status?: string
           title?: string | null
           tool_slug?: string
           updated_at?: string
           user_id?: string
         }
+        Relationships: []
+      }
+      admins: {
+        Row: { created_at: string; user_id: string }
+        Insert: { created_at?: string; user_id: string }
+        Update: { created_at?: string; user_id?: string }
         Relationships: []
       }
       saved_tools: {
@@ -104,7 +113,13 @@ export type Database = {
       }
     }
     Views: { [_ in never]: never }
-    Functions: { [_ in never]: never }
+    Functions: {
+      is_admin: { Args: Record<string, never>; Returns: boolean }
+      admin_click_stats: {
+        Args: { days?: number }
+        Returns: { tool_slug: string; clicks: number }[]
+      }
+    }
     Enums: { [_ in never]: never }
     CompositeTypes: { [_ in never]: never }
   }
