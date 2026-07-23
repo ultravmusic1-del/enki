@@ -5,6 +5,7 @@ import { Container } from "@/components/shared/container";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { FeaturedToolCard } from "@/components/home/featured-tool-card";
 import { CategoryTile } from "@/components/home/category-tile";
+import { FinderCta } from "@/components/home/finder-cta";
 import { Reveal } from "@/components/shared/reveal";
 import { Icon } from "@/components/shared/icon";
 import { getFeaturedTools, getCategories, getStats } from "@/lib/content";
@@ -81,6 +82,9 @@ export default function Home() {
           </div>
         </Container>
       </section>
+
+      {/* Guided finder CTA */}
+      <FinderCta />
 
       {/* Categories */}
       <section className="py-16 sm:py-20">

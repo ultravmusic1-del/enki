@@ -7,6 +7,7 @@ export const siteConfig = {
   ogImage: "/brand/logo.png",
   nav: [
     { title: "Directory", href: "/tools" },
+    { title: "Finder", href: "/finder" },
     { title: "Categories", href: "/categories" },
     { title: "Compare", href: "/compare" },
     { title: "Leaderboards", href: "/leaderboards" },
