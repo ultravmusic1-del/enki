@@ -32,7 +32,7 @@ export function ToolCard({ tool, categoryName, className }: ToolCardProps) {
       {tool.featured && <BorderBeam />}
 
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           <ToolLogo
             name={tool.name}
             accent={tool.accent}
