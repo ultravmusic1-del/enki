@@ -1,8 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { StarRating } from "@/components/shared/star-rating";
+import { CommunityRatingSummary } from "@/components/detail/community-rating-summary";
+import { summarizeReviews } from "@/lib/reviews";
 
 export const REVIEWS_UPDATED_EVENT = "enki:reviews-updated";
 
@@ -69,6 +71,10 @@ export function CommunityReviews({ toolSlug }: { toolSlug: string }) {
     return () => window.removeEventListener(REVIEWS_UPDATED_EVENT, onUpdate);
   }, [load, toolSlug]);
 
+  // Real aggregate from the moderated reviews we just fetched (RLS already
+  // limits non-admins to approved rows), computed before any early return.
+  const summary = useMemo(() => summarizeReviews(reviews), [reviews]);
+
   if (!loaded || reviews.length === 0) return null;
 
   return (
@@ -76,6 +82,7 @@ export function CommunityReviews({ toolSlug }: { toolSlug: string }) {
       <p className="font-mono text-xs tracking-wide text-teal uppercase">
         From the Enki community
       </p>
+      <CommunityRatingSummary {...summary} />
       {reviews.map((r) => (
         <div
           key={r.id}
