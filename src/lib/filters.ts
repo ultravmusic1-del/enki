@@ -54,6 +54,19 @@ export function sortTools(tools: Tool[], sort: SortKey): Tool[] {
   }
 }
 
+/**
+ * Stable partition that pins sponsored tools to the front (preserving their
+ * relative order), then everything else in its original order. Use only on
+ * *browse* surfaces — never on search results or leaderboards, which must stay
+ * merit-ordered. Pure; never mutates the input.
+ */
+export function pinSponsored(tools: Tool[]): Tool[] {
+  const sponsored = tools.filter((t) => t.sponsored);
+  if (sponsored.length === 0) return tools;
+  const rest = tools.filter((t) => !t.sponsored);
+  return [...sponsored, ...rest];
+}
+
 /** Unique tags across the given tools, most common first. */
 export function getAllTags(tools: Tool[]): string[] {
   const counts = new Map<string, number>();

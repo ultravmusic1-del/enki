@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import Fuse from "fuse.js";
-import { applyFilters, sortTools, getAllTags } from "@/lib/filters";
+import { applyFilters, sortTools, getAllTags, pinSponsored } from "@/lib/filters";
 import { getAllTools, getCategories } from "@/lib/content";
 
 const tools = getAllTools();
@@ -101,6 +101,25 @@ describe("filters: getAllTags", () => {
     const tags = getAllTags(tools);
     expect(new Set(tags).size).toBe(tags.length);
     expect(tags.length).toBeGreaterThan(5);
+  });
+});
+
+describe("filters: pinSponsored", () => {
+  it("moves sponsored tools to the front, preserving relative order, without mutating", () => {
+    const input = tools.slice(0, 6);
+    const withFlags = input.map((t, i) => ({ ...t, sponsored: i === 2 || i === 4 }));
+    const snapshot = withFlags.map((t) => t.slug);
+    const pinned = pinSponsored(withFlags);
+    expect(pinned.slice(0, 2).every((t) => t.sponsored)).toBe(true);
+    expect(pinned.slice(2).every((t) => !t.sponsored)).toBe(true);
+    expect(pinned[0].slug).toBe(withFlags[2].slug);
+    expect(pinned[1].slug).toBe(withFlags[4].slug);
+    expect(withFlags.map((t) => t.slug)).toEqual(snapshot);
+  });
+
+  it("returns the list unchanged when nothing is sponsored", () => {
+    const input = tools.slice(0, 5);
+    expect(pinSponsored(input).map((t) => t.slug)).toEqual(input.map((t) => t.slug));
   });
 });
 

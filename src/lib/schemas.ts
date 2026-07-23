@@ -87,6 +87,8 @@ export const toolSchema = z.object({
   platforms: z.array(z.string().min(1)).min(1),
   accent: hexColor,
   featured: z.boolean(),
+  /** Paid promoted placement (absent = not sponsored); never affects editorial score/rank. */
+  sponsored: z.boolean().optional(),
   foundedYear: z.number().int().min(1990).max(2100),
   company: z.string().min(1),
   screenshots: z.array(screenshotSchema).min(1),
