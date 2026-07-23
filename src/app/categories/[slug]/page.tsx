@@ -11,7 +11,7 @@ import {
   getCategoryBySlug,
   getToolsByCategory,
 } from "@/lib/content";
-import { sortTools } from "@/lib/filters";
+import { sortTools, pinSponsored } from "@/lib/filters";
 
 export function generateStaticParams() {
   return getCategories().map((c) => ({ slug: c.slug }));
@@ -42,7 +42,7 @@ export default async function CategoryDetailPage({
   const category = getCategoryBySlug(slug);
   if (!category) notFound();
 
-  const tools = sortTools(getToolsByCategory(category.slug), "rating");
+  const tools = pinSponsored(sortTools(getToolsByCategory(category.slug), "rating"));
   const otherCategories = getCategories()
     .filter((c) => c.slug !== category.slug)
     .slice(0, 3);

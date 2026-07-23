@@ -8,6 +8,7 @@ import type { CategoryWithCount } from "@/lib/content";
 import {
   applyFilters,
   sortTools,
+  pinSponsored,
   PRICING_OPTIONS,
   SORT_OPTIONS,
   type SortKey,
@@ -151,7 +152,10 @@ export function DirectoryExplorer({ tools, categories, tags }: Props) {
     // With a query, default to relevance (Fuse order); otherwise default to rating.
     const effectiveSort: SortKey =
       sort === "relevance" && !q ? "rating" : sort;
-    return sortTools(filtered, effectiveSort);
+    const sorted = sortTools(filtered, effectiveSort);
+    // Promoted tools pin to the top when browsing; an explicit search stays
+    // merit-ranked so results remain honest.
+    return q ? sorted : pinSponsored(sorted);
   }, [query, category, pricing, minRating, selectedTags, sort, tools, fuse]);
 
   const togglePricing = useCallback((model: PricingModel) => {
