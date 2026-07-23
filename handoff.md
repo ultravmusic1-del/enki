@@ -5,350 +5,315 @@
 > oracle/clay-tablet gravitas with a sleek dark AI-product UI.
 > Tagline: **"Wisdom for the age of AI."**
 
-This is the single source of truth for continuing work in a fresh session. Read
-§1 and §2 first, they cover the current state and the one open issue.
+Single source of truth for continuing work in a fresh session. **Read §1 and §2
+first** — they cover the current state, the live backend, and what's still pending.
 
 ---
 
 ## 1. Current status
 
-The MVP (data layer, chrome + landing, directory/detail/category pages, motion,
-tests) is complete, and several rounds of visual/UX polish have been layered on.
-As of the latest session the app is **dark-mode only** (light mode was removed,
-see §8) and carries new tool-detail polish (score dial, route transitions,
-softened section seams).
+Enki is a **feature-complete, dark-only Next.js 16 app with a real Supabase
+backend**. Far beyond the original static MVP: it now has auth, persisted
+reviews, cross-device saved tools, comparison, leaderboards, and full SEO.
 
-**The app is NOT deployed** — run `vercel` or connect the repo in the Vercel
-dashboard (needs your Vercel auth). No env vars required; all content is local
-seed data.
+**Pages:** home · `/tools` (directory) · `/tools/[slug]` (detail) · `/categories`
+· `/categories/[slug]` · `/leaderboards` · `/compare` · `/saved` · `/login` ·
+`/auth/callback`.
 
-Repo: `https://github.com/ultravmusic1-del/enki.git` (branch `main`).
+**What works, verified this session:**
+- **Auth** — Supabase email/password (sign in/up, session middleware, header
+  account menu). Demo login: **`reviewer@enki.app` / `enkitest123`**.
+- **Reviews** — auth-gated, persisted to Postgres (RLS owner-write / public-read);
+  real reviews render under "From the Enki community" above the seeded samples.
+- **Saved tools** — localStorage when logged out, **synced to Supabase when logged
+  in** (with one-time local→DB migration on login).
+- **Compare** — `/compare` (side-by-side, URL-shareable) + a global compare tray +
+  per-card "compare" actions.
+- **Leaderboards** — `/leaderboards`, anime.js-animated, editor + community boards.
+- **Screenshots** — real 1280×800 captures per tool in `public/screenshots/`.
+- **SEO** — `sitemap.ts`, `robots.ts`, JSON-LD structured data, dynamic OG/Twitter
+  images per tool + site.
+- **⌘K command palette** — fuzzy tool/category search + "Go to" page navigation.
+
+**Gates green:** `pnpm typecheck`, `pnpm lint`, `pnpm build` (103 routes),
+`pnpm test` (**45 tests**).
+
+**Repo:** `https://github.com/ultravmusic1-del/enki.git` (branch `main`).
+Latest commit: **`97bac6d`** (score-action clip fix + graph-flagged tests). Prior:
+`bd44fbe` (the big feature + Supabase commit).
+
+**NOT deployed yet** — see §2.
 
 ---
 
-## 2. ⚠ Open issue — "light mode still shows" (READ THIS FIRST)
+## 2. ⚠ Important context for continuing (READ THIS)
 
-**Symptom (reported by the owner):** after the dark-only conversion, the site
-still appears to render in light mode when viewed.
-
-**What the code actually is:** the light theme has been fully removed and the app
-is hardcoded to dark. This was verified in-session (see §8 for the exact checks):
-`<html>` carries a static `class="dark"`, `:root` holds only the dark design
-tokens, `color-scheme: dark` is set, every Tailwind `dark:` variant still
-resolves, and there is no theme toggle or `next-themes` anywhere. There is no
-code path left that produces a light render.
-
-**Most likely cause of the symptom — stale compiled output, not the source.**
-This project's Turbopack dev server has repeatedly served **stale CSS/JS chunks**
-after edits this session (the classic bug documented in §7 — new `globals.css`
-classes get silently dropped until the server is forced to recompile). On top of
-that, a browser that already loaded the pre-conversion bundle can keep serving the
-old `next-themes` script + light CSS from cache. Either one reproduces exactly
-this "I removed light mode but still see it" symptom while the source is correct.
-
-**How to confirm / resolve (do this before assuming a real bug):**
-
-```bash
-# 1. Stop every running dev server for this repo (there may be more than one).
-# 2. Nuke the build cache and restart clean:
-rm -rf .next
-pnpm dev                       # or: pnpm build && pnpm start
-# 3. Hard-refresh the browser (Ctrl/Cmd+Shift+R) to drop the cached bundle.
+### 2a. Environment variables are now REQUIRED
+The app needs Supabase config or auth/reviews/saved break:
 ```
+NEXT_PUBLIC_SUPABASE_URL=https://qknsqurdawglctwqfwxe.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_iRpRQepBf8ozIoeBYH-sqQ_mjhupS5a
+```
+These live in **`.env.local`** (gitignored, present locally). `.env.example`
+documents them (committed). Both values are the **publishable/anon** kind — safe
+in the client; RLS enforces access. The `service_role` key is never used or stored.
 
-Then check in devtools: `document.documentElement.className` should contain
-`dark`, and `getComputedStyle(document.documentElement).getPropertyValue('--background')`
-should be `#16191d`. The **production build is always authoritative** — if
-`pnpm build && pnpm start` renders dark, the source is correct and any remaining
-light render is a stale-cache artifact.
+### 2b. Deploy is pending YOUR manual step
+The Vercel connector can only do inline file-upload (impractical at 22 MB of
+assets) and has no Git-import or env-var tool. **Correct path:** import
+`ultravmusic1-del/enki` at [vercel.com/new](https://vercel.com/new), add the two
+env vars above, deploy. After that, `git push` auto-deploys. Once it builds, the
+Vercel connector CAN read deployment/build logs to debug.
+**Post-deploy:** add the Vercel URL to Supabase → Auth → URL Configuration (Site
+URL + Redirect URLs) so signup-confirmation links resolve (email/password *login*
+works without it).
 
-**If it is still light after a clean rebuild + hard refresh**, then (and only
-then) treat it as a real regression: grep for any lingering `next-themes`,
-`.dark` class removal, `prefers-color-scheme`, or hardcoded light hex values, and
-confirm `src/app/globals.css` `:root` contains the dark tokens (not light).
+### 2c. Uncommitted files (deliberately held — your decision)
+`97bac6d` committed only the layout fix + tests. Still in the working tree:
+- **code-review-graph integration** — `.mcp.json`, `CLAUDE.md`, `.claude/skills/`,
+  `.claude/settings.json`, `.gitignore` (adds `.code-review-graph/`), and
+  `.git/hooks/pre-commit`. Commit these if you want the team to share the graph.
+- **`.claude/launch.json`** — `autoPort:true` change (so it uses a free port when
+  3000 is taken by another chat's dev server).
+- **`brand/*.pdf`** — personal PDFs; keep excluded.
+
+### 2d. Email confirmation is ON (Supabase default)
+Real signups get a confirm-link email; the seeded demo user is pre-confirmed so
+you can log in instantly. For frictionless dev, toggle "Confirm email" off in
+Supabase → Auth → Providers → Email (dashboard only; no MCP tool for it).
 
 ---
 
 ## 3. How to run
 
-Requires **Node 24.x** and **pnpm** (`npm install -g pnpm@latest` if missing).
-
+Requires **Node 24.x** and **pnpm**.
 ```bash
 pnpm install
-pnpm dev          # http://localhost:3000  (Next 16 + Turbopack)
-pnpm build        # production build (authoritative — use to settle CSS doubts)
-pnpm start        # serve the production build
+pnpm dev          # http://localhost:3000 (Next 16 + Turbopack). Reads .env.local.
+pnpm build        # production build (authoritative)
+pnpm start
 pnpm typecheck | pnpm lint | pnpm test | pnpm test:e2e
 ```
-
-`.claude/launch.json` defines the `enki-dev` server (port 3000) for tooling. If a
-dev server from another session already holds port 3000, start on another port
-(`pnpm dev --port 3005`) — Next only allows one dev server per project dir.
-
-**Verified green** (run after any change):
-
-```bash
-pnpm typecheck   # tsc --noEmit
-pnpm lint        # eslint (flat config; React Compiler rules on — see §6)
-pnpm test        # vitest — unit tests
-pnpm test:e2e    # playwright — critical-flow tests (builds + serves first)
-pnpm build       # static pages (tool + category + core routes)
-```
+`.claude/launch.json` (name `enki-dev`) has `autoPort:true` — if 3000 is taken it
+auto-picks a free port (only signup-confirmation redirects care about the port).
 
 ---
 
-## 4. Tech stack (all installed; see `package.json`)
+## 4. Backend — Supabase (live)
+
+**Project `enki`** — id `qknsqurdawglctwqfwxe`, region `ap-south-1`, free tier,
+org `ultravmusic1-del's Org`. Managed via the Supabase MCP connector.
+
+**Schema (`public`), all RLS-enabled:**
+- **`profiles`** `(id → auth.users, display_name, created_at)` — auto-created on
+  signup by the `handle_new_user()` trigger. Public-read, self-write.
+- **`reviews`** `(id, tool_slug, user_id, rating 1–5, title?, body?, created_at,
+  updated_at, unique(tool_slug,user_id))` — public-read, owner-write. `tool_slug`
+  references the static seed catalog (no FK; tools stay seed data).
+- **`saved_tools`** `(user_id, tool_slug, created_at, pk(user_id,tool_slug))` —
+  owner-only.
+
+**Migrations applied:** `init_auth_backend`, `lock_down_handle_new_user` (revoked
+public EXECUTE on the trigger fn — a security-advisor finding). Advisor is clean.
+
+**Next.js integration (`@supabase/ssr`):**
+- `src/lib/supabase/{client,server,middleware}.ts` + `database.types.ts`.
+- `src/middleware.ts` (session refresh; Next 16 warns it should be renamed to
+  `proxy.ts` — deprecation, still works).
+- `src/components/auth/{auth-provider,login-form,account-menu}.tsx`,
+  `src/app/login/page.tsx`, `src/app/auth/callback/route.ts`.
+
+**Supabase gotchas learned (important):**
+- **Query builders are lazy thenables** — a bare `void supabase.from(...).upsert()`
+  never runs. You MUST `.then()` / `await` it (this caused a saved-sync bug).
+- **Seeded auth users need token columns set to `''`, not NULL** (`confirmation_token`,
+  `recovery_token`, `email_change*`, `phone_change*`, `reauthentication_token`), or
+  GoTrue returns 500 on sign-in.
+- Supabase **rejects emails with no MX** (e.g. `*.test`, `enki-test.com`); use a
+  real domain, or seed a confirmed user via SQL for testing.
+
+---
+
+## 5. Tech stack
 
 | Layer | Choice |
 |-------|--------|
-| Runtime / PM | Node **24.x**, **pnpm 11.12.0** |
-| Framework | **Next.js 16.2.10**, App Router, **Turbopack** dev |
-| UI | **React 19.2.4**, **TypeScript** (strict) |
-| Styling | **Tailwind CSS v4** — CSS-first config in `src/app/globals.css` (no `tailwind.config`) |
-| Components | **shadcn/ui**, Radix `radix-nova` preset (unified `radix-ui` pkg) in `src/components/ui/` |
-| Icons | **lucide-react `^1.24.0`** (1.x major — resolve via the icon registry, see §6) |
-| Motion | **Motion for React** (`motion` `^12`, import from `motion/react`) |
-| Scroll/hero anim | **GSAP + ScrollTrigger** `^3.15` (+ a tiny `useGSAP` hook in `src/lib/use-gsap.ts`) |
-| 3D | **three `^0.180`** + **@react-three/fiber `^9`** + **@react-three/drei `^10`** (hero model only) |
-| Carousels | **Embla** (`embla-carousel-react` + `-autoplay`) |
-| Search | **Fuse.js `^7`**, dynamically imported |
-| Forms | **React Hook Form + Zod `^4`** (review modal + newsletter; client-only, toast success) |
-| Theme | **Dark only.** `class="dark"` is hardcoded on `<html>`; no theme switching, no `next-themes` |
-| Toasts | **Sonner** (`<Toaster/>` mounted in layout, `theme="dark"`) |
-| Analytics | **Vercel Web Analytics + Speed Insights** (mounted in layout) |
+| Runtime / PM | Node **24.x**, **pnpm 11** |
+| Framework | **Next.js 16.2.10**, App Router, **Turbopack** |
+| UI | **React 19**, **TypeScript** strict; **Tailwind v4** (CSS-first in `globals.css`) |
+| Components | **shadcn/ui** on unified `radix-ui` in `src/components/ui/` |
+| Icons | **lucide-react 1.x** via the string registry in `shared/icon.tsx` |
+| Motion | **Motion for React** (`motion/react`); **GSAP + ScrollTrigger** (hero); **anime.js v4** (leaderboards) |
+| 3D | **three** + **@react-three/fiber** + **drei** (hero GLB only) |
+| Search | **Fuse.js** (threshold 0.3 — tightened this session) |
+| Forms | **React Hook Form + Zod v4** |
+| **Backend/Auth** | **Supabase** (`@supabase/supabase-js`, `@supabase/ssr`) — see §4 |
+| Toasts / Analytics | **Sonner**; **Vercel Web Analytics + Speed Insights** |
 | Tests | **Vitest** (jsdom) + **Playwright** |
-| CMS | **Sanity** — NOT wired; seed data is Sanity-shaped for a later swap |
-| Hosting | **Vercel** |
+| Dev tooling | **code-review-graph** MCP (structural graph; see §9) |
+| Theme | **Dark only** — `class="dark"` hardcoded on `<html>`, no theme switching |
+| Hosting | **Vercel** (not yet deployed) |
 
 ---
 
-## 5. Architecture & file map
+## 6. Architecture & file map
 
-Server Components by default; `"use client"` only where interactivity/motion
-needs it. `@/*` aliases `src/*`.
+Server Components by default; `"use client"` only where needed. `@/*` → `src/*`.
 
 ```
 src/
+  middleware.ts                # Supabase session refresh (all routes)
   app/
-    layout.tsx                 # fonts + hardcoded <html class="dark"> + grain
-                               #   + CommandMenuProvider + SiteHeader + SiteFooter
-                               #   + Toaster + Analytics + metadata (no ThemeProvider)
-    template.tsx               # ★ route transition — remounts per navigation so the
-                               #   `.page-transition` CSS animation replays (fade + lift)
-    globals.css                # ★ ALL design tokens (dark only, on :root), atmosphere
-                               #   utilities, liquid-nav, dimensional-card (.dim*), tagline
-                               #   pill, score dial (.score-arc), page transition, keyframes
-    page.tsx                   # Home: OracleHero → featured → categories → how-we-vet → CTA
-    not-found.tsx              # branded 404
-    tools/page.tsx             # /tools directory (Suspense-wrapped DirectoryExplorer)
-    tools/[slug]/page.tsx      # tool detail — generateStaticParams + generateMetadata
-    categories/page.tsx        # /categories grid
-    categories/[slug]/page.tsx # category landing (filtered tools)
+    layout.tsx                 # <html class="dark"> + AuthProvider > SavedToolsProvider
+                               #   > CommandMenuProvider (header/main) + CompareTray
+                               #   + JsonLd(site) + Toaster + Analytics
+    template.tsx               # route transition (.page-transition replay)
+    globals.css                # ALL design tokens (dark), atmosphere utils, keyframes
+    opengraph-image.tsx / twitter-image.tsx        # site OG cards (satori)
+    sitemap.ts / robots.ts                          # SEO
+    page.tsx                   # Home (oracle hero → featured → categories → vet → CTA)
+    not-found.tsx
+    tools/page.tsx             # /tools directory
+    tools/[slug]/page.tsx      # tool detail (score dial + actions + reviews)
+    tools/[slug]/opengraph-image.tsx / twitter-image.tsx   # per-tool OG cards
+    categories/page.tsx · categories/[slug]/page.tsx
+    compare/page.tsx           # /compare (Suspense → CompareView)
+    leaderboards/page.tsx      # /leaderboards (LeaderboardsView, anime.js)
+    saved/page.tsx             # /saved (SavedGallery)
+    login/page.tsx · auth/callback/route.ts        # auth
   components/
-    ui/                        # shadcn Radix primitives (button, card, dialog, command, sheet, …)
-    layout/                    # site-header (liquid-glass pill nav), site-footer (newsletter),
-                               #   command-menu (⌘K + Fuse)      [no theme-toggle — removed]
-    home/                      # oracle-hero, oracle-model(+scene) [R3F], featured-tool-card,
-                               #   category-tile   (featured/category use the .dim 3D "shape system")
-    directory/                 # directory-explorer (search + filters + sort, URL-synced)
-    detail/                    # screenshot-carousel (Embla), rating-distribution, review-list,
-                               #   review-modal (RHF+Zod; accepts triggerClassName)
-    shared/                    # container, section-heading, star-rating, monogram, tool-logo,
-                               #   pricing-badge, aurora, reveal, border-beam, tool-card,
+    ui/                        # shadcn primitives
+    layout/                    # site-header (liquid-glass nav + account + saved badge),
+                               #   site-footer, command-menu (⌘K + Fuse + page nav)
+    home/                      # oracle-hero, oracle-model(+scene) [R3F], featured/category cards
+    directory/                 # directory-explorer (search/filter/sort, URL-synced)
+    detail/                    # screenshot-carousel, rating-distribution, review-list,
+                               #   review-modal (auth-gated → Supabase), community-reviews (DB)
+    compare/                   # compare-view, compare-selection (store), compare-toggle, compare-tray
+    leaderboard/               # leaderboards-view
+    saved/                     # saved-tools (auth-aware store), save-button, saved-gallery
+    auth/                      # auth-provider, login-form, account-menu
+    seo/                       # json-ld
+    shared/                    # tool-card, savable-tool-card, tool-logo, star-rating, monogram,
+                               #   pricing-badge, container, section-heading, reveal, border-beam,
                                #   category-card, icon (registry)
-                               #   [no theme-provider — removed]
-  data/                        # tools.ts (27), categories.ts (8), authors.ts (6), reviews.ts (27)
+  data/                        # tools.ts (27), categories.ts (8), authors.ts (6), reviews.ts (27 seed)
   lib/
-    schemas.ts                 # Zod schemas (Sanity-shaped) + form schemas
-    content.ts                 # GROQ-shaped access layer (validates seed at load, throws in dev)
-    filters.ts                 # pure, tested filter/sort helpers  (+ content.test.ts, filters.test.ts)
-    site.ts                    # siteConfig (name, tagline, nav, social)
-    fonts.ts                   # Cardot(local) + Hanken Grotesk + IBM Plex Mono → CSS vars
-    use-gsap.ts                # minimal scoped useGSAP hook
-    utils.ts                   # cn()
+    content.ts                 # access layer (+ getLeaderboards, getCompareTools)
+    structured-data.ts         # JSON-LD builders (siteJsonLd, toolJsonLd)
+    og.ts                      # OG-image font/palette helpers (satori)
+    supabase/                  # client, server, middleware, database.types
+    schemas.ts · filters.ts · site.ts · fonts.ts · use-gsap.ts · utils.ts
+    *.test.ts                  # content, filters, structured-data (45 tests total)
   fonts/                       # Cardot .otf/.ttf
-tests/e2e/directory.spec.ts    # Playwright critical flows
 public/
-  models/enki-model.glb        # optimized 3D Enki emblem (~1.3 MB, meshopt) — hero
-  logos/<slug>.png             # 27 real brand logos (see §5-logos below)
-  brand/                       # logo.png, logo-mask.png (tintable), inspiration.png
-  icon.svg                     # favicon (teal 8-point star)
-scripts/make-logo-mask.mjs     # regenerates public/brand/logo-mask.png (needs pngjs)
+  models/enki-model.glb (~1.3MB) · logos/<slug>.png (27) · screenshots/<slug>/*.png · brand/
+scripts/capture-screenshots.mjs # Playwright screenshot capture (re-runnable per slug)
+tests/e2e/directory.spec.ts
+docs/superpowers/plans/         # written implementation plans
 ```
 
 ---
 
-## 6. Design language & key features
+## 7. Design language (unchanged core)
 
-### Palette (dark only; teal is the ONLY accent)
-`#16191D` void · `#222831` surface · `#393E46` slate/border · **`#00ADB5` teal** ·
-`#35E4EC` bright teal · `#EEEEEE` mist (text). All live on `:root` in
-`globals.css` as CSS vars (`--brand-*`, `--glow`, semantic `--background`/`--card`/…).
-Tailwind exposes `bg-teal`, `text-mist`, etc. There is no light theme — `:root`
-holds the dark values directly, `color-scheme: dark` is set, and the `.dark`
-class stays on `<html>` purely so Tailwind `dark:` variant utilities keep
-resolving (button/dialog/sheet rely on them). Keep the class.
+**Palette (dark only, teal is the ONLY accent):** `#16191D` void · `#222831`
+surface · `#393E46` slate · **`#00ADB5` teal** · `#35E4EC` bright · `#EEEEEE`
+mist. All CSS vars on `:root` in `globals.css`. Keep `class="dark"` on `<html>`
+(Tailwind `dark:` utilities depend on it).
 
-### Typography (`src/lib/fonts.ts`)
-- **Cardot** (local `.otf`) — display/headings. The brand face (reads uppercase).
-- **Hanken Grotesk** — body/UI. Deliberately not Inter/Roboto.
-- **IBM Plex Mono** — eyebrows, tags, ratings, metadata ("verified" feel).
-- CSS vars `--font-display` / `--font-sans` / `--font-mono`.
-
-### Atmosphere utilities (in `globals.css`)
-`.grain` (fixed film-grain), `.text-glow`, `.glass`, `.spotlight` (edge-anchored
-radial — good inside cards, NOT full-bleed sections; sections use a centered
-bloom instead), `.emblem` (tintable logo mask), `.ring-hairline`. Keyframes:
-aurora, float, shimmer, pulse-ring, marquee, tagline-glint, **score-draw** (score
-dial arc), **page-in** (route transition). `prefers-reduced-motion` neutralizes
-animation globally (block at the bottom of `globals.css`).
-
-### Signature pieces (where to find them)
-- **3D oracle hero** — `home/oracle-hero.tsx` + `oracle-model*.tsx` (lazy R3F GLB,
-  spring-physics mouse interaction, GSAP intro + scroll parallax).
-- **Liquid-glass nav** — `layout/site-header.tsx` + `.liquid-nav*` in globals.
-- **Dimensional "shape system" cards** — `.dim*` classes; `home/featured-tool-card.tsx`
-  and `home/category-tile.tsx`. 3D tilt on hover.
-- **Command palette** — `layout/command-menu.tsx` (⌘K, lazy Fuse).
-- **Directory** — `directory/directory-explorer.tsx`: Fuse search + filter rail +
-  sort, all URL-synced; mobile filters in a Sheet.
-- **Tool detail** — `tools/[slug]/page.tsx`: hero identity → Screenshots → **editor
-  score dial** → Overview/verdict → key features → pros/cons → Reviews → sidebar →
-  related tools.
-
-### Route transitions (`app/template.tsx` + `.page-transition` in globals)
-Every client navigation fades + lifts its page in, reusing the `Reveal` easing so
-navigation shares one motion language. `backwards` fill mode prevents a
-first-paint flash and leaves NO resting transform (so sticky sidebars and the home
-hero's ScrollTrigger parallax stay intact). Chrome (header, portaled dialogs/toasts)
-lives outside the wrapper, so it stays stable during the transition.
-
-### Brand logos (`public/logos/<slug>.png`)
-27 real brand icon marks fetched by domain, self-hosted, shown on a consistent
-white chip (`shared/tool-logo.tsx`). Third-party trademarks used nominatively. To
-swap one, drop a PNG at `public/logos/<slug>.png`; delete a file and that tool
-falls back to its monogram.
+**Type:** **Cardot** (local, display) · **Hanken Grotesk** (body) · **IBM Plex
+Mono** (eyebrows/metadata). **Atmosphere:** `.grain`, `.glass`, `.spotlight`,
+`.emblem`, `.ring-hairline`; keyframes incl. `score-draw`, `page-in`.
+`prefers-reduced-motion` neutralizes animation globally.
 
 ---
 
-## 7. Data model, content layer & conventions
+## 8. Data model & conventions (keep these)
 
-### Data model (mirror as Sanity documents later)
-Author in `src/data/*.ts`, validate with Zod in `src/lib/schemas.ts`, resolve via
-`src/lib/content.ts` (function names mirror GROQ so a live-Sanity swap is a config
-change, not a rewrite).
+**Seed data** in `src/data/*.ts`, validated by Zod (`src/lib/schemas.ts`), resolved
+via `src/lib/content.ts` (throws in dev on bad data). Tools/categories stay static
+seed; only reviews + saved live in Supabase (hybrid by design).
 
-- **category**: `slug, name, tagline, description, icon` (lucide name string), `accent`.
-- **tool**: `slug, logo?, name, tagline, description, longDescription, website,
-  categorySlug, tags[], pricing {model, startingPrice?, hasFreeTrial?, note?}, pros[],
-  cons[], keyFeatures[{title, description, icon}], integrations[], platforms[],
-  accent, featured, foundedYear, company, screenshots[{title, caption, hue}],
-  verdict, editorScore (0–10), rating (1–5, one decimal), reviewCount (int)`.
-- **author**: `id, name, role, accent`.
-- **review**: `id, toolSlug, authorId, rating, title, body, date, helpful, verified`.
-  The 5-bucket star distribution is synthesized deterministically from
-  `rating` + `reviewCount` (`getRatingDistribution` in `content.ts`).
-
-`content.ts` runs Zod `safeParse` + referential-integrity checks at module load
-and throws loudly in dev on bad data.
-
-### Conventions (keep these)
-- **Teal is the only accent. Dark only.** Atmospheric, "oracle-meets-AI" voice.
-  Avoid generic AI-slop aesthetics.
-- **Respect `prefers-reduced-motion`** in every animation.
-- **Keep `class="dark"` on `<html>`** — Tailwind `dark:` variants depend on it.
-- **Icons are strings** in data → mapped via the registry in `shared/icon.tsx`
-  (guards against lucide 1.x renames). Add new icons there.
-- **No em-dashes in displayed copy** — use commas/colons/periods/parentheses; title
-  separators use a middot `·`. (Code/CSS comments are exempt.)
-- **React Compiler lint rules are active** (`react-hooks/*`): don't read/mutate refs
-  during render, don't `setState` synchronously in an effect, don't mutate `useMemo`
-  values. In R3F code keep mutable state in `useRef` and assign in effects.
+- **Teal is the only accent. Dark only.** Avoid AI-slop aesthetics.
+- **Respect `prefers-reduced-motion`** everywhere.
+- **Icons are strings** → registry in `shared/icon.tsx` (guards lucide 1.x renames;
+  `Home` is aliased to `House`). Add new icons there.
+- **No em-dashes in displayed copy** (comments exempt).
+- **React Compiler lint is on** (`react-hooks/*`): no setState synchronously in an
+  effect (async data fetches are OK — setState resolves after `await`), no
+  ref/`useMemo` mutation during render.
 
 ---
 
-## 8. Recent session changelog (uncommitted → this commit)
+## 9. Recent session changelog
 
-Work done in the latest session, in order:
+Everything below was built this session (all in `bd44fbe` unless noted):
 
-1. **Editor score redesign** (`tools/[slug]/page.tsx`, `detail/review-modal.tsx`,
-   `globals.css`) — replaced the flat progress-bar score widget with a radial
-   **score dial** (SVG gradient ring, draws in via `.score-arc` / `score-draw`),
-   a qualitative verdict word (Exceptional/Excellent/…), and matched-height pill
-   CTAs (`ReviewModal` gained a `triggerClassName` prop). The "Visit <tool>"
-   button no longer wraps.
-2. **Route transitions** (`app/template.tsx`, `globals.css`) — added a site-wide
-   fade+lift page transition (`.page-transition` / `page-in`, `backwards` fill).
-3. **Softened hero seam** (`tools/[slug]/page.tsx`, `categories/[slug]/page.tsx`) —
-   replaced the hard full-width `border-b` between the masthead and the first
-   content section with a center-weighted hairline that fades to transparent at
-   the edges.
-4. **Removed light mode entirely** — the app is dark-only now:
-   - `layout.tsx`: dropped `<ThemeProvider>`, hardcoded `<html class="dark">`,
-     single dark `themeColor`.
-   - `globals.css`: folded the dark tokens onto `:root`, deleted the light `:root`
-     values and both `.dark` override blocks (semantic + liquid-nav), added
-     `color-scheme: dark`. Kept `@custom-variant dark` + the `.dark` class so
-     `dark:` utilities still resolve.
-   - `ui/sonner.tsx`: hardcoded `theme="dark"`, removed `useTheme`.
-   - `layout/site-header.tsx`: removed the `ThemeToggle`.
-   - Deleted `components/theme-provider.tsx` and `components/layout/theme-toggle.tsx`.
-   - Removed `next-themes` from `package.json` (lockfile synced).
-
-   In-session verification of the dark-only conversion: `pnpm typecheck` + `pnpm
-   lint` pass; `<html>` carries `dark`; `--background` resolves `#16191d`;
-   `color-scheme: dark`; a real `dark:` utility (`dark:border-input`) still
-   applies; the toggle is gone; home + detail render dark; no console errors.
-   **Caveat:** verified against the running dev server's live-compiled output, not
-   a fresh `pnpm build`, because a competing dev server held `.next`. See §2 — if
-   the owner still sees light, it is almost certainly stale build cache / browser
-   cache, resolved by a clean `rm -rf .next` rebuild + hard refresh.
+1. **Real screenshots** — captured 1280×800 shots per tool (`scripts/capture-screenshots.mjs`),
+   wired into the detail carousel with graceful fallback.
+2. **Leaderboards** (`/leaderboards`) — anime.js v4 boards (editor score + community).
+3. **Compare** (`/compare`) — side-by-side table (URL-shareable) + global compare
+   tray + per-card compare actions.
+4. **Saved tools** — bookmarks; localStorage → Supabase sync when signed in.
+5. **Auth + backend** — Supabase project, schema, RLS, `handle_new_user` trigger,
+   session middleware, email/password auth UI.
+6. **Reviews → Postgres** — auth-gated submit + live community reviews display.
+7. **SEO** — sitemap, robots, JSON-LD (`SoftwareApplication`/`AggregateRating`/
+   `Review`/`BreadcrumbList` + site `Organization`/`WebSite`), dynamic OG/Twitter images.
+8. **⌘K page navigation** — "Go to" group in the command palette.
+9. **Fixes** — H1 "for AI" spacing, `Home`→`House` icon alias, footer nav parity
+   (Compare/Leaderboards), tighter Fuse search relevance (0.4→0.3).
+10. **`97bac6d`:** tool-detail score-action row moved to a full-width row below the
+    score so the four buttons wrap instead of clipping at sub-fullscreen widths
+    (all 27 tool pages); + regression tests for `getLeaderboards`, `getCompareTools`,
+    and the structured-data builders (suite 31→45).
+11. **code-review-graph** installed (dev tooling; §10) — *uncommitted, see §2c*.
 
 ---
 
-## 9. Gotchas (these cost real time)
+## 10. Gotchas (these cost real time)
 
-1. **Turbopack dev stale chunk/CSS bug (most common — and the likely cause of the
-   §2 open issue).** After editing `globals.css` (new classes silently dropped) or
-   after rapid HMR, the dev server can serve a **stale compiled chunk** — styles
-   don't apply, or phantom `ReferenceError`s appear from an old file version. **Fix:**
-   stop the dev server, `rm -rf .next`, restart. Re-saving the edited file a second
-   time sometimes forces a recompile. The production build is always correct, so
-   verify against `pnpm build` / `pnpm start` when in doubt.
-2. **pnpm native builds.** pnpm 11 errors on undecided native build scripts
-   (`sharp`, `unrs-resolver`). Fixed by `pnpm-workspace.yaml` + `.npmrc`. If it
-   recurs: `pnpm approve-builds`.
-3. **Flaky/slow installs.** On a poor connection, retry with low concurrency:
-   `npm_config_network_concurrency=2 pnpm install`.
-4. **Screenshots of the app in tooling.** The GPU-heavy hero can make automated
-   screenshots time out or blank below the fold. It's a capture limitation, not a
-   page bug.
-5. **shadcn CLI under pnpm** hits a zod ESM bug via `pnpm dlx`; use `npx
-   shadcn@latest add <c> -y` instead. (All needed primitives are already added.)
-6. **One dev server per project dir.** `next dev` refuses to start a second server
-   in the same folder. If port 3000 is taken by another session's server, either
-   use it or `pnpm dev --port <n>`.
+1. **Turbopack stale chunks / console buffer.** After edits the dev server can
+   serve stale compiled chunks, and `read_console_messages` in tooling keeps
+   showing **old, already-fixed errors** even after a server restart — verify
+   against a fresh browser tab and `pnpm build`, not the stale console. `rm -rf
+   .next` + restart clears the server side.
+2. **Supabase query builders are lazy** — must `.then()`/`await` or the query
+   never fires (§4).
+3. **Seeded Supabase users need `''` token columns** or GoTrue 500s (§4).
+4. **Automated screenshots time out** on the GPU-heavy hero / heavy pages — capture
+   limitation, not a page bug. Prefer DOM measurement (`getBoundingClientRect`) to
+   verify layout.
+5. **code-review-graph pre-commit hook prints a `UnicodeEncodeError`** (Windows
+   cp1252 can't encode its Rich output) but is guarded by `|| true` — commits are
+   **not** blocked. Cosmetic.
+6. **One dev server per project dir** / port 3000 contention → `autoPort` handles it.
 
 ---
 
-## 10. Ideas / possible next steps (none required)
+## 11. code-review-graph (dev tooling)
 
-- Confirm the §2 open issue is a stale-cache artifact via a clean `pnpm build`.
-- Deploy to Vercel; optionally buy/point a domain.
-- Swap the local seed for a live Sanity dataset (reimplement `content.ts` against
-  GROQ; the schema already matches).
-- Submit-a-tool form, tool comparison, or a blog (intentionally out of MVP).
-- Real OG images per tool; sitemap/robots.
+Installed (`pip install`, Python 3.12). Builds a Tree-sitter/SQLite structural
+graph of the repo and serves MCP tools for token-efficient exploration/review.
+- **Graph:** 110 files, ~447 nodes, ~3.2k edges (`.code-review-graph/`, gitignored).
+- **Auto:** hooks re-index after each Edit/Write and on commit; `CLAUDE.md` tells
+  Claude to prefer graph tools over Grep/Read. Requires **Claude Code restart** to
+  load the MCP server.
+- **Rebuild:** `code-review-graph build`; stats: `code-review-graph status`.
+- Flagged the biggest real gap: **test coverage** — the components/pages/auth/
+  supabase layers are largely untested (only the `lib` pure functions are). The
+  session added leaderboard/compare/structured-data tests; **auth, saved, and the
+  React components remain untested** — the highest-leverage next work.
 
 ---
 
-## 11. Brand assets
+## 12. Open items / next steps
 
-- `brand/` (and `public/brand/`) — untouched originals: `logo.png` (teal Enki mask),
-  `inspiration.png` (the EQTY "Verify to Trust" reference).
-- `public/brand/logo-mask.png` — generated tintable alpha mask powering `.emblem`.
-  Regenerate: `node scripts/make-logo-mask.mjs`.
-- `public/models/enki-model.glb` — the 3D emblem. Re-optimize with
-  `npx @gltf-transform/cli optimize in.glb out.glb --compress meshopt --texture-size 512 --simplify`.
-- `public/icon.svg` — favicon.
-- Fonts in `src/fonts/` (Cardot).
+- **Deploy** (§2b) — Vercel git import + env vars (your action), then verify.
+- **Commit the code-review-graph integration** if the team should share it (§2c).
+- **Rename `middleware.ts` → `proxy.ts`** (Next 16 deprecation warning).
+- **More tests** — auth flows, the saved-tools provider, compare/leaderboard
+  components (mock Supabase with `@supabase/…` in vitest).
+- Social login (Google/GitHub) if wanted — needs provider creds in the Supabase
+  dashboard. Swap seed → live CMS later (`content.ts` is query-shaped).
