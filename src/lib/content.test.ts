@@ -11,6 +11,8 @@ import {
   getRatingDistribution,
   getStats,
   getSearchDocs,
+  getLeaderboards,
+  getCompareTools,
 } from "@/lib/content";
 
 describe("content: tools", () => {
@@ -140,5 +142,84 @@ describe("content: stats & search", () => {
       getCategories().length,
     );
     expect(docs.every((d) => d.href.startsWith("/"))).toBe(true);
+  });
+});
+
+describe("content: leaderboards", () => {
+  it("returns both boards capped at the requested limit", () => {
+    const { editor, user } = getLeaderboards(15);
+    expect(editor).toHaveLength(15);
+    expect(user).toHaveLength(15);
+    const small = getLeaderboards(5);
+    expect(small.editor).toHaveLength(5);
+    expect(small.user).toHaveLength(5);
+  });
+
+  it("orders the editor board by descending editor score with 1-based ranks", () => {
+    const { editor } = getLeaderboards(15);
+    expect(editor[0].rank).toBe(1);
+    expect(editor[editor.length - 1].rank).toBe(editor.length);
+    for (let i = 1; i < editor.length; i++) {
+      expect(editor[i - 1].editorScore).toBeGreaterThanOrEqual(
+        editor[i].editorScore,
+      );
+    }
+  });
+
+  it("orders the user board by rating, breaking ties by review count", () => {
+    const { user } = getLeaderboards(15);
+    for (let i = 1; i < user.length; i++) {
+      const prev = user[i - 1];
+      const cur = user[i];
+      const ok =
+        prev.rating > cur.rating ||
+        (prev.rating === cur.rating && prev.reviewCount >= cur.reviewCount);
+      expect(ok).toBe(true);
+    }
+  });
+
+  it("carries each entry's standing on the other board", () => {
+    const { editor } = getLeaderboards(15);
+    expect(editor[0].editorRank).toBe(1);
+    expect(editor[0].userRank).toBeGreaterThanOrEqual(1);
+  });
+
+  it("puts Cursor atop editors and Midjourney atop the community", () => {
+    const { editor, user } = getLeaderboards(15);
+    expect(editor[0].slug).toBe("cursor");
+    expect(user[0].slug).toBe("midjourney");
+  });
+});
+
+describe("content: compare tools", () => {
+  it("returns every tool, sorted by name", () => {
+    const compare = getCompareTools();
+    expect(compare).toHaveLength(getAllTools().length);
+    const names = compare.map((c) => c.name);
+    expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
+  });
+
+  it("caps pros and cons at three each", () => {
+    for (const c of getCompareTools()) {
+      expect(c.pros.length).toBeLessThanOrEqual(3);
+      expect(c.cons.length).toBeLessThanOrEqual(3);
+    }
+  });
+
+  it("exposes a valid pricing model and a boolean free-trial flag", () => {
+    for (const c of getCompareTools()) {
+      expect(["free", "freemium", "paid", "enterprise"]).toContain(
+        c.pricingModel,
+      );
+      expect(typeof c.hasFreeTrial).toBe("boolean");
+    }
+  });
+
+  it("mirrors the source tool's scores and platforms", () => {
+    const cursor = getCompareTools().find((c) => c.slug === "cursor")!;
+    const source = getToolBySlug("cursor")!;
+    expect(cursor.editorScore).toBe(source.editorScore);
+    expect(cursor.rating).toBe(source.rating);
+    expect(cursor.platforms).toEqual(source.platforms);
   });
 });

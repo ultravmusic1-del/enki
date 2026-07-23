@@ -191,7 +191,7 @@ export default async function ToolDetailPage({
                   "radial-gradient(circle, rgb(var(--glow) / 0.16), transparent 70%)",
               }}
             />
-            <div className="relative flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+            <div className="relative flex flex-col gap-6">
               {/* Score cluster */}
               <div className="flex items-center gap-5 sm:gap-6">
                 <ScoreDial score={tool.editorScore} />
@@ -209,8 +209,10 @@ export default async function ToolDetailPage({
                 </div>
               </div>
 
-              {/* Actions */}
-              <div className="flex flex-col gap-3 sm:flex-row md:shrink-0">
+              {/* Actions — full-width row beneath the score so all four buttons
+                  fit on one line on desktop and wrap gracefully (never clip)
+                  as the card narrows. */}
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <a
                   href={tool.website}
                   target="_blank"
