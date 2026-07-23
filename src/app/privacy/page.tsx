@@ -57,6 +57,20 @@ export default function PrivacyPage() {
             </a>
             . Newsletter subscriptions can be cancelled at any time.
           </p>
+
+          <h2
+            id="affiliate"
+            className="mt-4 scroll-mt-28 font-display text-xl font-semibold text-foreground"
+          >
+            Affiliate links
+          </h2>
+          <p>
+            Some outbound links to tools are affiliate links, meaning Enki may
+            earn a commission if you sign up or purchase through them, at no
+            extra cost to you. Affiliate relationships never influence our editor
+            scores, verdicts, or rankings — those are decided independently
+            before any commercial arrangement.
+          </p>
         </section>
       </div>
     </Container>

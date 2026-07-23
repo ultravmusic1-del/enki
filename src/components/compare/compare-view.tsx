@@ -4,6 +4,7 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { CompareTool } from "@/lib/content";
+import { outboundHref } from "@/lib/outbound";
 import { ToolLogo } from "@/components/shared/tool-logo";
 import { StarRating } from "@/components/shared/star-rating";
 import { PricingBadge } from "@/components/shared/pricing-badge";
@@ -331,9 +332,13 @@ export function CompareView({ tools }: { tools: CompareTool[] }) {
                   <Icon name="ArrowRight" className="size-3.5" />
                 </Link>
                 <a
-                  href={t.website}
+                  href={outboundHref(t.slug)}
                   target="_blank"
-                  rel="noopener noreferrer"
+                  rel={
+                    t.isAffiliate
+                      ? "sponsored noopener noreferrer"
+                      : "noopener noreferrer"
+                  }
                   className="inline-flex items-center justify-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-teal/40 hover:text-foreground"
                 >
                   Visit site

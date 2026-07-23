@@ -296,6 +296,8 @@ export type CompareTool = {
   pros: string[];
   cons: string[];
   website: string;
+  /** True when the tool has an affiliate URL (drives rel="sponsored"). */
+  isAffiliate: boolean;
 };
 
 /** Compact, serializable rows for the /compare table (all tools, A→Z). */
@@ -320,6 +322,7 @@ export function getCompareTools(): CompareTool[] {
       pros: t.pros.slice(0, 3),
       cons: t.cons.slice(0, 3),
       website: t.website,
+      isAffiliate: Boolean(t.affiliateUrl),
     }));
 }
 

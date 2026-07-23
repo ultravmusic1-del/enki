@@ -17,6 +17,8 @@ import { CommunityReviews } from "@/components/detail/community-reviews";
 import { SaveButton } from "@/components/saved/save-button";
 import { CompareToggle } from "@/components/compare/compare-toggle";
 import { JsonLd } from "@/components/seo/json-ld";
+import { AffiliateDisclosure } from "@/components/shared/affiliate-disclosure";
+import { outboundHref, resolveOutboundTarget } from "@/lib/outbound";
 import { toolJsonLd } from "@/lib/structured-data";
 import {
   getAllTools,
@@ -61,6 +63,7 @@ export default async function ToolDetailPage({
   const tool = getToolBySlug(slug);
   if (!tool) notFound();
 
+  const outbound = resolveOutboundTarget(tool);
   const category = getCategoryBySlug(tool.categorySlug);
   const reviews = getReviewsForTool(tool.slug);
   const related = getRelatedTools(tool, 3);
@@ -215,9 +218,13 @@ export default async function ToolDetailPage({
                   as the card narrows. */}
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <a
-                  href={tool.website}
+                  href={outboundHref(tool.slug)}
                   target="_blank"
-                  rel="noopener noreferrer"
+                  rel={
+                    outbound.isAffiliate
+                      ? "sponsored noopener noreferrer"
+                      : "noopener noreferrer"
+                  }
                   className="group inline-flex h-11 items-center justify-center gap-2 rounded-full bg-teal px-6 text-sm font-semibold whitespace-nowrap text-[#04171a] shadow-glow-sm transition-all hover:-translate-y-0.5 hover:bg-teal-bright hover:shadow-glow"
                 >
                   Visit {tool.name}
@@ -234,6 +241,8 @@ export default async function ToolDetailPage({
                 <SaveButton slug={tool.slug} name={tool.name} />
                 <CompareToggle slug={tool.slug} name={tool.name} />
               </div>
+
+              <AffiliateDisclosure className="text-xs text-muted-foreground/70" />
             </div>
           </div>
         </section>

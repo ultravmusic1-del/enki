@@ -81,6 +81,27 @@ export type Database = {
         }
         Relationships: []
       }
+      outbound_clicks: {
+        Row: {
+          created_at: string
+          id: number
+          path: string | null
+          tool_slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          path?: string | null
+          tool_slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          path?: string | null
+          tool_slug?: string
+        }
+        Relationships: []
+      }
     }
     Views: { [_ in never]: never }
     Functions: { [_ in never]: never }
