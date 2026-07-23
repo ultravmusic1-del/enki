@@ -66,13 +66,20 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${fontVariables} h-full antialiased`}>
       <body className="relative min-h-full">
+        <a href="#main-content" className="skip-link">
+          Skip to content
+        </a>
         <JsonLd data={siteJsonLd()} />
         <div aria-hidden className="grain" />
         <AuthProvider>
           <SavedToolsProvider>
             <CommandMenuProvider docs={searchDocs}>
               <SiteHeader />
-              <main className="relative z-10 flex min-h-screen flex-col">
+              <main
+                id="main-content"
+                tabIndex={-1}
+                className="relative z-10 flex min-h-screen flex-col"
+              >
                 <div className="flex-1">{children}</div>
                 <SiteFooter />
               </main>
