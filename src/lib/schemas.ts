@@ -75,6 +75,8 @@ export const toolSchema = z.object({
   description: z.string().min(1),
   longDescription: z.string().min(1),
   website: z.url(),
+  /** Optional affiliate/referral URL; when set, outbound links use it and are marked rel="sponsored". */
+  affiliateUrl: z.url().optional(),
   categorySlug: slug,
   tags: z.array(z.string().min(1)).min(1),
   pricing: pricingSchema,
