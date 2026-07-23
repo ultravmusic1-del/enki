@@ -135,9 +135,25 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 sm:flex-row">
-          <p className="text-xs text-muted-foreground">
-            © {2026} Enki. Wisdom for the age of AI.
-          </p>
+          <div className="flex flex-col items-center gap-2 sm:flex-row sm:gap-4">
+            <p className="text-xs text-muted-foreground">
+              © {2026} Enki. Wisdom for the age of AI.
+            </p>
+            <nav aria-label="Legal" className="flex items-center gap-4">
+              <Link
+                href="/privacy"
+                className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Privacy
+              </Link>
+              <Link
+                href="/terms"
+                className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Terms
+              </Link>
+            </nav>
+          </div>
           <div className="flex items-center gap-2">
             {socialLinks.map((social) => (
               <a

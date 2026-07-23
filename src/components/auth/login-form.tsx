@@ -176,10 +176,15 @@ export function LoginForm() {
       </form>
 
       <p className="mt-5 text-center text-xs text-muted-foreground">
-        By continuing you agree to browse responsibly. Enki is in preview.{" "}
-        <Link href="/" className="text-teal hover:underline">
-          Back home
+        By continuing you agree to our{" "}
+        <Link href="/terms" className="text-teal hover:underline">
+          Terms
+        </Link>{" "}
+        and{" "}
+        <Link href="/privacy" className="text-teal hover:underline">
+          Privacy Policy
         </Link>
+        .
       </p>
     </div>
   );
