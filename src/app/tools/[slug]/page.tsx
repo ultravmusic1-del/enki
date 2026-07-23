@@ -43,6 +43,7 @@ export async function generateMetadata({
   return {
     title: `${tool.name} review: ${tool.tagline}`,
     description: tool.description,
+    alternates: { canonical: `/tools/${tool.slug}` },
     openGraph: {
       title: `${tool.name}, reviewed on Enki`,
       description: tool.description,

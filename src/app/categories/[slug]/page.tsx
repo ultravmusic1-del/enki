@@ -29,6 +29,7 @@ export async function generateMetadata({
   return {
     title: `${category.name}: AI tools`,
     description: category.description,
+    alternates: { canonical: `/categories/${slug}` },
   };
 }
 

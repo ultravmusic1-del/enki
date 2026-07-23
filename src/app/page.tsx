@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { OracleHero } from "@/components/home/oracle-hero";
 import { Container } from "@/components/shared/container";
@@ -7,6 +8,10 @@ import { CategoryTile } from "@/components/home/category-tile";
 import { Reveal } from "@/components/shared/reveal";
 import { Icon } from "@/components/shared/icon";
 import { getFeaturedTools, getCategories, getStats } from "@/lib/content";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 const vetSteps = [
   {

@@ -6,6 +6,7 @@ import { getAllTools, getCategories } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Saved tools",
   description: "Your shortlist of AI tools, saved for quick access on Enki.",
+  alternates: { canonical: "/saved" },
 };
 
 export default function SavedPage() {

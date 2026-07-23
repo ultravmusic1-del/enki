@@ -6,6 +6,7 @@ import { LoginForm } from "@/components/auth/login-form";
 export const metadata: Metadata = {
   title: "Sign in",
   description: "Sign in to Enki to save tools and write reviews.",
+  alternates: { canonical: "/login" },
 };
 
 export default function LoginPage() {

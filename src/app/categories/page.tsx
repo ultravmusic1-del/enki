@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: "Categories",
   description:
     "Browse Enki's AI tools by category: writing, image, coding, productivity, video, audio, research, and marketing.",
+  alternates: { canonical: "/categories" },
 };
 
 export default function CategoriesPage() {

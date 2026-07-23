@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Leaderboards",
   description:
     "The top AI tools on Enki, ranked two ways — by our editors' scores and by the community's ratings. See where the experts and the crowd agree, and where they don't.",
+  alternates: { canonical: "/leaderboards" },
 };
 
 export default function LeaderboardsPage() {

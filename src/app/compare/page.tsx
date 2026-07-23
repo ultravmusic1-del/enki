@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: "Compare AI tools",
   description:
     "Put AI tools side by side — editor scores, community ratings, pricing, platforms, and the trade-offs — and decide which one to trust.",
+  alternates: { canonical: "/compare" },
 };
 
 export default function ComparePage() {
