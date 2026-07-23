@@ -10,6 +10,17 @@
             "timeout": 30
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/visual-sweep-guard.mjs\" 2>/dev/null || true",
+            "timeout": 10,
+            "statusMessage": "Checking for visual changes…"
+          }
+        ]
       }
     ],
     "SessionStart": [
