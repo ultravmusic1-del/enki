@@ -100,6 +100,13 @@ import {
   LayoutGrid,
   List,
   Sprout,
+  // finder icons
+  Gift,
+  Timer,
+  Gem,
+  Laptop,
+  Smartphone,
+  RotateCcw,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -209,6 +216,12 @@ const registry = {
   LayoutGrid,
   List,
   Sprout,
+  Gift,
+  Timer,
+  Gem,
+  Laptop,
+  Smartphone,
+  RotateCcw,
   // Lucide renamed Home → House; alias so a stored "Home" name still resolves.
   Home: House,
 } satisfies Record<string, LucideIcon>;
