@@ -355,6 +355,19 @@ export default async function ToolDetailPage({
             <FactCard title="At a glance">
               <Fact label="Company" value={tool.company} />
               <Fact label="Founded" value={String(tool.foundedYear)} />
+              {tool.lastVetted && (
+                <Fact
+                  label="Last vetted"
+                  value={new Date(
+                    `${tool.lastVetted}T00:00:00Z`,
+                  ).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    timeZone: "UTC",
+                  })}
+                />
+              )}
               <Fact
                 label="Pricing"
                 value={

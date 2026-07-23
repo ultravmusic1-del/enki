@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
 import { getAllTools } from "@/lib/content";
+import { STALE_AFTER_DAYS, toolsNeedingRevet } from "@/lib/freshness";
 import { Container } from "@/components/shared/container";
 import { ModerationActions } from "@/app/admin/moderation-actions";
 
@@ -14,7 +15,9 @@ export default async function AdminPage() {
   await requireAdmin();
 
   const supabase = await createClient();
-  const nameBySlug = new Map(getAllTools().map((t) => [t.slug, t.name]));
+  const allTools = getAllTools();
+  const nameBySlug = new Map(allTools.map((t) => [t.slug, t.name]));
+  const revet = toolsNeedingRevet(allTools, new Date());
 
   const [{ data: stats }, { count: reviewCount }, { data: reviews }] =
     await Promise.all([
@@ -80,6 +83,51 @@ export default async function AdminPage() {
                   </span>
                 </div>
               ))}
+            </div>
+          )}
+        </section>
+
+        {/* Re-vet queue */}
+        <section className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="font-display text-2xl font-semibold">
+              Needs re-vetting
+            </h2>
+            <p className="font-mono text-xs text-muted-foreground">
+              {revet.length} of {allTools.length} · stale after{" "}
+              {STALE_AFTER_DAYS} days
+            </p>
+          </div>
+          {revet.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Every listing has been vetted recently.
+            </p>
+          ) : (
+            <div className="overflow-hidden rounded-2xl border border-border ring-hairline">
+              {revet.slice(0, 12).map(({ tool, status }) => (
+                <div
+                  key={tool.slug}
+                  className="flex items-center justify-between gap-4 border-b border-border px-4 py-3 last:border-b-0"
+                >
+                  <span className="truncate text-sm">{tool.name}</span>
+                  <span
+                    className={
+                      status.state === "never"
+                        ? "font-mono text-xs text-destructive"
+                        : "font-mono text-xs text-muted-foreground"
+                    }
+                  >
+                    {status.state === "never"
+                      ? "never vetted"
+                      : `${status.daysAgo}d ago`}
+                  </span>
+                </div>
+              ))}
+              {revet.length > 12 && (
+                <div className="px-4 py-2 font-mono text-xs text-muted-foreground">
+                  +{revet.length - 12} more
+                </div>
+              )}
             </div>
           )}
         </section>

@@ -90,6 +90,8 @@ export const toolSchema = z.object({
   /** Paid promoted placement (absent = not sponsored); never affects editorial score/rank. */
   sponsored: z.boolean().optional(),
   foundedYear: z.number().int().min(1990).max(2100),
+  /** ISO date (YYYY-MM-DD) an editor last re-checked this listing. */
+  lastVetted: z.iso.date().optional(),
   company: z.string().min(1),
   screenshots: z.array(screenshotSchema).min(1),
   verdict: z.string().min(1),
