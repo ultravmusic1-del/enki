@@ -4,7 +4,6 @@ import type { Tool } from "@/lib/schemas";
 import { ToolLogo } from "@/components/shared/tool-logo";
 import { StarRating } from "@/components/shared/star-rating";
 import { PricingBadge } from "@/components/shared/pricing-badge";
-import { Icon } from "@/components/shared/icon";
 import { BorderBeam } from "@/components/shared/border-beam";
 
 type ToolCardProps = {
@@ -17,6 +16,11 @@ type ToolCardProps = {
 /**
  * A tool "tablet" — the core directory card. Server-rendered; hover motion is
  * pure CSS so the card stays cheap. Featured tools get a faint teal beam.
+ *
+ * Layout note: the name gets the full top-row width beside the logo, and the
+ * pricing badge lives in the bottom meta row. In a narrow 3-up card the name
+ * and badge can't share a row without one clipping or the other truncating, so
+ * they're deliberately kept on separate rows — both stay fully legible.
  */
 export function ToolCard({ tool, categoryName, className }: ToolCardProps) {
   return (
@@ -31,50 +35,39 @@ export function ToolCard({ tool, categoryName, className }: ToolCardProps) {
     >
       {tool.featured && <BorderBeam />}
 
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <ToolLogo
-            name={tool.name}
-            accent={tool.accent}
-            logo={tool.logo}
-            size="md"
-          />
-          <div className="min-w-0">
-            <h3 className="truncate font-display text-lg leading-tight font-semibold">
-              {tool.name}
-            </h3>
-            {categoryName && (
-              <span className="font-mono text-[0.65rem] tracking-wide text-muted-foreground uppercase">
-                {categoryName}
-              </span>
-            )}
-          </div>
+      {/* Identity — name gets the full width beside the logo */}
+      <div className="flex items-center gap-3">
+        <ToolLogo
+          name={tool.name}
+          accent={tool.accent}
+          logo={tool.logo}
+          size="md"
+        />
+        <div className="min-w-0">
+          <h3 className="line-clamp-2 font-display text-lg leading-tight font-semibold">
+            {tool.name}
+          </h3>
+          {categoryName && (
+            <span className="block truncate font-mono text-[0.65rem] tracking-wide text-muted-foreground uppercase">
+              {categoryName}
+            </span>
+          )}
         </div>
-        <PricingBadge model={tool.pricing.model} />
       </div>
 
       <p className="line-clamp-2 text-sm text-pretty text-muted-foreground">
         {tool.tagline}
       </p>
 
-      <div className="mt-auto flex items-center justify-between gap-2 pt-1">
-        <div className="flex items-center gap-2">
+      {/* Meta — rating on the left, pricing badge on the right */}
+      <div className="mt-auto flex items-center justify-between gap-3 pt-1">
+        <div className="flex min-w-0 items-center gap-2">
           <StarRating value={tool.rating} size={14} />
-          <span className="font-mono text-xs text-muted-foreground tabular-nums">
+          <span className="font-mono text-xs whitespace-nowrap text-muted-foreground tabular-nums">
             {tool.rating.toFixed(1)}
-            <span className="text-muted-foreground/60">
-              {" "}
-              ({tool.reviewCount.toLocaleString()})
-            </span>
           </span>
         </div>
-        <span
-          aria-hidden
-          className="inline-flex items-center gap-1 text-xs text-teal opacity-0 transition-all duration-300 group-hover/card:translate-x-0 group-hover/card:opacity-100 -translate-x-1"
-        >
-          View
-          <Icon name="ArrowRight" className="size-3.5" />
-        </span>
+        <PricingBadge model={tool.pricing.model} className="shrink-0" />
       </div>
     </Link>
   );
