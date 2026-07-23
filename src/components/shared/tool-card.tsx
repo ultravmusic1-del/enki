@@ -30,6 +30,7 @@ export function ToolCard({ tool, categoryName, className }: ToolCardProps) {
         "group/card relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-border bg-card p-5",
         "transition-all duration-300 ring-hairline",
         "hover:-translate-y-1 hover:border-teal/40 hover:shadow-glow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        tool.sponsored && "border-teal/30 ring-1 ring-teal/15",
         className,
       )}
     >
@@ -50,6 +51,11 @@ export function ToolCard({ tool, categoryName, className }: ToolCardProps) {
           {categoryName && (
             <span className="block truncate font-mono text-[0.65rem] tracking-wide text-muted-foreground uppercase">
               {categoryName}
+            </span>
+          )}
+          {tool.sponsored && (
+            <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-full bg-teal/10 px-2 py-0.5 font-mono text-[0.6rem] tracking-[0.15em] text-teal uppercase">
+              Promoted
             </span>
           )}
         </div>
