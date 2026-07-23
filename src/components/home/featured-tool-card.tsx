@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Tool } from "@/lib/schemas";
 import { StarRating } from "@/components/shared/star-rating";
 import { PricingBadge } from "@/components/shared/pricing-badge";
@@ -51,8 +52,12 @@ export function FeaturedToolCard({
             }
           >
             {tool.logo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={tool.logo} alt="" />
+              <Image
+                src={tool.logo}
+                alt={`${tool.name} logo`}
+                width={68}
+                height={68}
+              />
             ) : (
               <span
                 className="font-display text-2xl font-semibold"

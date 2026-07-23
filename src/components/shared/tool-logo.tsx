@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Monogram } from "@/components/shared/monogram";
 
@@ -42,10 +43,11 @@ export function ToolLogo({
         className,
       )}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={logo}
         alt={`${name} logo`}
+        width={64}
+        height={64}
         loading="lazy"
         className="size-full object-contain"
       />

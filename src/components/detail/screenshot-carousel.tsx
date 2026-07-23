@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import type { Tool } from "@/lib/schemas";
@@ -21,9 +22,21 @@ export function ScreenshotCarousel({
   screenshots: Screenshot[];
   accent: string;
 }) {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "start" }, [
-    Autoplay({ delay: 4800, stopOnInteraction: true, stopOnMouseEnter: true }),
-  ]);
+  const prefersReducedMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    { loop: true, align: "start" },
+    prefersReducedMotion
+      ? []
+      : [
+          Autoplay({
+            delay: 4800,
+            stopOnInteraction: true,
+            stopOnMouseEnter: true,
+          }),
+        ],
+  );
   const [selected, setSelected] = useState(0);
 
   const onSelect = useCallback(() => {
@@ -117,12 +130,13 @@ function Screen({ shot }: { shot: Screenshot }) {
   if (shot.src) {
     return (
       <div className="relative aspect-[16/10] w-full bg-black/40">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={shot.src}
           alt={shot.title}
+          fill
+          sizes="(max-width: 768px) 100vw, 720px"
           loading="lazy"
-          className="size-full object-cover object-top"
+          className="object-cover object-top"
         />
       </div>
     );
