@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { siteConfig } from "@/lib/site";
 import { newsletterSchema, type NewsletterValues } from "@/lib/schemas";
+import { subscribe } from "@/app/actions/newsletter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Icon } from "@/components/shared/icon";
@@ -39,12 +40,16 @@ export function SiteFooter() {
     defaultValues: { email: "" },
   });
 
-  const onSubmit = (values: NewsletterValues) => {
-    // Client-only demo: no network call. Confirm with a toast.
-    toast.success("You're on the list", {
-      description: `We'll send the best new AI tools to ${values.email}.`,
-    });
-    reset();
+  const onSubmit = async (values: NewsletterValues) => {
+    const res = await subscribe(values.email);
+    if (res.ok) {
+      toast.success("You're on the list", {
+        description: `We'll send the best new AI tools to ${values.email}.`,
+      });
+      reset();
+    } else {
+      toast.error(res.error ?? "Could not subscribe");
+    }
   };
 
   return (

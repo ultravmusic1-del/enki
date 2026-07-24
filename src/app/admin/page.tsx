@@ -26,6 +26,7 @@ export default async function AdminPage() {
     { count: reviewCount },
     { data: reviews },
     { data: submissions },
+    { count: subscriberCount },
   ] = await Promise.all([
     supabase.rpc("admin_click_stats", { days: 30 }),
     supabase.from("reviews").select("id", { count: "exact", head: true }),
@@ -39,6 +40,7 @@ export default async function AdminPage() {
       .select("id, name, url, category_slug, pitch, status, created_at")
       .order("created_at", { ascending: false })
       .limit(25),
+    supabase.from("subscribers").select("id", { count: "exact", head: true }),
   ]);
 
   const pendingSubmissions = (submissions ?? []).filter(
@@ -63,11 +65,12 @@ export default async function AdminPage() {
         </header>
 
         {/* KPIs */}
-        <section className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border ring-hairline md:grid-cols-4">
+        <section className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border ring-hairline md:grid-cols-5">
           <Kpi label="Tools" value={String(nameBySlug.size)} />
           <Kpi label="Reviews" value={String(reviewCount ?? 0)} />
           <Kpi label="Outbound clicks (30d)" value={String(totalClicks)} />
           <Kpi label="Pending submissions" value={String(pendingSubmissions)} />
+          <Kpi label="Subscribers" value={String(subscriberCount ?? 0)} />
         </section>
 
         {/* Click leaderboard */}
