@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/lib/site";
 import { getAllTools, getCategories } from "@/lib/content";
+import { versusPairs, versusSlug } from "@/lib/seo";
 
 /** Generated at build time; regenerates when tool/category content changes. */
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -35,5 +36,35 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
-  return [...staticRoutes, ...tools, ...categories];
+  const best: MetadataRoute.Sitemap = getCategories().map((c) => ({
+    url: `${base}/best/${c.slug}`,
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: 0.7,
+  }));
+
+  const alternatives: MetadataRoute.Sitemap = getAllTools().map((t) => ({
+    url: `${base}/alternatives/${t.slug}`,
+    lastModified: now,
+    changeFrequency: "monthly",
+    priority: 0.5,
+  }));
+
+  const versus: MetadataRoute.Sitemap = versusPairs(getAllTools()).map(
+    ([a, b]) => ({
+      url: `${base}/vs/${versusSlug(a.slug, b.slug)}`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    }),
+  );
+
+  return [
+    ...staticRoutes,
+    ...tools,
+    ...categories,
+    ...best,
+    ...alternatives,
+    ...versus,
+  ];
 }

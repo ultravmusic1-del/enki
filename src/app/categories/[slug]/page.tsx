@@ -97,6 +97,13 @@ export default async function CategoryDetailPage({
                 {category.toolCount}{" "}
                 {category.toolCount === 1 ? "tool" : "tools"} vetted
               </p>
+              <Link
+                href={`/best/${category.slug}`}
+                className="mt-3 inline-flex w-fit items-center gap-1 font-mono text-xs text-teal hover:underline"
+              >
+                See the best {category.name} tools, ranked
+                <Icon name="ArrowRight" className="size-3" />
+              </Link>
             </div>
           </div>
         </Container>

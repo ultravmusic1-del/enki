@@ -420,6 +420,13 @@ export default async function ToolDetailPage({
         {related.length > 0 && (
           <section className="mt-20">
             <SectionLabel icon="LayoutGrid">Related tools</SectionLabel>
+            <Link
+              href={`/alternatives/${tool.slug}`}
+              className="mb-6 -mt-2 inline-flex items-center gap-1 font-mono text-xs text-teal hover:underline"
+            >
+              See all {tool.name} alternatives, ranked
+              <Icon name="ArrowRight" className="size-3" />
+            </Link>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {related.map((rel, i) => (
                 <Reveal key={rel.slug} index={i}>
