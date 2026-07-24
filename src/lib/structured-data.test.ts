@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { siteJsonLd, toolJsonLd } from "@/lib/structured-data";
+import {
+  siteJsonLd,
+  toolJsonLd,
+  breadcrumbJsonLd,
+  faqJsonLd,
+  itemListJsonLd,
+} from "@/lib/structured-data";
 import { getToolBySlug, getReviewsForTool } from "@/lib/content";
 
 type Node = { "@type"?: string; [k: string]: unknown };
@@ -59,5 +65,35 @@ describe("structured-data: tool", () => {
     const items = crumb.itemListElement as Array<{ name: string }>;
     expect(items).toHaveLength(3);
     expect(items[2].name).toBe(tool.name);
+  });
+});
+
+describe("structured-data: reusable page builders", () => {
+  it("builds an ItemList with absolute URLs and 1-based positions", () => {
+    const ld = itemListJsonLd([
+      { name: "A", url: "/tools/a" },
+      { name: "B", url: "/tools/b" },
+    ]);
+    expect(ld["@type"]).toBe("ItemList");
+    expect(ld.itemListElement).toHaveLength(2);
+    expect(ld.itemListElement[0]).toMatchObject({ position: 1, name: "A" });
+    expect(ld.itemListElement[0].url).toMatch(/^https?:\/\/.+\/tools\/a$/);
+  });
+
+  it("builds a FAQPage from Q/A pairs", () => {
+    const ld = faqJsonLd([{ question: "Q?", answer: "A." }]);
+    expect(ld["@type"]).toBe("FAQPage");
+    expect(ld.mainEntity[0]).toMatchObject({ "@type": "Question", name: "Q?" });
+    expect(ld.mainEntity[0].acceptedAnswer.text).toBe("A.");
+  });
+
+  it("builds a BreadcrumbList with absolute item URLs", () => {
+    const ld = breadcrumbJsonLd([
+      { name: "Home", path: "/" },
+      { name: "Best", path: "/best/writing" },
+    ]);
+    expect(ld["@type"]).toBe("BreadcrumbList");
+    expect(ld.itemListElement[1]).toMatchObject({ position: 2, name: "Best" });
+    expect(ld.itemListElement[1].item).toMatch(/\/best\/writing$/);
   });
 });

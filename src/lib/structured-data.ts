@@ -119,3 +119,46 @@ export function toolJsonLd({
     "@graph": [application, breadcrumb],
   };
 }
+
+/* ------------------------------------------------- reusable page builders */
+
+/** ItemList — for ranked "best" and "alternatives" landing pages. */
+export function itemListJsonLd(items: { name: string; url: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: items.map((it, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: it.name,
+      url: abs(it.url),
+    })),
+  };
+}
+
+/** FAQPage — for the Q&A blocks on best/vs pages. */
+export function faqJsonLd(faqs: { question: string; answer: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answer },
+    })),
+  };
+}
+
+/** BreadcrumbList — shared across the new landing pages. */
+export function breadcrumbJsonLd(crumbs: { name: string; path: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: crumbs.map((c, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: c.name,
+      item: abs(c.path),
+    })),
+  };
+}
