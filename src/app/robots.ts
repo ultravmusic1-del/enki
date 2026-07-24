@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       // /saved is a per-device shortlist with no shared content to index;
       // /admin is operator-only.
-      disallow: ["/saved", "/admin"],
+      disallow: ["/saved", "/admin", "/collections"],
     },
     sitemap: `${siteConfig.url}/sitemap.xml`,
     host: siteConfig.url,

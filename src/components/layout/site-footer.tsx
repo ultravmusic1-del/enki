@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 
 const exploreLinks = [
   { title: "All tools", href: "/tools" },
+  { title: "Collections", href: "/collections" },
   { title: "Categories", href: "/categories" },
   { title: "Compare", href: "/compare" },
   { title: "Leaderboards", href: "/leaderboards" },
