@@ -66,6 +66,20 @@ export const screenshotSchema = z.object({
   hue: z.number().min(0).max(360),
 });
 
+/** An optional promotional deal/coupon for a tool. */
+export const dealSchema = z.object({
+  /** Short headline, e.g. "20% off annual plans". */
+  headline: z.string().min(1),
+  /** Coupon code, if any. */
+  code: z.string().min(1).optional(),
+  /** One extra line of detail/terms. */
+  detail: z.string().min(1).optional(),
+  /** ISO date (YYYY-MM-DD) the deal expires; absent = ongoing. */
+  expiresAt: z.iso.date().optional(),
+});
+
+export type Deal = z.infer<typeof dealSchema>;
+
 export const toolSchema = z.object({
   slug,
   /** Path to the brand logo under /public (optional; falls back to a monogram). */
@@ -89,6 +103,8 @@ export const toolSchema = z.object({
   featured: z.boolean(),
   /** Paid promoted placement (absent = not sponsored); never affects editorial score/rank. */
   sponsored: z.boolean().optional(),
+  /** Optional promotional deal/coupon. */
+  deal: dealSchema.optional(),
   foundedYear: z.number().int().min(1990).max(2100),
   /** ISO date (YYYY-MM-DD) an editor last re-checked this listing. */
   lastVetted: z.iso.date().optional(),

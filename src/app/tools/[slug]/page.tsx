@@ -14,6 +14,7 @@ import { RatingDistribution } from "@/components/detail/rating-distribution";
 import { ReviewList } from "@/components/detail/review-list";
 import { ReviewModal } from "@/components/detail/review-modal";
 import { CommunityReviews } from "@/components/detail/community-reviews";
+import { DealBox } from "@/components/detail/deal-box";
 import { SaveButton } from "@/components/saved/save-button";
 import { CompareToggle } from "@/components/compare/compare-toggle";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -246,6 +247,8 @@ export default async function ToolDetailPage({
             </div>
           </div>
         </section>
+
+        <DealBox tool={tool} />
 
         <div className="mt-12 grid gap-12 lg:grid-cols-[1fr_300px]">
           {/* Main column */}

@@ -5,6 +5,8 @@ import { ToolLogo } from "@/components/shared/tool-logo";
 import { StarRating } from "@/components/shared/star-rating";
 import { PricingBadge } from "@/components/shared/pricing-badge";
 import { BorderBeam } from "@/components/shared/border-beam";
+import { Icon } from "@/components/shared/icon";
+import { isDealActive } from "@/lib/deals";
 
 type ToolCardProps = {
   tool: Tool;
@@ -53,11 +55,19 @@ export function ToolCard({ tool, categoryName, className }: ToolCardProps) {
               {categoryName}
             </span>
           )}
-          {tool.sponsored && (
-            <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-full bg-teal/10 px-2 py-0.5 font-mono text-[0.6rem] tracking-[0.15em] text-teal uppercase">
-              Promoted
-            </span>
-          )}
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {tool.sponsored && (
+              <span className="inline-flex w-fit items-center gap-1 rounded-full bg-teal/10 px-2 py-0.5 font-mono text-[0.6rem] tracking-[0.15em] text-teal uppercase">
+                Promoted
+              </span>
+            )}
+            {isDealActive(tool.deal, new Date()) && (
+              <span className="inline-flex w-fit items-center gap-1 rounded-full bg-amber-400/10 px-2 py-0.5 font-mono text-[0.6rem] tracking-[0.15em] text-amber-300 uppercase">
+                <Icon name="Tag" className="size-2.5" />
+                Deal
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
