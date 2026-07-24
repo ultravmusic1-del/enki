@@ -72,6 +72,39 @@ export type Database = {
         Update: { created_at?: string; user_id?: string }
         Relationships: []
       }
+      tool_submissions: {
+        Row: {
+          category_slug: string | null
+          created_at: string
+          id: string
+          name: string
+          pitch: string | null
+          status: string
+          submitter_email: string | null
+          url: string
+        }
+        Insert: {
+          category_slug?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          pitch?: string | null
+          status?: string
+          submitter_email?: string | null
+          url: string
+        }
+        Update: {
+          category_slug?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          pitch?: string | null
+          status?: string
+          submitter_email?: string | null
+          url?: string
+        }
+        Relationships: []
+      }
       saved_tools: {
         Row: {
           created_at: string

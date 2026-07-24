@@ -169,3 +169,20 @@ export const newsletterSchema = z.object({
 });
 
 export type NewsletterValues = z.infer<typeof newsletterSchema>;
+
+/* ------------------------------------------------ submit-a-tool form */
+
+export const submissionFormSchema = z.object({
+  name: z.string().min(1, "Enter the tool's name").max(80),
+  url: z.url("Enter a valid URL, including https://"),
+  categorySlug: z.string().optional(),
+  pitch: z
+    .string()
+    .max(500, "Keep the pitch under 500 characters")
+    .optional(),
+  submitterEmail: z
+    .union([z.email("Enter a valid email"), z.literal("")])
+    .optional(),
+});
+
+export type SubmissionValues = z.infer<typeof submissionFormSchema>;

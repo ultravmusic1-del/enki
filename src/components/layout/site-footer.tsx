@@ -17,6 +17,7 @@ const exploreLinks = [
   { title: "Compare", href: "/compare" },
   { title: "Leaderboards", href: "/leaderboards" },
   { title: "Deals", href: "/deals" },
+  { title: "Submit a tool", href: "/submit" },
   { title: "How we vet", href: "/#how-we-vet" },
 ];
 

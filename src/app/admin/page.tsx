@@ -4,7 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { getAllTools } from "@/lib/content";
 import { STALE_AFTER_DAYS, toolsNeedingRevet } from "@/lib/freshness";
 import { Container } from "@/components/shared/container";
+import { Icon } from "@/components/shared/icon";
 import { ModerationActions } from "@/app/admin/moderation-actions";
+import { SubmissionActions } from "@/app/admin/submission-actions";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -19,16 +21,29 @@ export default async function AdminPage() {
   const nameBySlug = new Map(allTools.map((t) => [t.slug, t.name]));
   const revet = toolsNeedingRevet(allTools, new Date());
 
-  const [{ data: stats }, { count: reviewCount }, { data: reviews }] =
-    await Promise.all([
-      supabase.rpc("admin_click_stats", { days: 30 }),
-      supabase.from("reviews").select("id", { count: "exact", head: true }),
-      supabase
-        .from("reviews")
-        .select("id, tool_slug, rating, title, body, status, created_at")
-        .order("created_at", { ascending: false })
-        .limit(25),
-    ]);
+  const [
+    { data: stats },
+    { count: reviewCount },
+    { data: reviews },
+    { data: submissions },
+  ] = await Promise.all([
+    supabase.rpc("admin_click_stats", { days: 30 }),
+    supabase.from("reviews").select("id", { count: "exact", head: true }),
+    supabase
+      .from("reviews")
+      .select("id, tool_slug, rating, title, body, status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(25),
+    supabase
+      .from("tool_submissions")
+      .select("id, name, url, category_slug, pitch, status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(25),
+  ]);
+
+  const pendingSubmissions = (submissions ?? []).filter(
+    (s) => s.status === "pending",
+  ).length;
 
   const clickRows = stats ?? [];
   const totalClicks = clickRows.reduce((sum, r) => sum + Number(r.clicks), 0);
@@ -48,10 +63,11 @@ export default async function AdminPage() {
         </header>
 
         {/* KPIs */}
-        <section className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border ring-hairline md:grid-cols-3">
+        <section className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border ring-hairline md:grid-cols-4">
           <Kpi label="Tools" value={String(nameBySlug.size)} />
           <Kpi label="Reviews" value={String(reviewCount ?? 0)} />
           <Kpi label="Outbound clicks (30d)" value={String(totalClicks)} />
+          <Kpi label="Pending submissions" value={String(pendingSubmissions)} />
         </section>
 
         {/* Click leaderboard */}
@@ -128,6 +144,48 @@ export default async function AdminPage() {
                   +{revet.length - 12} more
                 </div>
               )}
+            </div>
+          )}
+        </section>
+
+        {/* Submissions */}
+        <section className="flex flex-col gap-4">
+          <h2 className="font-display text-2xl font-semibold">
+            Tool submissions
+          </h2>
+          {!submissions || submissions.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No submissions yet.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {submissions.map((s) => (
+                <div
+                  key={s.id}
+                  className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 ring-hairline"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <a
+                      href={s.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-sm font-medium hover:text-teal"
+                    >
+                      {s.name}
+                      <Icon name="ExternalLink" className="size-3.5" />
+                    </a>
+                    <span className="font-mono text-[0.65rem] tracking-wide text-muted-foreground uppercase">
+                      {s.category_slug ?? "uncategorized"} · {s.status}
+                    </span>
+                  </div>
+                  {s.pitch && (
+                    <p className="text-sm text-pretty text-muted-foreground">
+                      {s.pitch}
+                    </p>
+                  )}
+                  <SubmissionActions id={s.id} status={s.status} />
+                </div>
+              ))}
             </div>
           )}
         </section>
