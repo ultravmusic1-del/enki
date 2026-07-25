@@ -67,7 +67,9 @@ JSON editor). See §2c to grant yourself admin.
 (**121 tests**).
 
 **Repo:** `https://github.com/ultravmusic1-del/enki.git` (branch `main`, pushed).
-Latest commit **`b350d45`** (admin tool authoring). **NOT deployed yet** — see §2b.
+**Live:** https://enki-five.vercel.app (Vercel project `enki`, auto-deploys on
+push to `main`). Deployment Protection is on, which gates the *deployment-specific*
+and preview URLs behind Vercel SSO; the production alias above is public.
 
 ---
 
@@ -83,15 +85,24 @@ Both are the **publishable/anon** kind — safe client-side; RLS enforces access
 The `service_role` key is never used or stored. **No new env vars are required**
 for the current features; the (unbuilt) email digest would add `RESEND_API_KEY`.
 
-### 2b. Deploy is pending YOUR manual step
-Import `ultravmusic1-del/enki` at [vercel.com/new](https://vercel.com/new), add the
-two env vars, deploy. After that `git push` auto-deploys. Post-deploy: add the
-Vercel URL to Supabase → Auth → URL Configuration.
+### 2b. Deployed ✅ — one auth setting still outstanding
+Live at **https://enki-five.vercel.app**; `git push` to `main` auto-deploys.
+Env vars set: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+
+**Still to do:** add the Vercel URL to **Supabase → Auth → URL Configuration**
+(Site URL = `https://enki-five.vercel.app`, Redirect URLs += 
+`https://enki-five.vercel.app/auth/callback`). Password sign-in works without
+this, but confirmation and recovery emails will point at the wrong origin.
+
+**Canonical origin:** `siteConfig.url` is resolved from the environment, not
+hard-coded — `NEXT_PUBLIC_SITE_URL` if set, else Vercel's injected production
+domain, else localhost. Set `NEXT_PUBLIC_SITE_URL` when a custom domain is
+attached; nothing needs changing until then.
 **Build note:** the content layer now reads tools from Supabase at build time
 (with a 2.5s timeout + seed fallback), so the DB should be **awake** during a
 deploy for freshest content; if it's paused the build still succeeds on the seed.
 
-### 2c. 🔑 Granting yourself admin (needed to use `/admin`)
+### 2c. 🔑 Admin access — DONE for vivaankavalani11@gmail.com
 Admin identity is a dedicated **`admins`** table (NOT a `profiles.role` — that
 table has an unrestricted self-update policy, so a role there would let any user
 self-promote). Steps:
@@ -103,6 +114,10 @@ self-promote). Steps:
    on conflict (user_id) do nothing;
    ```
 3. Visit `/admin`. Non-admins are redirected to `/login`.
+
+**Current state:** `vivaankavalani11@gmail.com`
+(`7fc156ef-b643-48af-84e9-fee0a55d92af`) is in `admins`. Use the steps above to
+add anyone else.
 
 ### 2d. The Supabase project auto-pauses (free tier)
 It sleeps after inactivity. The content layer + all admin reads **fall back to
