@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 
 /** Desktop account control: "Log in" when signed out, an avatar menu otherwise. */
 export function AccountMenu({ className }: { className?: string }) {
-  const { user, displayName, loading, signOut } = useAuth();
+  const { user, displayName, loading, isAdmin, signOut } = useAuth();
   const router = useRouter();
 
   if (loading) {
@@ -79,6 +79,14 @@ export function AccountMenu({ className }: { className?: string }) {
             Saved tools
           </Link>
         </DropdownMenuItem>
+        {isAdmin && (
+          <DropdownMenuItem asChild>
+            <Link href="/admin" className="gap-2">
+              <Icon name="SlidersHorizontal" className="size-4 text-teal" />
+              Admin
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={onSignOut} className="gap-2">
           <Icon name="ArrowRight" className="size-4" />

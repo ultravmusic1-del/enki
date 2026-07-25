@@ -28,7 +28,7 @@ export function SiteHeader() {
   const pathname = usePathname();
   const { setOpen } = useCommandMenu();
   const { count, ready } = useSavedTools();
-  const { user, displayName, signOut } = useAuth();
+  const { user, displayName, isAdmin, signOut } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navRef = useRef<HTMLElement>(null);
@@ -260,6 +260,18 @@ export function SiteHeader() {
                     <span className="px-3 py-1 font-mono text-xs tracking-wide text-muted-foreground uppercase">
                       {displayName}
                     </span>
+                    {isAdmin && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setMobileOpen(false)}
+                        className={cn(
+                          "rounded-lg px-3 py-2.5 text-sm text-teal transition-colors hover:bg-muted",
+                          isActive("/admin") && "text-foreground",
+                        )}
+                      >
+                        Admin
+                      </Link>
+                    )}
                     <button
                       type="button"
                       onClick={() => {
