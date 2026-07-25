@@ -6,131 +6,177 @@
 > Tagline: **"Wisdom for the age of AI."**
 
 Single source of truth for continuing work in a fresh session. **Read §1 and §2
-first** — they cover the current state, the live backend, and what's still pending.
+first** — current state, the live backend, and how to unlock the admin.
 
 ---
 
 ## 1. Current status
 
 Enki is a **feature-complete, dark-only Next.js 16 app with a real Supabase
-backend**. Far beyond the original static MVP: it now has auth, persisted
-reviews, cross-device saved tools, comparison, leaderboards, and full SEO.
+backend**, now with a **monetization layer, a role-gated admin/CMS, a
+programmatic-SEO surface, and engagement features**. It grew well past the
+review-directory MVP over two build sessions.
 
-**Pages:** home · `/tools` (directory) · `/tools/[slug]` (detail) · `/categories`
-· `/categories/[slug]` · `/leaderboards` · `/compare` · `/saved` · `/login` ·
-`/auth/callback`.
+### Public pages
+home · `/tools` (directory) · `/tools/[slug]` (detail) · `/finder` (guided
+recommender) · `/categories` · `/categories/[slug]` · `/leaderboards` ·
+`/compare` · `/deals` · `/saved` · `/collections` · `/lists/[id]` (shared list) ·
+`/submit` · `/best/[category]` · `/alternatives/[slug]` · `/vs/[versus]` ·
+`/privacy` · `/terms` · `/login` · `/auth/callback`.
+**Routes / endpoints:** `/go/[slug]` (tracked outbound redirect), `/llms.txt`,
+`sitemap.xml`, `robots.txt`, per-tool + site OG/Twitter images, web manifest,
+`apple-icon`.
 
-**What works, verified this session:**
-- **Auth** — Supabase email/password (sign in/up, session middleware, header
-  account menu). Demo login: **`reviewer@enki.app` / `enkitest123`**.
-- **Reviews** — auth-gated, persisted to Postgres (RLS owner-write / public-read);
-  real reviews render under "From the Enki community" above the seeded samples.
-- **Saved tools** — localStorage when logged out, **synced to Supabase when logged
-  in** (with one-time local→DB migration on login).
-- **Compare** — `/compare` (side-by-side, URL-shareable) + a global compare tray +
-  per-card "compare" actions.
-- **Leaderboards** — `/leaderboards`, anime.js-animated, editor + community boards.
-- **Screenshots** — real 1280×800 captures per tool in `public/screenshots/`.
-- **SEO** — `sitemap.ts`, `robots.ts`, JSON-LD structured data, dynamic OG/Twitter
-  images per tool + site.
-- **⌘K command palette** — fuzzy tool/category search + "Go to" page navigation.
+### Admin (role-gated, `/admin`)
+`/admin` dashboard — KPIs (tools, reviews, 30-day outbound clicks, pending
+submissions, subscribers), **outbound-demand leaderboard**, **review
+moderation**, **re-vet queue**, **submission moderation**. `/admin/tools` +
+`/admin/tools/[slug]` — **tool CMS** (create/edit/publish via a Zod-validated
+JSON editor). See §2c to grant yourself admin.
 
-**Gates green:** `pnpm typecheck`, `pnpm lint`, `pnpm build` (103 routes),
-`pnpm test` (**45 tests**).
+### Everything that works (verified across sessions)
+- **Auth** — Supabase email/password; session middleware; header account menu.
+- **Reviews** — auth-gated, Postgres-persisted, **now moderated** (`status`:
+  pending/approved/rejected); public sees approved. **Real community rating**
+  (live average from moderated reviews) shows on tool pages.
+- **Saved tools** — localStorage logged-out, Supabase-synced logged-in.
+- **Collections** — named groups of tools + private notes; a collection can be
+  made public → shareable `/lists/[id]` (indexable).
+- **Compare / Leaderboards** — as before (side-by-side + editor/community boards).
+- **Finder** (`/finder`) — deterministic 3-question recommender ("Ask the Oracle"),
+  shareable URLs, reasoned results. No LLM.
+- **Monetization** — tracked affiliate outbound (`/go/[slug]` logs a click, 302s
+  to `affiliateUrl ?? website`) + FTC disclosure; labeled **sponsored** pinning
+  (browse only, never search/leaderboards); **deals/coupons** (badge + tool-page
+  box + `/deals` roundup).
+- **Programmatic SEO** — `/best/[category]`, `/alternatives/[slug]`,
+  `/vs/[versus]` (same-category pairs, canonicalized), `llms.txt`, ItemList/FAQ/
+  Breadcrumb JSON-LD, full sitemap coverage, internal links.
+- **Freshness** — optional `lastVetted` per tool → "Last vetted" trust line + an
+  admin re-vet queue (unset = "never vetted").
+- **Submit-a-tool** (`/submit`) — public form → `tool_submissions` → admin queue.
+- **Newsletter** — footer form now **really captures** subscribers (was a stub).
+  Sending digests/alerts is a documented follow-on (needs an email provider key).
+- **SEO/PWA/legal/a11y baseline** — canonicals on every page, security headers,
+  web manifest + apple-touch-icon, `/privacy` + `/terms`, skip-link + global
+  focus ring.
 
-**Repo:** `https://github.com/ultravmusic1-del/enki.git` (branch `main`).
-Latest commit: **`97bac6d`** (score-action clip fix + graph-flagged tests). Prior:
-`bd44fbe` (the big feature + Supabase commit).
+**Gates green:** `typecheck`, `lint`, `build` (**~181 routes**), `test`
+(**88 tests**).
 
-**NOT deployed yet** — see §2.
+**Repo:** `https://github.com/ultravmusic1-del/enki.git` (branch `main`, pushed).
+Latest commit **`b350d45`** (admin tool authoring). **NOT deployed yet** — see §2b.
 
 ---
 
 ## 2. ⚠ Important context for continuing (READ THIS)
 
-### 2a. Environment variables are now REQUIRED
-The app needs Supabase config or auth/reviews/saved break:
+### 2a. Environment variables (required)
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://qknsqurdawglctwqfwxe.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_iRpRQepBf8ozIoeBYH-sqQ_mjhupS5a
 ```
-These live in **`.env.local`** (gitignored, present locally). `.env.example`
-documents them (committed). Both values are the **publishable/anon** kind — safe
-in the client; RLS enforces access. The `service_role` key is never used or stored.
+In **`.env.local`** (gitignored, present locally); `.env.example` documents them.
+Both are the **publishable/anon** kind — safe client-side; RLS enforces access.
+The `service_role` key is never used or stored. **No new env vars are required**
+for the current features; the (unbuilt) email digest would add `RESEND_API_KEY`.
 
 ### 2b. Deploy is pending YOUR manual step
-The Vercel connector can only do inline file-upload (impractical at 22 MB of
-assets) and has no Git-import or env-var tool. **Correct path:** import
-`ultravmusic1-del/enki` at [vercel.com/new](https://vercel.com/new), add the two
-env vars above, deploy. After that, `git push` auto-deploys. Once it builds, the
-Vercel connector CAN read deployment/build logs to debug.
-**Post-deploy:** add the Vercel URL to Supabase → Auth → URL Configuration (Site
-URL + Redirect URLs) so signup-confirmation links resolve (email/password *login*
-works without it).
+Import `ultravmusic1-del/enki` at [vercel.com/new](https://vercel.com/new), add the
+two env vars, deploy. After that `git push` auto-deploys. Post-deploy: add the
+Vercel URL to Supabase → Auth → URL Configuration.
+**Build note:** the content layer now reads tools from Supabase at build time
+(with a 2.5s timeout + seed fallback), so the DB should be **awake** during a
+deploy for freshest content; if it's paused the build still succeeds on the seed.
 
-### 2c. Uncommitted files (deliberately held — your decision)
-`97bac6d` committed only the layout fix + tests. Still in the working tree:
-- **code-review-graph integration** — `.mcp.json`, `CLAUDE.md`, `.claude/skills/`,
-  `.claude/settings.json`, `.gitignore` (adds `.code-review-graph/`), and
-  `.git/hooks/pre-commit`. Commit these if you want the team to share the graph.
-- **`.claude/launch.json`** — `autoPort:true` change (so it uses a free port when
-  3000 is taken by another chat's dev server).
-- **`brand/*.pdf`** — personal PDFs; keep excluded.
+### 2c. 🔑 Granting yourself admin (needed to use `/admin`)
+Admin identity is a dedicated **`admins`** table (NOT a `profiles.role` — that
+table has an unrestricted self-update policy, so a role there would let any user
+self-promote). Steps:
+1. Sign in to the app once (creates your auth user + profile).
+2. Run in **Supabase → SQL Editor**:
+   ```sql
+   insert into public.admins (user_id)
+   select id from auth.users where email = 'YOUR_EMAIL_HERE'
+   on conflict (user_id) do nothing;
+   ```
+3. Visit `/admin`. Non-admins are redirected to `/login`.
 
-### 2d. Email confirmation is ON (Supabase default)
-Real signups get a confirm-link email; the seeded demo user is pre-confirmed so
-you can log in instantly. For frictionless dev, toggle "Confirm email" off in
-Supabase → Auth → Providers → Email (dashboard only; no MCP tool for it).
+### 2d. The Supabase project auto-pauses (free tier)
+It sleeps after inactivity. The content layer + all admin reads **fall back to
+the static seed** when it's asleep, so the public site never breaks — but the
+admin, auth, reviews, saved, submissions, etc. need it awake. Resume it in the
+dashboard (or via the Supabase MCP `restore_project`) before testing those.
+
+### 2e. Email confirmation is ON (Supabase default)
+Real signups get a confirm-link email. For frictionless dev, toggle "Confirm
+email" off in Supabase → Auth → Providers → Email (dashboard only).
 
 ---
 
 ## 3. How to run
 
-Requires **Node 24.x** and **pnpm**.
 ```bash
-pnpm install
-pnpm dev          # http://localhost:3000 (Next 16 + Turbopack). Reads .env.local.
-pnpm build        # production build (authoritative)
+pnpm install        # (npm also works; scripts are package-manager-agnostic)
+pnpm dev            # http://localhost:3000 (Next 16 + Turbopack). Reads .env.local.
+pnpm build          # production build (authoritative — SSGs ~181 pages)
 pnpm start
 pnpm typecheck | pnpm lint | pnpm test | pnpm test:e2e
 ```
-`.claude/launch.json` (name `enki-dev`) has `autoPort:true` — if 3000 is taken it
-auto-picks a free port (only signup-confirmation redirects care about the port).
+`.claude/launch.json` (name `enki-dev`) has `autoPort:true` — auto-picks a free
+port if 3000 is taken.
 
 ---
 
 ## 4. Backend — Supabase (live)
 
-**Project `enki`** — id `qknsqurdawglctwqfwxe`, region `ap-south-1`, free tier,
-org `ultravmusic1-del's Org`. Managed via the Supabase MCP connector.
+**Project `enki`** — id `qknsqurdawglctwqfwxe`, region `ap-south-1`, free tier.
+Managed via the Supabase MCP connector.
 
-**Schema (`public`), all RLS-enabled:**
-- **`profiles`** `(id → auth.users, display_name, created_at)` — auto-created on
-  signup by the `handle_new_user()` trigger. Public-read, self-write.
-- **`reviews`** `(id, tool_slug, user_id, rating 1–5, title?, body?, created_at,
-  updated_at, unique(tool_slug,user_id))` — public-read, owner-write. `tool_slug`
-  references the static seed catalog (no FK; tools stay seed data).
-- **`saved_tools`** `(user_id, tool_slug, created_at, pk(user_id,tool_slug))` —
-  owner-only.
+### Schema (`public`) — all RLS-enabled
+| Table | Shape / purpose | RLS |
+|---|---|---|
+| `profiles` | `(id→auth.users, display_name, created_at)`, trigger-created on signup | public-read, self-write |
+| `reviews` | `(id, tool_slug, user_id, rating 1–5, title?, body?, **status**, created_at, updated_at)` | public-read **approved**; owner-write; **admins update any** |
+| `saved_tools` | `(user_id, tool_slug, created_at)` | owner-only |
+| `admins` | `(user_id→auth.users, created_at)` — admin membership | **zero policies** (API-unreachable; SQL-only) |
+| `outbound_clicks` | `(id, tool_slug, path, created_at)` — affiliate click log | anon **insert-only**; admins read |
+| `tool_submissions` | `(id, name, url, category_slug?, pitch?, submitter_email?, status, created_at)` | anon **insert**; admins read/update |
+| `collections` | `(id, user_id, name, is_public, created_at)` | owner all; **public rows world-readable** |
+| `collection_items` | `(collection_id, tool_slug, note?, created_at)` | readable if parent readable; owner writes |
+| `subscribers` | `(id, email unique, status, created_at)` | anon **insert**; admins read |
+| `tools` | `(slug pk, **data jsonb**, published, created_at, updated_at)` — CMS content | public-read published; **admins write** |
 
-**Migrations applied:** `init_auth_backend`, `lock_down_handle_new_user` (revoked
-public EXECUTE on the trigger fn — a security-advisor finding). Advisor is clean.
+### RPCs (SECURITY DEFINER)
+- **`is_admin()`** → boolean; used by RLS + the app gate without exposing `admins`.
+- **`admin_click_stats(days int)`** → per-tool click counts; self-guards with
+  `is_admin()` (non-admins get 0 rows even if they call it directly).
 
-**Next.js integration (`@supabase/ssr`):**
-- `src/lib/supabase/{client,server,middleware}.ts` + `database.types.ts`.
-- `src/middleware.ts` (session refresh; Next 16 warns it should be renamed to
-  `proxy.ts` — deprecation, still works).
-- `src/components/auth/{auth-provider,login-form,account-menu}.tsx`,
-  `src/app/login/page.tsx`, `src/app/auth/callback/route.ts`.
+### Migrations applied (via MCP)
+`init_auth_backend`, `lock_down_handle_new_user`, `create_outbound_clicks`,
+`admin_foundation` (admins + is_admin + reviews.status + click-stats RPC),
+`create_tool_submissions`, `create_collections`, `create_subscribers`,
+`create_tools_table`.
 
-**Supabase gotchas learned (important):**
-- **Query builders are lazy thenables** — a bare `void supabase.from(...).upsert()`
-  never runs. You MUST `.then()` / `await` it (this caused a saved-sync bug).
-- **Seeded auth users need token columns set to `''`, not NULL** (`confirmation_token`,
-  `recovery_token`, `email_change*`, `phone_change*`, `reauthentication_token`), or
-  GoTrue returns 500 on sign-in.
-- Supabase **rejects emails with no MX** (e.g. `*.test`, `enki-test.com`); use a
-  real domain, or seed a confirmed user via SQL for testing.
+### Content layer — DB-preferred + seed fallback (IMPORTANT, new)
+`src/lib/content.ts` is now **async**. Tools load from the `tools` table
+(**override-by-slug, add-new**) **merged over the git-versioned seed**; if the DB
+is empty/unreachable it falls back to pure seed. A **60s TTL cache** +
+**2.5s timeout** keep a build from hammering or stalling on a paused DB. Admin
+`saveTool`/`deleteTool` call `revalidatePath("/", "layout")` + `invalidateToolCache()`.
+Categories/authors/seed-reviews remain seed-only.
+
+### Supabase gotchas learned (important)
+- **`.upsert()` / `.insert()` + RLS:** supabase-js `.insert()` defaults to
+  `return=minimal` (no RETURNING → no SELECT needed) and works under
+  **anon-insert-only** policies. `.upsert()` returns a representation → needs
+  SELECT → **silently fails** where anon has no read policy (this bit the
+  newsletter). For anon writes use `.insert()` and treat unique-violation
+  (`error.code === '23505'`) as a friendly no-op.
+- Query builders are **lazy thenables** — `void supabase.from(...).x()` never runs;
+  `.then()`/`await` it.
+- Seeded auth users need token columns set to `''` (not NULL) or GoTrue 500s.
+- Supabase rejects emails with no MX (`*.test`, etc.); use a real domain.
 
 ---
 
@@ -138,182 +184,168 @@ public EXECUTE on the trigger fn — a security-advisor finding). Advisor is cle
 
 | Layer | Choice |
 |-------|--------|
-| Runtime / PM | Node **24.x**, **pnpm 11** |
-| Framework | **Next.js 16.2.10**, App Router, **Turbopack** |
+| Runtime / PM | Node 24.x, pnpm (npm works too) |
+| Framework | **Next.js 16.2.10**, App Router, Turbopack |
 | UI | **React 19**, **TypeScript** strict; **Tailwind v4** (CSS-first in `globals.css`) |
-| Components | **shadcn/ui** on unified `radix-ui` in `src/components/ui/` |
+| Components | shadcn/ui on unified `radix-ui` in `src/components/ui/` |
 | Icons | **lucide-react 1.x** via the string registry in `shared/icon.tsx` |
-| Motion | **Motion for React** (`motion/react`); **GSAP + ScrollTrigger** (hero); **anime.js v4** (leaderboards) |
-| 3D | **three** + **@react-three/fiber** + **drei** (hero GLB only) |
-| Search | **Fuse.js** (threshold 0.3 — tightened this session) |
-| Forms | **React Hook Form + Zod v4** |
-| **Backend/Auth** | **Supabase** (`@supabase/supabase-js`, `@supabase/ssr`) — see §4 |
-| Toasts / Analytics | **Sonner**; **Vercel Web Analytics + Speed Insights** |
-| Tests | **Vitest** (jsdom) + **Playwright** |
-| Dev tooling | **code-review-graph** MCP (structural graph; see §9) |
-| Theme | **Dark only** — `class="dark"` hardcoded on `<html>`, no theme switching |
-| Hosting | **Vercel** (not yet deployed) |
+| Motion / 3D | Motion for React; GSAP+ScrollTrigger (hero); anime.js v4 (leaderboards); three + R3F + drei (hero GLB) |
+| Search | Fuse.js (threshold 0.3) |
+| Forms | React Hook Form + Zod v4 |
+| **Backend/Auth/CMS** | **Supabase** (`@supabase/supabase-js`, `@supabase/ssr`) — see §4 |
+| Server mutations | **Next server actions** (reviews, submit, newsletter, collections, admin moderation + tool CRUD) |
+| Toasts / Analytics | Sonner; Vercel Web Analytics + Speed Insights |
+| Tests | Vitest (jsdom) + Playwright |
+| Dev tooling | code-review-graph MCP (§10) |
+| Theme / Hosting | Dark only (`class="dark"`); Vercel (not yet deployed) |
 
 ---
 
-## 6. Architecture & file map
+## 6. Architecture & file map (new/changed highlighted)
 
 Server Components by default; `"use client"` only where needed. `@/*` → `src/*`.
 
 ```
 src/
-  middleware.ts                # Supabase session refresh (all routes)
+  middleware.ts                # Supabase session refresh
   app/
-    layout.tsx                 # <html class="dark"> + AuthProvider > SavedToolsProvider
-                               #   > CommandMenuProvider (header/main) + CompareTray
-                               #   + JsonLd(site) + Toaster + Analytics
-    template.tsx               # route transition (.page-transition replay)
-    globals.css                # ALL design tokens (dark), atmosphere utils, keyframes
-    opengraph-image.tsx / twitter-image.tsx        # site OG cards (satori)
-    sitemap.ts / robots.ts                          # SEO
-    page.tsx                   # Home (oracle hero → featured → categories → vet → CTA)
-    not-found.tsx
-    tools/page.tsx             # /tools directory
-    tools/[slug]/page.tsx      # tool detail (score dial + actions + reviews)
-    tools/[slug]/opengraph-image.tsx / twitter-image.tsx   # per-tool OG cards
-    categories/page.tsx · categories/[slug]/page.tsx
-    compare/page.tsx           # /compare (Suspense → CompareView)
-    leaderboards/page.tsx      # /leaderboards (LeaderboardsView, anime.js)
-    saved/page.tsx             # /saved (SavedGallery)
-    login/page.tsx · auth/callback/route.ts        # auth
+    layout.tsx                 # <html class="dark"> providers; async (awaits getSearchDocs/getAllTools)
+    page.tsx                   # Home (async)
+    tools/… categories/… compare/ leaderboards/ saved/ login/ auth/
+    finder/page.tsx            # NEW guided recommender → <OracleFinder>
+    deals/page.tsx             # NEW deals roundup
+    submit/page.tsx + actions.ts   # NEW submit-a-tool
+    collections/page.tsx       # NEW (auth-gated manager)
+    lists/[id]/page.tsx        # NEW public shared collection
+    best/[category]/page.tsx   # NEW SEO listicle
+    alternatives/[slug]/page.tsx   # NEW SEO
+    vs/[versus]/page.tsx       # NEW SEO head-to-head
+    go/[slug]/route.ts         # NEW tracked outbound redirect
+    llms.txt/route.ts          # NEW
+    privacy/ terms/            # NEW legal pages
+    manifest.ts apple-icon.tsx # NEW PWA
+    admin/
+      page.tsx                 # dashboard (analytics/moderation/re-vet/submissions)
+      actions.ts               # setReviewStatus, setSubmissionStatus
+      moderation-actions.tsx submission-actions.tsx
+      tools/page.tsx           # NEW CMS list
+      tools/[slug]/page.tsx    # NEW CMS editor (+ new-tool template)
+      tools/actions.ts tool-editor.tsx  # NEW saveTool/deleteTool + JSON editor
+    actions/newsletter.ts      # NEW subscribe action
   components/
-    ui/                        # shadcn primitives
-    layout/                    # site-header (liquid-glass nav + account + saved badge),
-                               #   site-footer, command-menu (⌘K + Fuse + page nav)
-    home/                      # oracle-hero, oracle-model(+scene) [R3F], featured/category cards
-    directory/                 # directory-explorer (search/filter/sort, URL-synced)
-    detail/                    # screenshot-carousel, rating-distribution, review-list,
-                               #   review-modal (auth-gated → Supabase), community-reviews (DB)
-    compare/                   # compare-view, compare-selection (store), compare-toggle, compare-tray
-    leaderboard/               # leaderboards-view
-    saved/                     # saved-tools (auth-aware store), save-button, saved-gallery
-    auth/                      # auth-provider, login-form, account-menu
-    seo/                       # json-ld
-    shared/                    # tool-card, savable-tool-card, tool-logo, star-rating, monogram,
-                               #   pricing-badge, container, section-heading, reveal, border-beam,
-                               #   category-card, icon (registry)
-  data/                        # tools.ts (27), categories.ts (8), authors.ts (6), reviews.ts (27 seed)
+    finder/ collections/ submit/ seo/(ranked-tool-row)  # NEW
+    detail/(… + deal-box, community-rating-summary)      # NEW additions
+    shared/(… + affiliate-disclosure)                    # NEW
+    layout/ home/ directory/ compare/ leaderboard/ saved/ auth/ ui/
+  data/                        # tools.ts (27), categories.ts (8), authors.ts (6), reviews.ts (27) — the seed BASE
   lib/
-    content.ts                 # access layer (+ getLeaderboards, getCompareTools)
-    structured-data.ts         # JSON-LD builders (siteJsonLd, toolJsonLd)
-    og.ts                      # OG-image font/palette helpers (satori)
-    supabase/                  # client, server, middleware, database.types
-    schemas.ts · filters.ts · site.ts · fonts.ts · use-gsap.ts · utils.ts
-    *.test.ts                  # content, filters, structured-data (45 tests total)
-  fonts/                       # Cardot .otf/.ttf
-public/
-  models/enki-model.glb (~1.3MB) · logos/<slug>.png (27) · screenshots/<slug>/*.png · brand/
-scripts/capture-screenshots.mjs # Playwright screenshot capture (re-runnable per slug)
-tests/e2e/directory.spec.ts
-docs/superpowers/plans/         # written implementation plans
+    content.ts                 # ASYNC DB-preferred + seed fallback (see §4)
+    finder.ts outbound.ts deals.ts freshness.ts reviews.ts seo.ts admin.ts   # NEW
+    structured-data.ts         # + itemList/faq/breadcrumb builders
+    supabase/(client,server,middleware,anon,database.types)   # anon.ts NEW (cookieless writes)
+    schemas.ts filters.ts site.ts fonts.ts utils.ts
+    *.test.ts                  # content, filters, structured-data, finder, outbound, deals, freshness, reviews, seo (88 tests)
+  fonts/ · public/(models,logos,screenshots,brand,icon.svg)
+  scripts/capture-screenshots.mjs · tests/e2e/(directory, finder)
+  docs/superpowers/plans/      # written implementation plans (one per feature)
+.claude/hooks/visual-sweep-guard.mjs   # NEW — see §9
 ```
 
 ---
 
 ## 7. Design language (unchanged core)
 
-**Palette (dark only, teal is the ONLY accent):** `#16191D` void · `#222831`
-surface · `#393E46` slate · **`#00ADB5` teal** · `#35E4EC` bright · `#EEEEEE`
-mist. All CSS vars on `:root` in `globals.css`. Keep `class="dark"` on `<html>`
-(Tailwind `dark:` utilities depend on it).
+**Palette (dark only, teal is the accent; amber used only for deal/savings
+affordances):** `#16191D` void · `#222831` surface · `#393E46` slate ·
+**`#00ADB5` teal** · `#35E4EC` bright · `#EEEEEE` mist. All CSS vars on `:root`.
+Keep `class="dark"` on `<html>`.
 
-**Type:** **Cardot** (local, display) · **Hanken Grotesk** (body) · **IBM Plex
-Mono** (eyebrows/metadata). **Atmosphere:** `.grain`, `.glass`, `.spotlight`,
-`.emblem`, `.ring-hairline`; keyframes incl. `score-draw`, `page-in`.
+**Type:** Cardot (display) · Hanken Grotesk (body) · IBM Plex Mono (eyebrows).
+**Atmosphere:** `.grain`, `.glass`, `.spotlight`, `.emblem`, `.ring-hairline`;
 `prefers-reduced-motion` neutralizes animation globally.
 
 ---
 
-## 8. Data model & conventions (keep these)
+## 8. Conventions (keep these)
 
-**Seed data** in `src/data/*.ts`, validated by Zod (`src/lib/schemas.ts`), resolved
-via `src/lib/content.ts` (throws in dev on bad data). Tools/categories stay static
-seed; only reviews + saved live in Supabase (hybrid by design).
-
-- **Teal is the only accent. Dark only.** Avoid AI-slop aesthetics.
-- **Respect `prefers-reduced-motion`** everywhere.
-- **Icons are strings** → registry in `shared/icon.tsx` (guards lucide 1.x renames;
-  `Home` is aliased to `House`). Add new icons there.
+- **DB-preferred + seed fallback** for tools (§4). Categories/authors/seed-reviews
+  are seed-only. `content.ts` getters are **async** — `await` them (TS enforces it).
+- **Teal accent, dark only.** Avoid AI-slop aesthetics. Respect reduced-motion.
+- **Icons are strings** → registry in `shared/icon.tsx` (add new icons there;
+  `Home`→`House` alias). Missing names fall back + warn in dev.
 - **No em-dashes in displayed copy** (comments exempt).
-- **React Compiler lint is on** (`react-hooks/*`): no setState synchronously in an
-  effect (async data fetches are OK — setState resolves after `await`), no
-  ref/`useMemo` mutation during render.
+- **React-hooks lint on** (no setState synchronously in an effect — async fetch is
+  OK; the collections manager has one justified `eslint-disable` for its load effect).
+- **Integrity guardrails (don't break):** never ship a fabricated sponsored tool,
+  deal, coupon, or vetting date in the committed seed — those are operator-set.
+  Sponsored placement **never** touches editorial score/verdict/search/leaderboards.
+- **Affiliate rel:** outbound links carry `rel="sponsored"` only when a tool has an
+  `affiliateUrl`; all outbound routes through `/go/[slug]` for tracking.
 
 ---
 
-## 9. Recent session changelog
+## 9. Visual Sweep rule (MANDATORY — see CLAUDE.md §"Visual Sweep")
 
-Everything below was built this session (all in `bd44fbe` unless noted):
-
-1. **Real screenshots** — captured 1280×800 shots per tool (`scripts/capture-screenshots.mjs`),
-   wired into the detail carousel with graceful fallback.
-2. **Leaderboards** (`/leaderboards`) — anime.js v4 boards (editor score + community).
-3. **Compare** (`/compare`) — side-by-side table (URL-shareable) + global compare
-   tray + per-card compare actions.
-4. **Saved tools** — bookmarks; localStorage → Supabase sync when signed in.
-5. **Auth + backend** — Supabase project, schema, RLS, `handle_new_user` trigger,
-   session middleware, email/password auth UI.
-6. **Reviews → Postgres** — auth-gated submit + live community reviews display.
-7. **SEO** — sitemap, robots, JSON-LD (`SoftwareApplication`/`AggregateRating`/
-   `Review`/`BreadcrumbList` + site `Organization`/`WebSite`), dynamic OG/Twitter images.
-8. **⌘K page navigation** — "Go to" group in the command palette.
-9. **Fixes** — H1 "for AI" spacing, `Home`→`House` icon alias, footer nav parity
-   (Compare/Leaderboards), tighter Fuse search relevance (0.4→0.3).
-10. **`97bac6d`:** tool-detail score-action row moved to a full-width row below the
-    score so the four buttons wrap instead of clipping at sub-fullscreen widths
-    (all 27 tool pages); + regression tests for `getLeaderboards`, `getCompareTools`,
-    and the structured-data builders (suite 31→45).
-11. **code-review-graph** installed (dev tooling; §10) — *uncommitted, see §2c*.
+Any change to visual code (`.tsx/.jsx/.css/.scss`, Tailwind, layout) **must** be
+verified in a real browser before claiming done/committing — typecheck/lint/tests
+don't catch layout breakage (overflow, clipping, misalignment). A `PostToolUse`
+hook (`.claude/hooks/visual-sweep-guard.mjs`) reminds you the moment visual code
+changes. Procedure (from CLAUDE.md): serve → load affected routes + `/` + `/tools`
+→ console clean → **measure** bounding boxes (`badge.right <= card.right`, no
+`scrollWidth > clientWidth`) at narrow + wide widths → cite what you checked.
+This exists because a pricing-badge clip once shipped on HTML-only inspection.
 
 ---
 
 ## 10. Gotchas (these cost real time)
 
-1. **Turbopack stale chunks / console buffer.** After edits the dev server can
-   serve stale compiled chunks, and `read_console_messages` in tooling keeps
-   showing **old, already-fixed errors** even after a server restart — verify
-   against a fresh browser tab and `pnpm build`, not the stale console. `rm -rf
-   .next` + restart clears the server side.
-2. **Supabase query builders are lazy** — must `.then()`/`await` or the query
-   never fires (§4).
-3. **Seeded Supabase users need `''` token columns** or GoTrue 500s (§4).
-4. **Automated screenshots time out** on the GPU-heavy hero / heavy pages — capture
-   limitation, not a page bug. Prefer DOM measurement (`getBoundingClientRect`) to
-   verify layout.
-5. **code-review-graph pre-commit hook prints a `UnicodeEncodeError`** (Windows
-   cp1252 can't encode its Rich output) but is guarded by `|| true` — commits are
-   **not** blocked. Cosmetic.
-6. **One dev server per project dir** / port 3000 contention → `autoPort` handles it.
+1. **`.upsert()` vs `.insert()` under anon RLS** — §4. The #1 non-obvious backend trap.
+2. **DB-preferred content is async + build-time** — static pages bake tool content
+   at build; a DB edit needs a revalidate (admin `saveTool` does it) or rebuild to
+   appear on *static* pages. Dynamic routes (`/tools/[slug]` on-demand) reflect DB
+   edits immediately.
+3. **Verifying RHF form submits in automation** — a synthetic click may not fire
+   `handleSubmit`; use `form.requestSubmit()` (this masked the submit + newsletter
+   flows during verification until switched).
+4. **Admin/auth features can't be visually verified without a login** — you can't
+   create accounts in automation. Verify the gate (unauth → `/login`), RLS (via
+   SQL as `anon`), and the data layer; the logged-in UI is a human click-through.
+5. **Turbopack stale chunks / console buffer** — verify against a fresh tab +
+   `build`, not the stale dev console. `rm -rf .next` clears the server side.
+6. **Automated screenshots time out** on the GPU-heavy hero — use DOM measurement
+   (`getBoundingClientRect`) to verify layout, not screenshots.
+7. **code-review-graph pre-commit hook prints a `UnicodeEncodeError`** (Windows
+   cp1252) but is `|| true`-guarded — commits are **not** blocked. Cosmetic.
 
 ---
 
 ## 11. code-review-graph (dev tooling)
 
-Installed (`pip install`, Python 3.12). Builds a Tree-sitter/SQLite structural
-graph of the repo and serves MCP tools for token-efficient exploration/review.
-- **Graph:** 110 files, ~447 nodes, ~3.2k edges (`.code-review-graph/`, gitignored).
-- **Auto:** hooks re-index after each Edit/Write and on commit; `CLAUDE.md` tells
-  Claude to prefer graph tools over Grep/Read. Requires **Claude Code restart** to
-  load the MCP server.
-- **Rebuild:** `code-review-graph build`; stats: `code-review-graph status`.
-- Flagged the biggest real gap: **test coverage** — the components/pages/auth/
-  supabase layers are largely untested (only the `lib` pure functions are). The
-  session added leaderboard/compare/structured-data tests; **auth, saved, and the
-  React components remain untested** — the highest-leverage next work.
+Tree-sitter/SQLite structural graph + MCP tools for token-efficient
+exploration/review. Auto-reindexes on Edit/Write and commit; `CLAUDE.md` tells
+Claude to prefer graph tools over Grep/Read. Rebuild: `code-review-graph build`;
+stats: `code-review-graph status`. Requires a Claude Code restart to load the MCP.
 
 ---
 
 ## 12. Open items / next steps
 
-- **Deploy** (§2b) — Vercel git import + env vars (your action), then verify.
-- **Commit the code-review-graph integration** if the team should share it (§2c).
+- **Deploy** (§2b) — Vercel git import + env vars (your action), then verify; grant
+  yourself admin (§2c).
+- **Email sending** — the newsletter *captures* subscribers but doesn't send.
+  Wire a provider (Resend/Postmark) + `RESEND_API_KEY` for the weekly digest +
+  per-tool "notify me when this changes" alerts (the freshness `changelog` is the
+  source).
+- **Link-health cron** — a Vercel Cron that pings each tool's site and flags dead
+  links into the admin re-vet queue (folded conceptually into freshness; not built).
+- **CMS authoring UX** — the tool editor is a Zod-validated **JSON editor** (fully
+  functional). A field-by-field form (array editors for keyFeatures/screenshots/
+  pros/cons, Supabase Storage for logo/screenshot uploads) is the polish pass.
 - **Rename `middleware.ts` → `proxy.ts`** (Next 16 deprecation warning).
-- **More tests** — auth flows, the saved-tools provider, compare/leaderboard
-  components (mock Supabase with `@supabase/…` in vitest).
-- Social login (Google/GitHub) if wanted — needs provider creds in the Supabase
-  dashboard. Swap seed → live CMS later (`content.ts` is query-shaped).
+- **Tests for the new surfaces** — admin actions, server actions, and the React
+  components remain largely untested (pure `lib` logic is well-covered: finder,
+  outbound, deals, freshness, reviews, seo, structured-data). Highest-leverage:
+  mock Supabase in vitest and cover the auth/admin/collections flows.
+- **Consider a real `createdAt`/`updatedAt` on tools** (now that they can be
+  DB-backed) to power an honest RSS feed / "recently added" digest.
+```
