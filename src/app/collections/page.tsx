@@ -11,8 +11,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/collections" },
 };
 
-export default function CollectionsPage() {
-  const tools = getAllTools().map((t) => ({
+export default async function CollectionsPage() {
+  const tools = (await getAllTools()).map((t) => ({
     slug: t.slug,
     name: t.name,
     logo: t.logo,

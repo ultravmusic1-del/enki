@@ -72,6 +72,30 @@ export type Database = {
         Update: { created_at?: string; user_id?: string }
         Relationships: []
       }
+      tools: {
+        Row: {
+          created_at: string
+          data: Json
+          published: boolean
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data: Json
+          published?: boolean
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          published?: boolean
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscribers: {
         Row: {
           created_at: string

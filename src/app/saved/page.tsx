@@ -9,9 +9,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "/saved" },
 };
 
-export default function SavedPage() {
-  const categoryName = new Map(getCategories().map((c) => [c.slug, c.name]));
-  const items: SavedItem[] = getAllTools().map((tool) => ({
+export default async function SavedPage() {
+  const categoryName = new Map((await getCategories()).map((c) => [c.slug, c.name]));
+  const items: SavedItem[] = (await getAllTools()).map((tool) => ({
     tool,
     categoryName: categoryName.get(tool.categorySlug) ?? "",
   }));

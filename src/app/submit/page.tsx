@@ -10,8 +10,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/submit" },
 };
 
-export default function SubmitPage() {
-  const categories = getCategories().map((c) => ({ slug: c.slug, name: c.name }));
+export default async function SubmitPage() {
+  const categories = (await getCategories()).map((c) => ({ slug: c.slug, name: c.name }));
 
   return (
     <Container className="pt-28 pb-20">

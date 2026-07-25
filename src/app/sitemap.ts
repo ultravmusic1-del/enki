@@ -4,9 +4,11 @@ import { getAllTools, getCategories } from "@/lib/content";
 import { versusPairs, versusSlug } from "@/lib/seo";
 
 /** Generated at build time; regenerates when tool/category content changes. */
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteConfig.url;
   const now = new Date();
+  const allTools = await getAllTools();
+  const allCategories = await getCategories();
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { path: "", priority: 1 },
@@ -24,35 +26,35 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority,
   }));
 
-  const tools: MetadataRoute.Sitemap = getAllTools().map((t) => ({
+  const tools: MetadataRoute.Sitemap = allTools.map((t) => ({
     url: `${base}/tools/${t.slug}`,
     lastModified: now,
     changeFrequency: "weekly",
     priority: 0.6,
   }));
 
-  const categories: MetadataRoute.Sitemap = getCategories().map((c) => ({
+  const categories: MetadataRoute.Sitemap = allCategories.map((c) => ({
     url: `${base}/categories/${c.slug}`,
     lastModified: now,
     changeFrequency: "weekly",
     priority: 0.5,
   }));
 
-  const best: MetadataRoute.Sitemap = getCategories().map((c) => ({
+  const best: MetadataRoute.Sitemap = allCategories.map((c) => ({
     url: `${base}/best/${c.slug}`,
     lastModified: now,
     changeFrequency: "weekly",
     priority: 0.7,
   }));
 
-  const alternatives: MetadataRoute.Sitemap = getAllTools().map((t) => ({
+  const alternatives: MetadataRoute.Sitemap = allTools.map((t) => ({
     url: `${base}/alternatives/${t.slug}`,
     lastModified: now,
     changeFrequency: "monthly",
     priority: 0.5,
   }));
 
-  const versus: MetadataRoute.Sitemap = versusPairs(getAllTools()).map(
+  const versus: MetadataRoute.Sitemap = versusPairs(allTools).map(
     ([a, b]) => ({
       url: `${base}/vs/${versusSlug(a.slug, b.slug)}`,
       lastModified: now,

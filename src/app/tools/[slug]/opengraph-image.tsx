@@ -10,8 +10,8 @@ export const alt = "AI tool review on Enki";
 export const size = OG_SIZE;
 export const contentType = "image/png";
 
-export function generateStaticParams() {
-  return getAllTools().map((tool) => ({ slug: tool.slug }));
+export async function generateStaticParams() {
+  return (await getAllTools()).map((tool) => ({ slug: tool.slug }));
 }
 
 export default async function Image({
@@ -20,7 +20,7 @@ export default async function Image({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const tool = getToolBySlug(slug);
+  const tool = await getToolBySlug(slug);
   const fonts = await ogFonts();
 
   if (!tool) {
@@ -47,7 +47,7 @@ export default async function Image({
     );
   }
 
-  const category = getCategoryBySlug(tool.categorySlug);
+  const category = await getCategoryBySlug(tool.categorySlug);
   const logo = await publicImageDataUri(tool.logo);
 
   return new ImageResponse(

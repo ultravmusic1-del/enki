@@ -12,8 +12,8 @@ import { getAllTools, getToolBySlug, getCategoryBySlug } from "@/lib/content";
 import { parseVersusSlug, versusPairs, versusSlug } from "@/lib/seo";
 import type { Tool } from "@/lib/schemas";
 
-export function generateStaticParams() {
-  return versusPairs(getAllTools()).map(([a, b]) => ({
+export async function generateStaticParams() {
+  return versusPairs(await getAllTools()).map(([a, b]) => ({
     versus: versusSlug(a.slug, b.slug),
   }));
 }
@@ -26,8 +26,8 @@ export async function generateMetadata({
   const { versus } = await params;
   const parsed = parseVersusSlug(versus);
   if (!parsed) return { title: "Not found" };
-  const a = getToolBySlug(parsed[0]);
-  const b = getToolBySlug(parsed[1]);
+  const a = await getToolBySlug(parsed[0]);
+  const b = await getToolBySlug(parsed[1]);
   if (!a || !b) return { title: "Not found" };
   return {
     title: `${a.name} vs ${b.name}: which is better? (2026)`,
@@ -44,13 +44,13 @@ export default async function VersusPage({
   const { versus } = await params;
   const parsed = parseVersusSlug(versus);
   if (!parsed) notFound();
-  const a = getToolBySlug(parsed[0]);
-  const b = getToolBySlug(parsed[1]);
+  const a = await getToolBySlug(parsed[0]);
+  const b = await getToolBySlug(parsed[1]);
   if (!a || !b) notFound();
 
   const winner = a.editorScore >= b.editorScore ? a : b;
   const loser = winner === a ? b : a;
-  const category = getCategoryBySlug(a.categorySlug);
+  const category = await getCategoryBySlug(a.categorySlug);
 
   const faqs = [
     {

@@ -16,20 +16,20 @@ import {
 } from "@/lib/content";
 
 describe("content: tools", () => {
-  it("returns tools sorted by name", () => {
-    const tools = getAllTools();
+  it("returns tools sorted by name", async () => {
+    const tools = await getAllTools();
     expect(tools.length).toBeGreaterThanOrEqual(24);
     const names = tools.map((t) => t.name);
     expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
   });
 
-  it("looks up a tool by slug", () => {
-    expect(getToolBySlug("cursor")?.name).toBe("Cursor");
-    expect(getToolBySlug("does-not-exist")).toBeUndefined();
+  it("looks up a tool by slug", async () => {
+    expect((await getToolBySlug("cursor"))?.name).toBe("Cursor");
+    expect(await getToolBySlug("does-not-exist")).toBeUndefined();
   });
 
-  it("returns only featured tools, highest rated first", () => {
-    const featured = getFeaturedTools();
+  it("returns only featured tools, highest rated first", async () => {
+    const featured = await getFeaturedTools();
     expect(featured.length).toBeGreaterThan(0);
     expect(featured.every((t) => t.featured)).toBe(true);
     for (let i = 1; i < featured.length; i++) {
@@ -39,37 +39,39 @@ describe("content: tools", () => {
 });
 
 describe("content: categories", () => {
-  it("returns categories with accurate tool counts", () => {
-    const categories = getCategories();
+  it("returns categories with accurate tool counts", async () => {
+    const categories = await getCategories();
     expect(categories.length).toBeGreaterThanOrEqual(6);
     for (const cat of categories) {
-      expect(cat.toolCount).toBe(getToolsByCategory(cat.slug).length);
+      expect(cat.toolCount).toBe((await getToolsByCategory(cat.slug)).length);
     }
   });
 
-  it("sums tool counts to the total tool count", () => {
-    const total = getCategories().reduce((sum, c) => sum + c.toolCount, 0);
-    expect(total).toBe(getAllTools().length);
+  it("sums tool counts to the total tool count", async () => {
+    const total = (await getCategories()).reduce(
+      (sum, c) => sum + c.toolCount,
+      0,
+    );
+    expect(total).toBe((await getAllTools()).length);
   });
 
-  it("resolves a category by slug", () => {
-    expect(getCategoryBySlug("coding")?.name).toBe("Coding & Dev");
-    expect(getCategoryBySlug("nope")).toBeUndefined();
+  it("resolves a category by slug", async () => {
+    expect((await getCategoryBySlug("coding"))?.name).toBe("Coding & Dev");
+    expect(await getCategoryBySlug("nope")).toBeUndefined();
   });
 });
 
 describe("content: related tools", () => {
-  it("never includes the source tool and respects the count", () => {
-    const tool = getToolBySlug("cursor")!;
-    const related = getRelatedTools(tool, 3);
+  it("never includes the source tool and respects the count", async () => {
+    const tool = (await getToolBySlug("cursor"))!;
+    const related = await getRelatedTools(tool, 3);
     expect(related).toHaveLength(3);
     expect(related.some((t) => t.slug === tool.slug)).toBe(false);
   });
 
-  it("prefers tools from the same category", () => {
-    const tool = getToolBySlug("cursor")!;
-    const related = getRelatedTools(tool, 3);
-    // The coding category has several tools, so the first result should share it.
+  it("prefers tools from the same category", async () => {
+    const tool = (await getToolBySlug("cursor"))!;
+    const related = await getRelatedTools(tool, 3);
     expect(related[0].categorySlug).toBe(tool.categorySlug);
   });
 });
@@ -124,39 +126,39 @@ describe("content: rating distribution", () => {
 });
 
 describe("content: stats & search", () => {
-  it("computes site stats", () => {
-    const stats = getStats();
-    expect(stats.toolCount).toBe(getAllTools().length);
-    expect(stats.categoryCount).toBe(getCategories().length);
+  it("computes site stats", async () => {
+    const stats = await getStats();
+    expect(stats.toolCount).toBe((await getAllTools()).length);
+    expect(stats.categoryCount).toBe((await getCategories()).length);
     expect(stats.reviewCount).toBeGreaterThan(0);
     expect(stats.averageRating).toBeGreaterThan(0);
     expect(stats.averageRating).toBeLessThanOrEqual(5);
   });
 
-  it("produces search docs for every tool and category", () => {
-    const docs = getSearchDocs();
+  it("produces search docs for every tool and category", async () => {
+    const docs = await getSearchDocs();
     expect(docs.filter((d) => d.type === "tool")).toHaveLength(
-      getAllTools().length,
+      (await getAllTools()).length,
     );
     expect(docs.filter((d) => d.type === "category")).toHaveLength(
-      getCategories().length,
+      (await getCategories()).length,
     );
     expect(docs.every((d) => d.href.startsWith("/"))).toBe(true);
   });
 });
 
 describe("content: leaderboards", () => {
-  it("returns both boards capped at the requested limit", () => {
-    const { editor, user } = getLeaderboards(15);
+  it("returns both boards capped at the requested limit", async () => {
+    const { editor, user } = await getLeaderboards(15);
     expect(editor).toHaveLength(15);
     expect(user).toHaveLength(15);
-    const small = getLeaderboards(5);
+    const small = await getLeaderboards(5);
     expect(small.editor).toHaveLength(5);
     expect(small.user).toHaveLength(5);
   });
 
-  it("orders the editor board by descending editor score with 1-based ranks", () => {
-    const { editor } = getLeaderboards(15);
+  it("orders the editor board by descending editor score with 1-based ranks", async () => {
+    const { editor } = await getLeaderboards(15);
     expect(editor[0].rank).toBe(1);
     expect(editor[editor.length - 1].rank).toBe(editor.length);
     for (let i = 1; i < editor.length; i++) {
@@ -166,8 +168,8 @@ describe("content: leaderboards", () => {
     }
   });
 
-  it("orders the user board by rating, breaking ties by review count", () => {
-    const { user } = getLeaderboards(15);
+  it("orders the user board by rating, breaking ties by review count", async () => {
+    const { user } = await getLeaderboards(15);
     for (let i = 1; i < user.length; i++) {
       const prev = user[i - 1];
       const cur = user[i];
@@ -178,36 +180,36 @@ describe("content: leaderboards", () => {
     }
   });
 
-  it("carries each entry's standing on the other board", () => {
-    const { editor } = getLeaderboards(15);
+  it("carries each entry's standing on the other board", async () => {
+    const { editor } = await getLeaderboards(15);
     expect(editor[0].editorRank).toBe(1);
     expect(editor[0].userRank).toBeGreaterThanOrEqual(1);
   });
 
-  it("puts Cursor atop editors and Midjourney atop the community", () => {
-    const { editor, user } = getLeaderboards(15);
+  it("puts Cursor atop editors and Midjourney atop the community", async () => {
+    const { editor, user } = await getLeaderboards(15);
     expect(editor[0].slug).toBe("cursor");
     expect(user[0].slug).toBe("midjourney");
   });
 });
 
 describe("content: compare tools", () => {
-  it("returns every tool, sorted by name", () => {
-    const compare = getCompareTools();
-    expect(compare).toHaveLength(getAllTools().length);
+  it("returns every tool, sorted by name", async () => {
+    const compare = await getCompareTools();
+    expect(compare).toHaveLength((await getAllTools()).length);
     const names = compare.map((c) => c.name);
     expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
   });
 
-  it("caps pros and cons at three each", () => {
-    for (const c of getCompareTools()) {
+  it("caps pros and cons at three each", async () => {
+    for (const c of await getCompareTools()) {
       expect(c.pros.length).toBeLessThanOrEqual(3);
       expect(c.cons.length).toBeLessThanOrEqual(3);
     }
   });
 
-  it("exposes a valid pricing model and a boolean free-trial flag", () => {
-    for (const c of getCompareTools()) {
+  it("exposes a valid pricing model and a boolean free-trial flag", async () => {
+    for (const c of await getCompareTools()) {
       expect(["free", "freemium", "paid", "enterprise"]).toContain(
         c.pricingModel,
       );
@@ -215,9 +217,9 @@ describe("content: compare tools", () => {
     }
   });
 
-  it("mirrors the source tool's scores and platforms", () => {
-    const cursor = getCompareTools().find((c) => c.slug === "cursor")!;
-    const source = getToolBySlug("cursor")!;
+  it("mirrors the source tool's scores and platforms", async () => {
+    const cursor = (await getCompareTools()).find((c) => c.slug === "cursor")!;
+    const source = (await getToolBySlug("cursor"))!;
     expect(cursor.editorScore).toBe(source.editorScore);
     expect(cursor.rating).toBe(source.rating);
     expect(cursor.platforms).toEqual(source.platforms);

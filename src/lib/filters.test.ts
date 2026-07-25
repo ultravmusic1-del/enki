@@ -3,8 +3,10 @@ import Fuse from "fuse.js";
 import { applyFilters, sortTools, getAllTags, pinSponsored } from "@/lib/filters";
 import { getAllTools, getCategories } from "@/lib/content";
 
-const tools = getAllTools();
-const categoryName = new Map(getCategories().map((c) => [c.slug, c.name]));
+const tools = await getAllTools();
+const categoryName = new Map(
+  (await getCategories()).map((c) => [c.slug, c.name]),
+);
 
 describe("filters: applyFilters", () => {
   it("filters by category", () => {

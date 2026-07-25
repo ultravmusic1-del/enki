@@ -7,8 +7,10 @@ import {
   type FinderAnswers,
 } from "@/lib/finder";
 
-const tools = getAllTools();
-const categoryName = new Map(getCategories().map((c) => [c.slug, c.name]));
+const tools = await getAllTools();
+const categoryName = new Map(
+  (await getCategories()).map((c) => [c.slug, c.name]),
+);
 
 function rec(answers: FinderAnswers, n = 3) {
   return recommendTools(tools, answers, categoryName, n);

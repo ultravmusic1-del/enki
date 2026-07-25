@@ -13,8 +13,8 @@ import {
   getCategoryBySlug,
 } from "@/lib/content";
 
-export function generateStaticParams() {
-  return getAllTools().map((t) => ({ slug: t.slug }));
+export async function generateStaticParams() {
+  return (await getAllTools()).map((t) => ({ slug: t.slug }));
 }
 
 export async function generateMetadata({
@@ -23,9 +23,9 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const tool = getToolBySlug(slug);
+  const tool = await getToolBySlug(slug);
   if (!tool) return { title: "Not found" };
-  const alts = getRelatedTools(tool, 6);
+  const alts = await getRelatedTools(tool, 6);
   return {
     title: `${alts.length} best ${tool.name} alternatives (2026)`,
     description: `Looking for an alternative to ${tool.name}? Our editors' vetted picks: ${alts
@@ -42,11 +42,11 @@ export default async function AlternativesPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const tool = getToolBySlug(slug);
+  const tool = await getToolBySlug(slug);
   if (!tool) notFound();
 
-  const alts = getRelatedTools(tool, 6);
-  const category = getCategoryBySlug(tool.categorySlug);
+  const alts = await getRelatedTools(tool, 6);
+  const category = await getCategoryBySlug(tool.categorySlug);
 
   return (
     <Container className="pt-28 pb-20">

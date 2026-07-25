@@ -19,12 +19,12 @@ import type { Tool } from "@/lib/schemas";
 
 const YEAR = 2026;
 
-export function generateStaticParams() {
-  return getCategories().map((c) => ({ category: c.slug }));
+export async function generateStaticParams() {
+  return (await getCategories()).map((c) => ({ category: c.slug }));
 }
 
-function ranked(slug: string): Tool[] {
-  return [...getToolsByCategory(slug)].sort(
+async function ranked(slug: string): Promise<Tool[]> {
+  return [...(await getToolsByCategory(slug))].sort(
     (a, b) =>
       b.editorScore - a.editorScore ||
       b.rating - a.rating ||
@@ -39,9 +39,9 @@ export async function generateMetadata({
   params: Promise<{ category: string }>;
 }): Promise<Metadata> {
   const { category } = await params;
-  const cat = getCategoryBySlug(category);
+  const cat = await getCategoryBySlug(category);
   if (!cat) return { title: "Not found" };
-  const tools = ranked(category);
+  const tools = await ranked(category);
   return {
     title: `The ${tools.length} best ${cat.name} AI tools (${YEAR})`,
     description: `Our editors' ranked pick of the best ${cat.name.toLowerCase()} AI tools in ${YEAR}, vetted and scored. ${tools
@@ -58,10 +58,10 @@ export default async function BestCategoryPage({
   params: Promise<{ category: string }>;
 }) {
   const { category } = await params;
-  const cat = getCategoryBySlug(category);
+  const cat = await getCategoryBySlug(category);
   if (!cat) notFound();
 
-  const tools = ranked(category);
+  const tools = await ranked(category);
   const top = tools[0];
   const freeTools = tools.filter(
     (t) => t.pricing.model === "free" || t.pricing.model === "freemium",

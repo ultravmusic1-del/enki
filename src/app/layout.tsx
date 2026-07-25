@@ -53,11 +53,11 @@ export const viewport: Viewport = {
   themeColor: "#16191d",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const searchDocs = getSearchDocs();
-  const compareTools = getAllTools().map((t) => ({
+  const searchDocs = await getSearchDocs();
+  const compareTools = (await getAllTools()).map((t) => ({
     slug: t.slug,
     name: t.name,
     logo: t.logo,

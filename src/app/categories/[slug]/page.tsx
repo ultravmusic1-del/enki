@@ -13,8 +13,8 @@ import {
 } from "@/lib/content";
 import { sortTools, pinSponsored } from "@/lib/filters";
 
-export function generateStaticParams() {
-  return getCategories().map((c) => ({ slug: c.slug }));
+export async function generateStaticParams() {
+  return (await getCategories()).map((c) => ({ slug: c.slug }));
 }
 
 export async function generateMetadata({
@@ -23,7 +23,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const category = getCategoryBySlug(slug);
+  const category = await getCategoryBySlug(slug);
   if (!category) return { title: "Category not found" };
 
   return {
@@ -39,11 +39,11 @@ export default async function CategoryDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const category = getCategoryBySlug(slug);
+  const category = await getCategoryBySlug(slug);
   if (!category) notFound();
 
-  const tools = pinSponsored(sortTools(getToolsByCategory(category.slug), "rating"));
-  const otherCategories = getCategories()
+  const tools = pinSponsored(sortTools(await getToolsByCategory(category.slug), "rating"));
+  const otherCategories = (await getCategories())
     .filter((c) => c.slug !== category.slug)
     .slice(0, 3);
 

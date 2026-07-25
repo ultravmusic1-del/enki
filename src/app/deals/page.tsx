@@ -17,8 +17,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/deals" },
 };
 
-export default function DealsPage() {
-  const deals = getActiveDeals(getAllTools(), new Date());
+export default async function DealsPage() {
+  const deals = getActiveDeals(await getAllTools(), new Date());
 
   return (
     <Container className="pt-28 pb-20">

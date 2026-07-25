@@ -10,8 +10,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/leaderboards" },
 };
 
-export default function LeaderboardsPage() {
-  const { editor, user } = getLeaderboards(15);
+export default async function LeaderboardsPage() {
+  const { editor, user } = await getLeaderboards(15);
 
   return (
     <div className="relative overflow-hidden pt-28 pb-24">

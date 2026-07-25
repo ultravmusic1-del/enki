@@ -12,9 +12,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "/tools" },
 };
 
-export default function ToolsPage() {
-  const tools = getAllTools();
-  const categories = getCategories();
+export default async function ToolsPage() {
+  const tools = await getAllTools();
+  const categories = await getCategories();
   const tags = getAllTags(tools);
 
   return (

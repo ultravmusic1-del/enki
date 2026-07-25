@@ -17,7 +17,7 @@ export default async function AdminPage() {
   await requireAdmin();
 
   const supabase = await createClient();
-  const allTools = getAllTools();
+  const allTools = await getAllTools();
   const nameBySlug = new Map(allTools.map((t) => [t.slug, t.name]));
   const revet = toolsNeedingRevet(allTools, new Date());
 

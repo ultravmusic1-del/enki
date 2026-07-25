@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 import {
   siteJsonLd,
   toolJsonLd,
@@ -7,6 +7,7 @@ import {
   itemListJsonLd,
 } from "@/lib/structured-data";
 import { getToolBySlug, getReviewsForTool } from "@/lib/content";
+import type { Tool } from "@/lib/schemas";
 
 type Node = { "@type"?: string; [k: string]: unknown };
 
@@ -32,11 +33,13 @@ describe("structured-data: site", () => {
 });
 
 describe("structured-data: tool", () => {
-  const tool = getToolBySlug("cursor")!;
-  const reviews = getReviewsForTool("cursor");
-  const graph = graphOf(
-    toolJsonLd({ tool, categoryName: "Coding & Dev", reviews }),
-  );
+  let tool: Tool;
+  let graph: Node[];
+  beforeAll(async () => {
+    tool = (await getToolBySlug("cursor"))!;
+    const reviews = getReviewsForTool("cursor");
+    graph = graphOf(toolJsonLd({ tool, categoryName: "Coding & Dev", reviews }));
+  });
 
   it("emits a SoftwareApplication whose rating mirrors the tool", () => {
     const app = nodeOfType(graph, "SoftwareApplication");

@@ -30,8 +30,8 @@ import {
   getRatingDistribution,
 } from "@/lib/content";
 
-export function generateStaticParams() {
-  return getAllTools().map((tool) => ({ slug: tool.slug }));
+export async function generateStaticParams() {
+  return (await getAllTools()).map((tool) => ({ slug: tool.slug }));
 }
 
 export async function generateMetadata({
@@ -40,7 +40,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const tool = getToolBySlug(slug);
+  const tool = await getToolBySlug(slug);
   if (!tool) return { title: "Tool not found" };
 
   return {
@@ -61,13 +61,13 @@ export default async function ToolDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const tool = getToolBySlug(slug);
+  const tool = await getToolBySlug(slug);
   if (!tool) notFound();
 
   const outbound = resolveOutboundTarget(tool);
-  const category = getCategoryBySlug(tool.categorySlug);
+  const category = await getCategoryBySlug(tool.categorySlug);
   const reviews = getReviewsForTool(tool.slug);
-  const related = getRelatedTools(tool, 3);
+  const related = await getRelatedTools(tool, 3);
   const distribution = getRatingDistribution(tool.rating, tool.reviewCount);
 
   return (

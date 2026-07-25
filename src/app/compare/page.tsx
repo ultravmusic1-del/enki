@@ -11,8 +11,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/compare" },
 };
 
-export default function ComparePage() {
-  const tools = getCompareTools();
+export default async function ComparePage() {
+  const tools = await getCompareTools();
 
   return (
     <div className="relative pt-28 pb-24">

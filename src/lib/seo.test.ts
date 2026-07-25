@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { getAllTools } from "@/lib/content";
 import { parseVersusSlug, versusPairs, versusSlug } from "@/lib/seo";
 
-const tools = getAllTools();
+const tools = await getAllTools();
 
 describe("seo: versus slugs", () => {
   it("builds a canonical (alphabetical) versus slug", () => {

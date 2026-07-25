@@ -4,10 +4,10 @@ import { siteConfig } from "@/lib/site";
 export const dynamic = "force-static";
 
 /** Plain-text site guide following the llms.txt convention. */
-export function GET() {
+export async function GET() {
   const base = siteConfig.url;
-  const categories = getCategories();
-  const tools = getAllTools();
+  const categories = await getCategories();
+  const tools = await getAllTools();
 
   const lines = [
     `# ${siteConfig.name}`,

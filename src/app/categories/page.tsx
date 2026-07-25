@@ -13,9 +13,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "/categories" },
 };
 
-export default function CategoriesPage() {
-  const categories = getCategories();
-  const stats = getStats();
+export default async function CategoriesPage() {
+  const categories = await getCategories();
+  const stats = await getStats();
 
   return (
     <div className="pt-28 pb-16">

@@ -17,10 +17,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function FinderPage() {
-  const tools = getAllTools();
+export default async function FinderPage() {
+  const tools = await getAllTools();
   const categoryNames = Object.fromEntries(
-    getCategories().map((c) => [c.slug, c.name]),
+    (await getCategories()).map((c) => [c.slug, c.name]),
   );
 
   return (

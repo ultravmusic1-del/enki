@@ -37,10 +37,10 @@ const vetSteps = [
   },
 ] as const;
 
-export default function Home() {
-  const featured = getFeaturedTools().slice(0, 6);
-  const categories = getCategories();
-  const stats = getStats();
+export default async function Home() {
+  const featured = (await getFeaturedTools()).slice(0, 6);
+  const categories = await getCategories();
+  const stats = await getStats();
   const categoryName = new Map(categories.map((c) => [c.slug, c.name]));
 
   return (

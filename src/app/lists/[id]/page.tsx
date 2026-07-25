@@ -5,7 +5,7 @@ import { Container } from "@/components/shared/container";
 import { Icon } from "@/components/shared/icon";
 import { ToolCard } from "@/components/shared/tool-card";
 import { createClient } from "@/lib/supabase/server";
-import { getToolBySlug, getCategories } from "@/lib/content";
+import { getAllTools, getCategories } from "@/lib/content";
 import { siteConfig } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -64,9 +64,10 @@ export default async function ListPage({
   const list = await loadList(id);
   if (!list) notFound();
 
-  const categoryName = new Map(getCategories().map((c) => [c.slug, c.name]));
+  const categoryName = new Map((await getCategories()).map((c) => [c.slug, c.name]));
+  const toolBySlug = new Map((await getAllTools()).map((t) => [t.slug, t]));
   const entries = list.items
-    .map((it) => ({ tool: getToolBySlug(it.tool_slug), note: it.note }))
+    .map((it) => ({ tool: toolBySlug.get(it.tool_slug), note: it.note }))
     .filter((e): e is { tool: NonNullable<typeof e.tool>; note: string | null } =>
       Boolean(e.tool),
     );
