@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -53,15 +54,23 @@ export default async function AdminPage() {
   return (
     <Container className="pt-28 pb-20">
       <div className="flex flex-col gap-10">
-        <header className="flex flex-col gap-2">
-          <p className="font-mono text-xs tracking-[0.3em] text-teal uppercase">
-            Operator
-          </p>
-          <h1 className="font-display text-4xl font-semibold">Admin</h1>
-          <p className="text-sm text-muted-foreground">
-            Outbound demand and community moderation. Editorial content is still
-            managed in <code className="font-mono">src/data</code>.
-          </p>
+        <header className="flex flex-wrap items-end justify-between gap-4">
+          <div className="flex flex-col gap-2">
+            <p className="font-mono text-xs tracking-[0.3em] text-teal uppercase">
+              Operator
+            </p>
+            <h1 className="font-display text-4xl font-semibold">Admin</h1>
+            <p className="text-sm text-muted-foreground">
+              Outbound demand, community moderation, and tool content.
+            </p>
+          </div>
+          <Link
+            href="/admin/tools"
+            className="inline-flex h-10 items-center gap-1.5 rounded-full bg-teal px-5 text-sm font-semibold text-[#04171a] hover:bg-teal-bright"
+          >
+            <Icon name="SlidersHorizontal" className="size-4" />
+            Manage tools
+          </Link>
         </header>
 
         {/* KPIs */}
