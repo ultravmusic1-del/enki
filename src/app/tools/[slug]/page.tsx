@@ -10,7 +10,6 @@ import { Reveal } from "@/components/shared/reveal";
 import { Icon } from "@/components/shared/icon";
 import { Badge } from "@/components/ui/badge";
 import { ScreenshotCarousel } from "@/components/detail/screenshot-carousel";
-import { RatingDistribution } from "@/components/detail/rating-distribution";
 import { ReviewList } from "@/components/detail/review-list";
 import { ReviewModal } from "@/components/detail/review-modal";
 import { CommunityReviews } from "@/components/detail/community-reviews";
@@ -27,7 +26,6 @@ import {
   getCategoryBySlug,
   getRelatedTools,
   getReviewsForTool,
-  getRatingDistribution,
 } from "@/lib/content";
 
 export async function generateStaticParams() {
@@ -68,7 +66,6 @@ export default async function ToolDetailPage({
   const category = await getCategoryBySlug(tool.categorySlug);
   const reviews = getReviewsForTool(tool.slug);
   const related = await getRelatedTools(tool, 3);
-  const distribution = getRatingDistribution(tool.rating, tool.reviewCount);
 
   return (
     <article className="pb-16">
@@ -338,13 +335,6 @@ export default async function ToolDetailPage({
                   Reviews
                 </SectionLabel>
                 <ReviewModal toolName={tool.name} toolSlug={tool.slug} />
-              </div>
-              <div className="mt-6 rounded-2xl border border-border bg-card/40 p-6">
-                <RatingDistribution
-                  rating={tool.rating}
-                  reviewCount={tool.reviewCount}
-                  distribution={distribution}
-                />
               </div>
               <div className="mt-6">
                 <CommunityReviews toolSlug={tool.slug} />

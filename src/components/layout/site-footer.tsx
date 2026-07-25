@@ -10,6 +10,7 @@ import { subscribe } from "@/app/actions/newsletter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Icon } from "@/components/shared/icon";
+import { Honeypot } from "@/components/shared/honeypot";
 import { cn } from "@/lib/utils";
 
 const exploreLinks = [
@@ -37,11 +38,11 @@ export function SiteFooter() {
     formState: { errors, isSubmitting },
   } = useForm<NewsletterValues>({
     resolver: zodResolver(newsletterSchema),
-    defaultValues: { email: "" },
+    defaultValues: { email: "", hp: "" },
   });
 
   const onSubmit = async (values: NewsletterValues) => {
-    const res = await subscribe(values.email);
+    const res = await subscribe(values.email, values.hp);
     if (res.ok) {
       toast.success("You're on the list", {
         description: `We'll send the best new AI tools to ${values.email}.`,
@@ -111,9 +112,10 @@ export function SiteFooter() {
             </p>
             <form
               onSubmit={handleSubmit(onSubmit)}
-              className="flex flex-col gap-2"
+              className="relative flex flex-col gap-2"
               noValidate
             >
+              <Honeypot register={register("hp")} />
               <div className="flex gap-2">
                 <Input
                   type="email"

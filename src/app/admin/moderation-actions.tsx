@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 
 const OPTIONS: { value: ReviewStatus; label: string }[] = [
   { value: "approved", label: "Approve" },
+  { value: "pending", label: "Hold" },
   { value: "flagged", label: "Flag" },
   { value: "rejected", label: "Reject" },
 ];

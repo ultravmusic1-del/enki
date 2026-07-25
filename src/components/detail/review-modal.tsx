@@ -83,8 +83,8 @@ export function ReviewModal({
       return;
     }
 
-    toast.success("Review posted", {
-      description: `Thanks for reviewing ${toolName}.`,
+    toast.success("Review submitted", {
+      description: `Thanks for reviewing ${toolName}. An editor will publish it shortly.`,
     });
     window.dispatchEvent(
       new CustomEvent(REVIEWS_UPDATED_EVENT, { detail: { toolSlug } }),

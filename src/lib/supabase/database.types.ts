@@ -242,6 +242,10 @@ export type Database = {
         Args: { days?: number }
         Returns: { tool_slug: string; clicks: number }[]
       }
+      admin_set_review_status: {
+        Args: { review_id: string; new_status: string }
+        Returns: boolean
+      }
     }
     Enums: { [_ in never]: never }
     CompositeTypes: { [_ in never]: never }

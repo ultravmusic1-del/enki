@@ -15,6 +15,7 @@ type Row = {
   body: string | null;
   created_at: string;
   user_id: string;
+  status: string;
   display_name: string;
 };
 
@@ -31,7 +32,7 @@ export function CommunityReviews({ toolSlug }: { toolSlug: string }) {
     const supabase = createClient();
     const { data: revs } = await supabase
       .from("reviews")
-      .select("id, rating, title, body, created_at, user_id")
+      .select("id, rating, title, body, created_at, user_id, status")
       .eq("tool_slug", toolSlug)
       .order("created_at", { ascending: false });
 
@@ -71,9 +72,12 @@ export function CommunityReviews({ toolSlug }: { toolSlug: string }) {
     return () => window.removeEventListener(REVIEWS_UPDATED_EVENT, onUpdate);
   }, [load, toolSlug]);
 
-  // Real aggregate from the moderated reviews we just fetched (RLS already
-  // limits non-admins to approved rows), computed before any early return.
-  const summary = useMemo(() => summarizeReviews(reviews), [reviews]);
+  // Only approved reviews count toward the public average. RLS also returns the
+  // viewer's own pending review, which must not move the number others see.
+  const summary = useMemo(
+    () => summarizeReviews(reviews.filter((r) => r.status === "approved")),
+    [reviews],
+  );
 
   if (!loaded || reviews.length === 0) return null;
 
@@ -102,7 +106,14 @@ export function CommunityReviews({ toolSlug }: { toolSlug: string }) {
                 })}
               </span>
             </div>
-            <StarRating value={r.rating} size={13} />
+            <span className="flex items-center gap-2">
+              {r.status !== "approved" && (
+                <span className="rounded-full border border-border px-2 py-0.5 font-mono text-[0.6rem] tracking-wide text-muted-foreground uppercase">
+                  Awaiting review
+                </span>
+              )}
+              <StarRating value={r.rating} size={13} />
+            </span>
           </div>
           {r.title && (
             <p className="mt-2 font-display text-base leading-tight font-semibold">

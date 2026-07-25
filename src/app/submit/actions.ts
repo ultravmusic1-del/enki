@@ -6,9 +6,14 @@ import { submissionFormSchema, type SubmissionValues } from "@/lib/schemas";
 /**
  * Record a public tool submission. Validated server-side with the same Zod
  * schema the form uses; written with the anonymous client (RLS allows insert
- * only — nobody but an admin can read the queue back).
+ * only — nobody but an admin can read the queue back). Length limits are
+ * mirrored as CHECK constraints in Postgres, since the anon key is public and
+ * a direct REST caller never runs this code.
  */
 export async function submitTool(values: SubmissionValues) {
+  // A filled honeypot means a bot. Report success so it learns nothing.
+  if (values.hp) return { ok: true as const };
+
   const parsed = submissionFormSchema.safeParse(values);
   if (!parsed.success) {
     return { ok: false as const, error: "Please check the form and try again." };
@@ -24,6 +29,12 @@ export async function submitTool(values: SubmissionValues) {
     submitter_email: v.submitterEmail?.trim() || null,
   });
 
-  if (error) return { ok: false as const, error: error.message };
+  if (error) {
+    console.error("[enki] tool submission failed", error);
+    return {
+      ok: false as const,
+      error: "Could not send your submission. Try again.",
+    };
+  }
   return { ok: true as const };
 }

@@ -1,7 +1,6 @@
 import type { ReviewWithAuthor } from "@/lib/content";
 import { StarRating } from "@/components/shared/star-rating";
 import { Monogram } from "@/components/shared/monogram";
-import { Icon } from "@/components/shared/icon";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", {
@@ -35,20 +34,11 @@ export function ReviewList({ reviews }: { reviews: ReviewWithAuthor[] }) {
                 size="sm"
               />
               <div>
-                <p className="flex items-center gap-1.5 text-sm font-medium">
+                <p className="text-sm font-medium">
                   {review.author?.name ?? "Anonymous"}
-                  {review.verified && (
-                    <span
-                      className="inline-flex items-center gap-0.5 text-teal"
-                      title="Verified reviewer"
-                    >
-                      <Icon name="BadgeCheck" className="size-3.5" />
-                    </span>
-                  )}
                 </p>
                 <p className="font-mono text-[0.7rem] tracking-wide text-muted-foreground">
-                  {review.author?.role ?? "Community"} ·{" "}
-                  {formatDate(review.date)}
+                  {review.author?.role ?? "Community"} · {formatDate(review.date)}
                 </p>
               </div>
             </div>
@@ -61,11 +51,6 @@ export function ReviewList({ reviews }: { reviews: ReviewWithAuthor[] }) {
           <p className="mt-1.5 text-sm text-pretty text-muted-foreground">
             {review.body}
           </p>
-
-          <div className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Icon name="ThumbsUp" className="size-3.5" />
-            {review.helpful} found this helpful
-          </div>
         </li>
       ))}
     </ul>

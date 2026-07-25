@@ -141,8 +141,6 @@ export const reviewSchema = z.object({
   body: z.string().min(1),
   /** ISO date string, e.g. 2025-11-03. */
   date: z.iso.date(),
-  helpful: z.number().int().min(0),
-  verified: z.boolean(),
 });
 
 export type Review = z.infer<typeof reviewSchema>;
@@ -164,8 +162,17 @@ export type ReviewFormValues = z.infer<typeof reviewFormSchema>;
 
 /* -------------------------------------------------- newsletter form (footer) */
 
+/**
+ * Hidden bot-trap field. Never shown to a human, so any value at all means the
+ * submitter is automated. It is `optional()` and never fails validation — the
+ * server actions decide what to do with it, so a bot gets a normal-looking
+ * success rather than a signal that it was detected.
+ */
+const honeypot = z.string().optional();
+
 export const newsletterSchema = z.object({
-  email: z.email("Enter a valid email address"),
+  email: z.email("Enter a valid email address").max(254),
+  hp: honeypot,
 });
 
 export type NewsletterValues = z.infer<typeof newsletterSchema>;
@@ -174,15 +181,16 @@ export type NewsletterValues = z.infer<typeof newsletterSchema>;
 
 export const submissionFormSchema = z.object({
   name: z.string().min(1, "Enter the tool's name").max(80),
-  url: z.url("Enter a valid URL, including https://"),
-  categorySlug: z.string().optional(),
+  url: z.url("Enter a valid URL, including https://").max(2048),
+  categorySlug: z.string().max(64).optional(),
   pitch: z
     .string()
     .max(500, "Keep the pitch under 500 characters")
     .optional(),
   submitterEmail: z
-    .union([z.email("Enter a valid email"), z.literal("")])
+    .union([z.email("Enter a valid email").max(254), z.literal("")])
     .optional(),
+  hp: honeypot,
 });
 
 export type SubmissionValues = z.infer<typeof submissionFormSchema>;

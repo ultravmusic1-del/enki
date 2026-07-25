@@ -25,12 +25,17 @@ export default async function AdminPage() {
   const [
     { data: stats },
     { count: reviewCount },
+    { count: pendingReviewCount },
     { data: reviews },
     { data: submissions },
     { count: subscriberCount },
   ] = await Promise.all([
     supabase.rpc("admin_click_stats", { days: 30 }),
     supabase.from("reviews").select("id", { count: "exact", head: true }),
+    supabase
+      .from("reviews")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending"),
     supabase
       .from("reviews")
       .select("id, tool_slug, rating, title, body, status, created_at")
@@ -74,9 +79,10 @@ export default async function AdminPage() {
         </header>
 
         {/* KPIs */}
-        <section className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border ring-hairline md:grid-cols-5">
+        <section className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border ring-hairline md:grid-cols-6">
           <Kpi label="Tools" value={String(nameBySlug.size)} />
           <Kpi label="Reviews" value={String(reviewCount ?? 0)} />
+          <Kpi label="Pending reviews" value={String(pendingReviewCount ?? 0)} />
           <Kpi label="Outbound clicks (30d)" value={String(totalClicks)} />
           <Kpi label="Pending submissions" value={String(pendingSubmissions)} />
           <Kpi label="Subscribers" value={String(subscriberCount ?? 0)} />

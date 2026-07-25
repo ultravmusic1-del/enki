@@ -41,20 +41,20 @@ describe("structured-data: tool", () => {
     graph = graphOf(toolJsonLd({ tool, categoryName: "Coding & Dev", reviews }));
   });
 
-  it("emits a SoftwareApplication whose rating mirrors the tool", () => {
+  it("omits AggregateRating while the seed ratings are unverified", () => {
     const app = nodeOfType(graph, "SoftwareApplication");
-    const agg = app.aggregateRating as {
-      ratingValue: number;
-      reviewCount: number;
-    };
-    expect(agg.ratingValue).toBe(tool.rating);
-    expect(agg.reviewCount).toBe(tool.reviewCount);
-    expect(String(app.url)).toContain("/tools/cursor");
+    expect(app.aggregateRating).toBeUndefined();
   });
 
-  it("caps embedded reviews at five", () => {
+  it("omits embedded Review markup while the seed ratings are unverified", () => {
     const app = nodeOfType(graph, "SoftwareApplication");
-    expect((app.review as unknown[]).length).toBeLessThanOrEqual(5);
+    expect(app.review).toBeUndefined();
+  });
+
+  it("still describes the application itself", () => {
+    const app = nodeOfType(graph, "SoftwareApplication");
+    expect(app.name).toBe(tool.name);
+    expect(String(app.url)).toContain("/tools/cursor");
   });
 
   it("prices a freemium tool at zero", () => {

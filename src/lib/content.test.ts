@@ -8,7 +8,6 @@ import {
   getToolsByCategory,
   getRelatedTools,
   getReviewsForTool,
-  getRatingDistribution,
   getStats,
   getSearchDocs,
   getLeaderboards,
@@ -77,51 +76,22 @@ describe("content: related tools", () => {
 });
 
 describe("content: reviews", () => {
-  it("returns authored reviews with resolved authors, sorted by helpful", () => {
+  it("returns authored reviews with resolved authors, newest first", () => {
     const reviews = getReviewsForTool("cursor");
     expect(reviews.length).toBeGreaterThan(0);
     expect(reviews[0].author?.name).toBeTruthy();
     for (let i = 1; i < reviews.length; i++) {
-      expect(reviews[i - 1].helpful).toBeGreaterThanOrEqual(reviews[i].helpful);
-    }
-  });
-});
-
-describe("content: rating distribution", () => {
-  it("buckets sum exactly to the review count", () => {
-    for (const [rating, count] of [
-      [4.7, 2450],
-      [4.0, 720],
-      [4.3, 1],
-      [3.5, 7],
-    ] as const) {
-      const dist = getRatingDistribution(rating, count);
-      const sum = dist.reduce((s, b) => s + b.count, 0);
-      expect(sum).toBe(count);
+      expect(
+        reviews[i - 1].date.localeCompare(reviews[i].date),
+      ).toBeGreaterThanOrEqual(0);
     }
   });
 
-  it("returns buckets ordered 5 to 1 star", () => {
-    const dist = getRatingDistribution(4.5, 100);
-    expect(dist.map((b) => b.star)).toEqual([5, 4, 3, 2, 1]);
-  });
-
-  it("skews toward higher stars for a high rating", () => {
-    const dist = getRatingDistribution(4.7, 1000);
-    const fiveStar = dist.find((b) => b.star === 5)!.count;
-    const oneStar = dist.find((b) => b.star === 1)!.count;
-    expect(fiveStar).toBeGreaterThan(oneStar);
-  });
-
-  it("handles a zero review count", () => {
-    const dist = getRatingDistribution(0, 0);
-    expect(dist.every((b) => b.count === 0 && b.pct === 0)).toBe(true);
-  });
-
-  it("is deterministic", () => {
-    const a = getRatingDistribution(4.2, 843);
-    const b = getRatingDistribution(4.2, 843);
-    expect(a).toEqual(b);
+  it("carries no fabricated engagement metrics", () => {
+    for (const review of getReviewsForTool("cursor")) {
+      expect(review).not.toHaveProperty("helpful");
+      expect(review).not.toHaveProperty("verified");
+    }
   });
 });
 

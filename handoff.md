@@ -28,7 +28,7 @@ recommender) · `/categories` · `/categories/[slug]` · `/leaderboards` ·
 `apple-icon`.
 
 ### Admin (role-gated, `/admin`)
-`/admin` dashboard — KPIs (tools, reviews, 30-day outbound clicks, pending
+`/admin` dashboard — KPIs (tools, reviews, pending reviews, 30-day outbound clicks, pending
 submissions, subscribers), **outbound-demand leaderboard**, **review
 moderation**, **re-vet queue**, **submission moderation**. `/admin/tools` +
 `/admin/tools/[slug]` — **tool CMS** (create/edit/publish via a Zod-validated
@@ -36,9 +36,11 @@ JSON editor). See §2c to grant yourself admin.
 
 ### Everything that works (verified across sessions)
 - **Auth** — Supabase email/password; session middleware; header account menu.
-- **Reviews** — auth-gated, Postgres-persisted, **now moderated** (`status`:
-  pending/approved/rejected); public sees approved. **Real community rating**
-  (live average from moderated reviews) shows on tool pages.
+- **Reviews** — auth-gated, Postgres-persisted, and **pre-moderated**: new and
+  edited reviews land as `pending` and only an admin-guarded RPC
+  (`admin_set_review_status`) can publish them. Authors see their own queued
+  review labelled "Awaiting review"; everyone else sees approved only. The
+  community rating averages **approved reviews only**.
 - **Saved tools** — localStorage logged-out, Supabase-synced logged-in.
 - **Collections** — named groups of tools + private notes; a collection can be
   made public → shareable `/lists/[id]` (indexable).
@@ -61,8 +63,8 @@ JSON editor). See §2c to grant yourself admin.
   web manifest + apple-touch-icon, `/privacy` + `/terms`, skip-link + global
   focus ring.
 
-**Gates green:** `typecheck`, `lint`, `build` (**~181 routes**), `test`
-(**88 tests**).
+**Gates green:** `typecheck`, `lint`, `build` (**182 routes**), `test`
+(**121 tests**).
 
 **Repo:** `https://github.com/ultravmusic1-del/enki.git` (branch `main`, pushed).
 Latest commit **`b350d45`** (admin tool authoring). **NOT deployed yet** — see §2b.
@@ -119,7 +121,7 @@ email" off in Supabase → Auth → Providers → Email (dashboard only).
 ```bash
 pnpm install        # (npm also works; scripts are package-manager-agnostic)
 pnpm dev            # http://localhost:3000 (Next 16 + Turbopack). Reads .env.local.
-pnpm build          # production build (authoritative — SSGs ~181 pages)
+pnpm build          # production build (authoritative — SSGs 182 pages)
 pnpm start
 pnpm typecheck | pnpm lint | pnpm test | pnpm test:e2e
 ```
@@ -137,7 +139,7 @@ Managed via the Supabase MCP connector.
 | Table | Shape / purpose | RLS |
 |---|---|---|
 | `profiles` | `(id→auth.users, display_name, created_at)`, trigger-created on signup | public-read, self-write |
-| `reviews` | `(id, tool_slug, user_id, rating 1–5, title?, body?, **status**, created_at, updated_at)` | public-read **approved**; owner-write; **admins update any** |
+| `reviews` | `(id, tool_slug, user_id, rating 1–5, title?, body?, **status**, created_at, updated_at)` | public-read **approved**; owner read/write own; **`status` is column-revoked** — only `admin_set_review_status()` sets it, and a BEFORE trigger forces edits back to `pending` |
 | `saved_tools` | `(user_id, tool_slug, created_at)` | owner-only |
 | `admins` | `(user_id→auth.users, created_at)` — admin membership | **zero policies** (API-unreachable; SQL-only) |
 | `outbound_clicks` | `(id, tool_slug, path, created_at)` — affiliate click log | anon **insert-only**; admins read |
@@ -150,13 +152,17 @@ Managed via the Supabase MCP connector.
 ### RPCs (SECURITY DEFINER)
 - **`is_admin()`** → boolean; used by RLS + the app gate without exposing `admins`.
 - **`admin_click_stats(days int)`** → per-tool click counts; self-guards with
-  `is_admin()` (non-admins get 0 rows even if they call it directly).
+  `is_admin()` (non-admins get 0 rows even if they call it directly). `anon`
+  cannot execute it.
+- **`admin_set_review_status(review_id uuid, new_status text)`** → boolean; the
+  only path that may write `reviews.status`. Self-guards with `is_admin()` and
+  returns false (not an error) for everyone else. `anon` cannot execute it.
 
 ### Migrations applied (via MCP)
 `init_auth_backend`, `lock_down_handle_new_user`, `create_outbound_clicks`,
 `admin_foundation` (admins + is_admin + reviews.status + click-stats RPC),
 `create_tool_submissions`, `create_collections`, `create_subscribers`,
-`create_tools_table`.
+`create_tools_table`, **`harden_review_moderation`**, **`harden_public_input`**.
 
 ### Content layer — DB-preferred + seed fallback (IMPORTANT, new)
 `src/lib/content.ts` is now **async**. Tools load from the `tools` table
@@ -193,7 +199,7 @@ Categories/authors/seed-reviews remain seed-only.
 | Search | Fuse.js (threshold 0.3) |
 | Forms | React Hook Form + Zod v4 |
 | **Backend/Auth/CMS** | **Supabase** (`@supabase/supabase-js`, `@supabase/ssr`) — see §4 |
-| Server mutations | **Next server actions** (reviews, submit, newsletter, collections, admin moderation + tool CRUD) |
+| Server mutations | **Next server actions** (submit, newsletter, admin moderation + tool CRUD). Reviews, saved tools, and collections write from the **browser client** under RLS, not through server actions. **Every admin action calls `assertAdmin()` itself** — server actions are public POST endpoints, and RLS alone does not stop an unauthorized caller from triggering their side effects. |
 | Toasts / Analytics | Sonner; Vercel Web Analytics + Speed Insights |
 | Tests | Vitest (jsdom) + Playwright |
 | Dev tooling | code-review-graph MCP (§10) |
@@ -316,6 +322,15 @@ This exists because a pricing-badge clip once shipped on HTML-only inspection.
    (`getBoundingClientRect`) to verify layout, not screenshots.
 7. **code-review-graph pre-commit hook prints a `UnicodeEncodeError`** (Windows
    cp1252) but is `|| true`-guarded — commits are **not** blocked. Cosmetic.
+8. **`reviews.status` is not writable over PostgREST.** Table-level INSERT/UPDATE
+   were revoked and re-granted per column. If you add a column to `reviews` you
+   must grant it explicitly or writes start failing with a permission error. A
+   table-level grant would silently re-open the self-approval bypass — never
+   `grant update on public.reviews`.
+9. **Turbopack builds an empty `middleware-manifest.json` for `proxy.ts`.** That
+   is not a signal the proxy is dead — the code lands in a loader chunk. Verify
+   by setting a response header in `proxy.ts` and curling a route, not by
+   reading the manifest.
 
 ---
 
@@ -330,6 +345,27 @@ stats: `code-review-graph status`. Requires a Claude Code restart to load the MC
 
 ## 12. Open items / next steps
 
+### Operator decisions needed before a public launch
+
+- **The seed `rating` / `reviewCount` on tools are editorial sample figures, not
+  real community aggregates**, and the six reviewers in `src/data/authors.ts` are
+  invented personas. The parts that could not be substantiated at all are now
+  gone — the "verified reviewer" badge, the invented "helpful" counts, the star
+  histogram synthesized from an aggregate, and all `AggregateRating`/`Review`
+  structured data (gated behind `siteConfig.hasVerifiedRatings`, currently
+  `false`). **The displayed numbers and the bylines remain.** For a site that
+  earns affiliate revenue off these rankings, decide before launch whether to
+  (a) replace them with real moderated-review aggregates, (b) relabel them
+  plainly as editorial estimates, or (c) remove them. Flip
+  `hasVerifiedRatings` to `true` only once (a) is done.
+- **Edge rate limiting.** The public forms have honeypots and Postgres CHECK
+  constraints, but no request-rate ceiling. Add Vercel WAF / firewall rules for
+  `/submit`, `/go/*`, and the newsletter action at deploy time.
+- **Enable leaked-password protection** in Supabase → Auth (flagged by the
+  security advisors; dashboard-only setting).
+
+### Still to build
+
 - **Deploy** (§2b) — Vercel git import + env vars (your action), then verify; grant
   yourself admin (§2c).
 - **Email sending** — the newsletter *captures* subscribers but doesn't send.
@@ -341,11 +377,10 @@ stats: `code-review-graph status`. Requires a Claude Code restart to load the MC
 - **CMS authoring UX** — the tool editor is a Zod-validated **JSON editor** (fully
   functional). A field-by-field form (array editors for keyFeatures/screenshots/
   pros/cons, Supabase Storage for logo/screenshot uploads) is the polish pass.
-- **Rename `middleware.ts` → `proxy.ts`** (Next 16 deprecation warning).
-- **Tests for the new surfaces** — admin actions, server actions, and the React
-  components remain largely untested (pure `lib` logic is well-covered: finder,
-  outbound, deals, freshness, reviews, seo, structured-data). Highest-leverage:
-  mock Supabase in vitest and cover the auth/admin/collections flows.
+- **A nonce-based CSP** — deliberately omitted in `next.config.ts` because the 3D
+  hero and Vercel Analytics need a validated policy first.
+- **Component/E2E tests** — `lib` logic and the admin/CMS server actions are now
+  covered (121 tests); the React components remain largely untested.
 - **Consider a real `createdAt`/`updatedAt` on tools** (now that they can be
   DB-backed) to power an honest RSS feed / "recently added" digest.
 ```

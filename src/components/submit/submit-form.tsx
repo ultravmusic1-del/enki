@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { submissionFormSchema, type SubmissionValues } from "@/lib/schemas";
 import { submitTool } from "@/app/submit/actions";
 import { Icon } from "@/components/shared/icon";
+import { Honeypot } from "@/components/shared/honeypot";
 
 type CategoryOption = { slug: string; name: string };
 
@@ -27,6 +28,7 @@ export function SubmitForm({ categories }: { categories: CategoryOption[] }) {
       categorySlug: "",
       pitch: "",
       submitterEmail: "",
+      hp: "",
     },
   });
 
@@ -56,9 +58,11 @@ export function SubmitForm({ categories }: { categories: CategoryOption[] }) {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="glass ring-hairline flex flex-col gap-4 rounded-2xl border border-border p-6 sm:p-8"
+      className="glass ring-hairline relative flex flex-col gap-4 rounded-2xl border border-border p-6 sm:p-8"
       noValidate
     >
+      <Honeypot register={register("hp")} />
+
       <Field label="Tool name" error={errors.name?.message}>
         <input
           type="text"

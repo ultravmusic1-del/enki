@@ -81,14 +81,19 @@ export function toolJsonLd({
     url,
     applicationCategory: categoryName ? `${categoryName} — AI tool` : "AI tool",
     operatingSystem: tool.platforms.join(", ") || "Web",
-    aggregateRating: {
+  };
+
+  // Ratings are only ever claimed to search engines when they are real.
+  // See siteConfig.hasVerifiedRatings.
+  if (siteConfig.hasVerifiedRatings) {
+    application.aggregateRating = {
       "@type": "AggregateRating",
       ratingValue: tool.rating,
       reviewCount: tool.reviewCount,
       bestRating: 5,
       worstRating: 1,
-    },
-    review: reviews.slice(0, 5).map((r) => ({
+    };
+    application.review = reviews.slice(0, 5).map((r) => ({
       "@type": "Review",
       reviewRating: {
         "@type": "Rating",
@@ -100,8 +105,9 @@ export function toolJsonLd({
       datePublished: r.date,
       name: r.title,
       reviewBody: r.body,
-    })),
-  };
+    }));
+  }
+
   if (tool.logo) application.image = abs(tool.logo);
   if (offer) application.offers = offer;
 
