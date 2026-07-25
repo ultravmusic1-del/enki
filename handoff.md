@@ -113,7 +113,9 @@ self-promote). Steps:
    select id from auth.users where email = 'YOUR_EMAIL_HERE'
    on conflict (user_id) do nothing;
    ```
-3. Visit `/admin`. Non-admins are redirected to `/login`.
+3. Visit `/admin` — or use the **Admin** item that now appears in the account
+   menu (desktop dropdown and mobile menu) for admins only. Non-admins are
+   redirected to `/login`.
 
 **Current state:** `vivaankavalani11@gmail.com`
 (`7fc156ef-b643-48af-84e9-fee0a55d92af`) is in `admins`. Use the steps above to
