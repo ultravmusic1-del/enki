@@ -162,7 +162,8 @@ Managed via the Supabase MCP connector.
 `init_auth_backend`, `lock_down_handle_new_user`, `create_outbound_clicks`,
 `admin_foundation` (admins + is_admin + reviews.status + click-stats RPC),
 `create_tool_submissions`, `create_collections`, `create_subscribers`,
-`create_tools_table`, **`harden_review_moderation`**, **`harden_public_input`**.
+`create_tools_table`, **`harden_review_moderation`**, **`harden_public_input`**,
+**`revoke_admin_rpc_from_public`**.
 
 ### Content layer — DB-preferred + seed fallback (IMPORTANT, new)
 `src/lib/content.ts` is now **async**. Tools load from the `tools` table
@@ -331,6 +332,14 @@ This exists because a pricing-badge clip once shipped on HTML-only inspection.
    is not a signal the proxy is dead — the code lands in a loader chunk. Verify
    by setting a response header in `proxy.ts` and curling a route, not by
    reading the manifest.
+10. **`revoke execute ... from anon` on a function is a silent no-op.** Postgres
+    grants EXECUTE on new functions to **PUBLIC**, and `anon` inherits it, so the
+    revoke must target `public` and the intended roles be re-granted explicitly.
+    Check with `select proacl from pg_proc` — a leading `=X/postgres` entry *is*
+    the PUBLIC grant. `is_admin()` is deliberately left PUBLIC-executable: it is
+    called inside the RLS policies that anonymous readers hit (`published OR
+    is_admin()` on `tools`), and policy expressions are evaluated with the
+    caller's privileges, so revoking it would break the public site.
 
 ---
 
