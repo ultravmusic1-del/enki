@@ -52,26 +52,35 @@ moment visual code changes; this section is the procedure it refers to.
 changes, component markup/layout, `globals.css`, fonts, or anything that alters
 what renders on screen.
 
-### The sweep (do every step; cite what you checked)
+### The sweep
 
-1. **Serve the app.** `preview_start` with `{ name: "enki-dev" }`. If the
-   preview harness won't keep the dev server alive, run a production server
-   (`npm run build` then `npx next start -p <port>`) and open it with
-   `preview_start { url: "http://localhost:<port>/..." }` so the in-app browser
-   can reach it.
-2. **Load the affected routes _plus_ the always-check pages:** `/` (home —
-   featured cards + 3D hero) and `/tools` (directory cards). Add any route your
-   change touches (e.g. `/tools/<slug>` for detail-page work).
-3. **Console must be clean:** `read_console_messages` (onlyErrors) → zero errors.
-4. **Prove the layout, don't eyeball it.** If screenshots aren't available
-   (pane not compositing), use `javascript_tool` to measure bounding boxes:
-   - Cards/badges/flex rows: assert the child stays inside its container
-     (e.g. `badge.getBoundingClientRect().right <= card.getBoundingClientRect().right`).
-   - Check that truncation engages on long content and that nothing has
-     `scrollWidth > clientWidth` where it shouldn't.
-   - Test at a narrow and a wide viewport (`resize_window`) for responsive work.
-5. **Capture proof** when the pane composites (`computer` screenshot); otherwise
-   report the measurements. **Never** assert "no regression" without this.
+Run the harness. Do not hand-write measurement JavaScript — `pnpm sweep` does
+it, and it stays consistent between sessions.
+
+1. **Serve the app.** `preview_start` with `{ name: "enki-dev" }`, or `pnpm dev`.
+   If the preview harness won't keep the dev server alive, run a production
+   server (`pnpm build` then `npx next start -p <port>`).
+2. **Sweep the affected routes plus the always-check pages** (`/` and `/tools`):
+
+   ```bash
+   pnpm sweep -- / /tools /tools/cursor
+   ```
+
+   Add `--base http://localhost:PORT` if the server did not take 3000.
+3. **Every route/viewport pair must read PASS.** At 390px and 1440px the sweep
+   asserts zero console errors, no horizontal document overflow, and that no
+   in-flow element escapes a container that clips.
+4. **Cite the output** when you report the work complete. Never assert "no
+   regression" without it.
+
+Out-of-flow children (absolute, fixed, sticky) are skipped deliberately: Enki's
+atmosphere is built from oversized absolutely-positioned blurs their container
+is meant to clip. Containers that clip on purpose — carousels, marquees — opt
+out with `data-sweep-ignore`, which exempts the subtree. Use it only where
+clipping is genuinely the design, never to silence a real failure.
+
+The sweep proves containment, not taste. For colour, spacing, and typography,
+take a screenshot.
 
 ### Why this rule exists
 
@@ -81,3 +90,19 @@ a browser. Rendered HTML looked correct; the actual flex layout overflowed and
 `overflow-hidden` clipped the badge. Measuring `badge.right` vs `card.right` in
 the browser catches exactly this class of bug. Assume every visual change can
 break layout until the browser proves otherwise.
+
+<!-- project commands -->
+## Commands
+
+| Command | Use |
+|---|---|
+| `pnpm doctor` | Converge this machine and report what is in flight. Run first, every session |
+| `pnpm doctor --fix` | Repair hooks and dependencies; create a missing `.env.local` |
+| `pnpm verify` | The gate: typecheck + lint + test. The pre-commit hook runs this |
+| `pnpm sweep` | The Visual Sweep, as a command. Required after visual changes |
+| `pnpm build` | Authoritative production build |
+
+Enki is developed on two machines that sync through GitHub, so anything
+gitignored or unversioned drifts between them. `pnpm doctor` is how you find out.
+
+Skills: `enki-session-start`, `enki-visual-sweep`, `enki-supabase-change`.

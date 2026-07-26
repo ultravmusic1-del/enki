@@ -63,8 +63,10 @@ JSON editor). See §2c to grant yourself admin.
   web manifest + apple-touch-icon, `/privacy` + `/terms`, skip-link + global
   focus ring.
 
-**Gates green:** `typecheck`, `lint`, `build` (**182 routes**), `test`
-(**121 tests**).
+**Gates:** `pnpm verify` (typecheck + lint + test) is the gate, and the
+pre-commit hook runs it for any commit touching code. `pnpm build` is
+authoritative for routing, `pnpm sweep` for layout. Counts are deliberately not
+recorded here — they go stale. Run the commands.
 
 **Repo:** `https://github.com/ultravmusic1-del/enki.git` (branch `main`, pushed).
 **Live:** https://enki-five.vercel.app (Vercel project `enki`, auto-deploys on
@@ -80,7 +82,9 @@ and preview URLs behind Vercel SSO; the production alias above is public.
 NEXT_PUBLIC_SUPABASE_URL=https://qknsqurdawglctwqfwxe.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_iRpRQepBf8ozIoeBYH-sqQ_mjhupS5a
 ```
-In **`.env.local`** (gitignored, present locally); `.env.example` documents them.
+In **`.env.local`** (gitignored, so it never travels between machines);
+`.env.example` documents them and `pnpm doctor` reports exactly which keys a
+machine is missing.
 Both are the **publishable/anon** kind — safe client-side; RLS enforces access.
 The `service_role` key is never used or stored. **No new env vars are required**
 for the current features; the (unbuilt) email digest would add `RESEND_API_KEY`.
@@ -136,14 +140,40 @@ email" off in Supabase → Auth → Providers → Email (dashboard only).
 ## 3. How to run
 
 ```bash
-pnpm install        # (npm also works; scripts are package-manager-agnostic)
+pnpm install        # also wires core.hooksPath -> .githooks via `prepare`
+pnpm doctor         # env, deps, hooks, toolchain, Supabase, and what's in flight
 pnpm dev            # http://localhost:3000 (Next 16 + Turbopack). Reads .env.local.
-pnpm build          # production build (authoritative — SSGs 182 pages)
+pnpm verify         # the gate: typecheck + lint + test
+pnpm sweep          # the Visual Sweep as a command (needs a server running)
+pnpm build          # production build (authoritative for routing)
 pnpm start
 pnpm typecheck | pnpm lint | pnpm test | pnpm test:e2e
 ```
 `.claude/launch.json` (name `enki-dev`) has `autoPort:true` — auto-picks a free
 port if 3000 is taken.
+
+### Working across two machines
+
+Enki is developed on two devices that sync through GitHub. Everything
+gitignored (`.env.local`) or unversioned (`.git/hooks`, `node_modules`) drifts
+between them silently, so start every session from a command rather than from
+this document:
+
+```bash
+git pull
+pnpm install
+pnpm doctor
+```
+
+`pnpm doctor --fix` repairs hooks and dependencies and creates a missing
+`.env.local` from `.env.example`. It cannot know the secret values; fill them
+from §2a. `--json` gives the same result machine-readably, and the exit code is
+1 on any FAIL so it is safe to branch on.
+
+End the day with a normal commit. The pre-commit hook runs `pnpm verify` when a
+commit touches code and skips it for docs-only commits, and the
+`verify` GitHub Actions workflow re-runs the same gate on push — the one check
+that is machine-independent, standing between a bad commit and the live site.
 
 ---
 
@@ -221,7 +251,7 @@ Categories/authors/seed-reviews remain seed-only.
 | Toasts / Analytics | Sonner; Vercel Web Analytics + Speed Insights |
 | Tests | Vitest (jsdom) + Playwright |
 | Dev tooling | code-review-graph MCP (§10) |
-| Theme / Hosting | Dark only (`class="dark"`); Vercel (not yet deployed) |
+| Theme / Hosting | Dark only (`class="dark"`); Vercel — live, auto-deploys on push to `main` |
 
 ---
 
@@ -338,8 +368,13 @@ This exists because a pricing-badge clip once shipped on HTML-only inspection.
    `build`, not the stale dev console. `rm -rf .next` clears the server side.
 6. **Automated screenshots time out** on the GPU-heavy hero — use DOM measurement
    (`getBoundingClientRect`) to verify layout, not screenshots.
-7. **code-review-graph pre-commit hook prints a `UnicodeEncodeError`** (Windows
-   cp1252) but is `|| true`-guarded — commits are **not** blocked. Cosmetic.
+7. **Git hooks live in `.githooks/`, not `.git/hooks`.** `.git/hooks` is never
+   pushed, so a hook installed by hand on one machine does not exist on the
+   other — this is why an earlier pre-commit hook silently vanished. The
+   versioned hook is wired by `core.hooksPath`, which the `prepare` script sets
+   on every `pnpm install`. `pnpm doctor` reports it if it is unset.
+   `.gitattributes` pins `.githooks/*` to LF: a CRLF on the shebang line makes
+   `sh` fail with `bad interpreter` on macOS/Linux while working fine on Windows.
 8. **`reviews.status` is not writable over PostgREST.** Table-level INSERT/UPDATE
    were revoked and re-granted per column. If you add a column to `reviews` you
    must grant it explicitly or writes start failing with a permission error. A
