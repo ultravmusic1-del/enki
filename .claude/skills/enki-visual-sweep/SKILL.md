@@ -29,7 +29,10 @@ it, and it is consistent between sessions.
 
 At 390px and 1440px, for every route:
 
-- Zero console errors and zero page errors.
+- Zero console errors and zero page errors. Requests to `/_vercel/*` are
+  filtered out: Vercel Analytics and Speed Insights only serve those scripts on
+  Vercel's edge, so against a local `next start` they 404 on every route and
+  would fail everything for a reason unrelated to the page.
 - No horizontal document overflow.
 - No **in-flow** element escaping a container that clips
   (`overflow-x: hidden|clip`) by more than 1px. This is the generalized form of

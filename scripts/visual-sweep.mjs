@@ -20,7 +20,11 @@
  *   pnpm sweep -- --base http://localhost:3100 /
  */
 import { chromium } from "@playwright/test";
-import { dedupeProblems, summarize } from "./visual-sweep/report.mjs";
+import {
+  dedupeProblems,
+  isIgnorableConsoleError,
+  summarize,
+} from "./visual-sweep/report.mjs";
 
 const VIEWPORTS = [
   { name: "narrow", width: 390, height: 844 },
@@ -109,7 +113,13 @@ for (const route of targets) {
 
     const consoleErrors = [];
     page.on("console", (message) => {
-      if (message.type() === "error") consoleErrors.push(message.text());
+      if (message.type() !== "error") return;
+      const text = message.text();
+      // The bare "Failed to load resource" line names no URL, so the request
+      // location is what identifies which asset actually failed.
+      const url = message.location()?.url ?? "";
+      if (isIgnorableConsoleError({ text, url })) return;
+      consoleErrors.push(text);
     });
     page.on("pageerror", (error) => consoleErrors.push(String(error)));
 
