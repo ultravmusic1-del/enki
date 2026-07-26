@@ -17,7 +17,17 @@ describe("probeSupabase", () => {
     expect(result.status).toBe("awake");
   });
 
-  it("reports unreachable on an error response", async () => {
+  it("treats a 401 from the REST root as awake, since the server answered", async () => {
+    const fetchImpl = async () => ({ ok: false, status: 401 });
+    const result = await probeSupabase({
+      url: "https://x.supabase.co",
+      key: "k",
+      fetchImpl,
+    });
+    expect(result.status).toBe("awake");
+  });
+
+  it("reports unreachable when the server answers but is broken", async () => {
     const fetchImpl = async () => ({ ok: false, status: 503 });
     const result = await probeSupabase({
       url: "https://x.supabase.co",

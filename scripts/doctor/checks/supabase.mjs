@@ -35,9 +35,13 @@ export async function probeSupabase({
       headers: { apikey: key },
       signal: controller.signal,
     });
-    return response.ok
-      ? { status: "awake", code: response.status }
-      : { status: "unreachable", code: response.status };
+
+    // Any HTTP answer proves the project is serving. The REST root replies 401
+    // to a bare apikey header, which is still a live server. Only a 5xx means
+    // it answered but is broken; a paused project does not answer at all.
+    return response.status >= 500
+      ? { status: "unreachable", code: response.status }
+      : { status: "awake", code: response.status };
   } catch {
     return { status: "asleep", reason: "timeout-or-network" };
   } finally {
