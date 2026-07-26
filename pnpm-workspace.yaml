@@ -1,3 +1,10 @@
+# Transitive dependencies of `next` that carry advisories Next has not yet
+# bumped past. postcss: arbitrary file read + path traversal via
+# sourceMappingURL. sharp: inherited libvips CVEs. Both are patch/minor bumps
+# within the same major, so the APIs Next relies on are unchanged.
+overrides:
+  postcss: '>=8.5.18'
+  sharp: '>=0.35.0'
 allowBuilds:
   sharp: true
   unrs-resolver: true
