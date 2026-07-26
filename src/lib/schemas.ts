@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isHttpUrl } from "@/lib/safe-url";
 
 /* =========================================================================
    Enki — content schemas (Sanity-shaped)
@@ -21,6 +22,15 @@ const slug = z
 
 /** Lucide icon name, resolved through the icon registry (guards 1.x renames). */
 const iconName = z.string().min(1);
+
+/**
+ * An absolute http(s) URL. Plain `z.url()` is not enough: it accepts
+ * `javascript:`, `data:`, and `file:` because it only checks that the URL
+ * parses. See src/lib/safe-url.ts.
+ */
+const httpUrl = z
+  .string()
+  .refine(isHttpUrl, "Must be an http:// or https:// URL");
 
 /* ------------------------------------------------------------------ category */
 
@@ -88,9 +98,9 @@ export const toolSchema = z.object({
   tagline: z.string().min(1),
   description: z.string().min(1),
   longDescription: z.string().min(1),
-  website: z.url(),
+  website: httpUrl,
   /** Optional affiliate/referral URL; when set, outbound links use it and are marked rel="sponsored". */
-  affiliateUrl: z.url().optional(),
+  affiliateUrl: httpUrl.optional(),
   categorySlug: slug,
   tags: z.array(z.string().min(1)).min(1),
   pricing: pricingSchema,
@@ -181,7 +191,10 @@ export type NewsletterValues = z.infer<typeof newsletterSchema>;
 
 export const submissionFormSchema = z.object({
   name: z.string().min(1, "Enter the tool's name").max(80),
-  url: z.url("Enter a valid URL, including https://").max(2048),
+  url: z
+    .string()
+    .max(2048)
+    .refine(isHttpUrl, "Enter a valid http:// or https:// URL"),
   categorySlug: z.string().max(64).optional(),
   pitch: z
     .string()
