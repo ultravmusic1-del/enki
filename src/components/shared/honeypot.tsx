@@ -11,6 +11,9 @@ export function Honeypot({ register }: { register: Record<string, unknown> }) {
   return (
     <div
       aria-hidden
+      // Its children overflow this 1px box on purpose, so exempt it from the
+      // visual sweep's containment check (see scripts/visual-sweep.mjs).
+      data-sweep-ignore
       className="pointer-events-none absolute -left-[9999px] h-px w-px overflow-hidden"
     >
       <label htmlFor="enki-hp">Leave this field empty</label>

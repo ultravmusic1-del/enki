@@ -62,7 +62,12 @@ export function ScreenshotCarousel({
   return (
     <div className="flex flex-col gap-4">
       <div className="relative overflow-hidden rounded-2xl border border-border ring-hairline">
-        <div ref={emblaRef} className="overflow-hidden">
+        {/*
+          Off-screen slides overflow this viewport by design -- that is how a
+          carousel works -- so exempt the subtree from the visual sweep's
+          containment check (see scripts/visual-sweep.mjs).
+        */}
+        <div ref={emblaRef} className="overflow-hidden" data-sweep-ignore>
           <div className="flex">
             {screenshots.map((shot, i) => (
               <div key={i} className="min-w-0 flex-[0_0_100%]">
