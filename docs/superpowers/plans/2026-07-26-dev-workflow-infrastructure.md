@@ -2091,3 +2091,49 @@ State the actual test count, the doctor output, the sweep result, and the CI con
 - **The calibration step in Task 11 is real work, not a formality.** Enki has carousels and a marquee that clip on purpose. Expect to add several `data-sweep-ignore` attributes, and think about each one — an attribute added to silence a genuine bug defeats the whole harness.
 - **Two tasks deliberately break things to prove a guard works** (Task 11 Step 5, Task 12 Step 3). Both say to revert. Do not skip the revert, and do not skip the proof.
 - **`prepare` runs on every `pnpm install`,** including in CI. `scripts/install-hooks.mjs` exits 0 outside a git checkout and never fails an install.
+
+---
+
+## Outcome (executed 2026-07-26)
+
+All 15 tasks landed in 16 commits, `8cf121f..de7720e`. Verified results:
+
+| Check | Result |
+|---|---|
+| `pnpm verify` | typecheck + lint clean, **185 tests in 23 files** |
+| `pnpm doctor` | all five checks PASS, exit 0 |
+| `pnpm build` | clean, 182 static pages |
+| `pnpm sweep` (dev, 8 routes) | clean, 16 route/viewport combinations |
+| `pnpm sweep` (production `next start`, 6 routes) | clean, 12 combinations |
+| Pre-commit hook | fires on code, skips docs-only, mode `100755`, LF-pinned |
+| GitHub Actions `verify` | success on `de7720e` |
+
+The test count is 185, not the 176 this plan predicted. The extra 9 are tests for
+defects found *while executing*, each only findable by running the thing:
+
+1. **Supabase 401 misread as unreachable.** The REST root answers 401 to a bare
+   apikey header. Any HTTP answer proves the project is serving, so only a 5xx is
+   unreachable now. (+1 test)
+2. **`pnpm --version` returned empty on Windows.** `execFileSync` cannot resolve
+   pnpm's `.cmd` shim by bare name, and reaching it via `shell: true` concatenated
+   arguments and mangled `git log --format=%h %s` into `(no commits)`. Now read
+   from `npm_config_user_agent`. (+3 tests)
+3. **Sweep flagged every decorative glow.** The probe checked out-of-flow
+   children; Enki's atmosphere is oversized absolutely-positioned blurs their
+   container is meant to clip. In-flow only now — ~45 findings became 4.
+4. **`data-sweep-ignore` exempted only the container, not its subtree**, so the
+   honeypot's children were still flagged against `body`.
+5. **Route arguments were silently dropped.** With no `--base`, `baseIndex` is
+   `-1`, so the guard `index !== baseIndex + 1` excluded index 0 and the defaults
+   always won. Every documented `pnpm sweep -- /route` invocation was a no-op.
+6. **Vercel Analytics 404s failed every route** against a local production
+   server. `/_vercel/*` scripts only exist on Vercel's edge; they are filtered
+   now, which is what makes `next start` sweepable at all. (+5 tests)
+
+Two things the plan did not anticipate:
+
+- **`.gitattributes` pinning `.githooks/*` to LF.** A CRLF on the shebang line
+  makes `sh` fail with `bad interpreter` on macOS/Linux while working fine on
+  Windows — it would have broken the hook on the other machine only.
+- **Two `data-sweep-ignore` annotations** were needed, not "several": the
+  honeypot's 1px off-screen box and the embla screenshot viewport.
