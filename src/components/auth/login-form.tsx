@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { safeInternalPath } from "@/lib/safe-redirect";
 import { Icon } from "@/components/shared/icon";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +14,8 @@ type Mode = "signin" | "signup";
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirect") || "/";
+  // Never trust ?redirect= — see src/lib/safe-redirect.ts.
+  const redirectTo = safeInternalPath(searchParams.get("redirect"));
 
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
@@ -146,10 +148,10 @@ export function LoginForm() {
           <input
             type="password"
             required
-            minLength={6}
+            minLength={10}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="At least 6 characters"
+            placeholder="At least 10 characters"
             autoComplete={mode === "signin" ? "current-password" : "new-password"}
             className={inputClass}
           />
