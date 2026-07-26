@@ -2,6 +2,11 @@
   "name": "enki",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@11.12.0",
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=11"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -10,7 +15,11 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "verify": "pnpm typecheck && pnpm lint && pnpm test",
+    "doctor": "node scripts/doctor.mjs",
+    "sweep": "node scripts/visual-sweep.mjs",
+    "prepare": "node scripts/install-hooks.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
