@@ -35,3 +35,9 @@ jobs:
       # No secrets needed: the suite stubs Supabase (src/test/supabase-stub.ts)
       # and never reads .env.local.
       - run: pnpm verify
+
+      # Fails the build on a high-severity advisory in the production tree.
+      # Scoped to --prod: a dev-only advisory should not block a deploy, and
+      # the full report stays available via `pnpm audit` locally.
+      - name: Audit production dependencies
+        run: pnpm audit --prod --audit-level high

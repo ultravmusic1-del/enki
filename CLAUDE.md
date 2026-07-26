@@ -99,6 +99,7 @@ break layout until the browser proves otherwise.
 | `pnpm doctor` | Converge this machine and report what is in flight. Run first, every session |
 | `pnpm doctor --fix` | Repair hooks and dependencies; create a missing `.env.local` |
 | `pnpm verify` | The gate: typecheck + lint + test. The pre-commit hook runs this |
+| `pnpm audit:rls` | Prove RLS still blocks anonymous reads of private tables |
 | `pnpm sweep` | The Visual Sweep, as a command. Required after visual changes |
 | `pnpm build` | Authoritative production build |
 

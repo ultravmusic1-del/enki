@@ -337,6 +337,22 @@ Keep `class="dark"` on `<html>`.
 - **Affiliate rel:** outbound links carry `rel="sponsored"` only when a tool has an
   `affiliateUrl`; all outbound routes through `/go/[slug]` for tracking.
 
+### Security invariants (do not regress these)
+
+- **URL schemes are allowlisted.** `src/lib/safe-url.ts` is the only authority.
+  Never use bare `z.url()` for a stored URL — Zod v4 accepts `javascript:`,
+  `data:`, and `file:`. New stored-URL fields use the `httpUrl` schema, and any
+  new render site uses `safeExternalHref()`.
+- **Redirect targets are validated.** `src/lib/safe-redirect.ts` is the only
+  authority. Never hand a `?redirect=` parameter to `router.push()` directly.
+- **Collection notes are private.** `/lists/[id]` must not select or render
+  `collection_items.note`. The collections manager promises privacy in its copy.
+- **`pnpm audit:rls` must stay green.** It proves anonymous callers cannot read
+  `admins`, `profiles`, `reviews`, `collections`, `subscribers`,
+  `tool_submissions`, or `outbound_clicks`.
+- **CI fails on a high-severity production advisory.** `pnpm audit --prod
+  --audit-level high` runs on every push; keep it at exit 0.
+
 ---
 
 ## 9. Visual Sweep rule (MANDATORY — see CLAUDE.md §"Visual Sweep")
@@ -393,6 +409,18 @@ This exists because a pricing-badge clip once shipped on HTML-only inspection.
     called inside the RLS policies that anonymous readers hit (`published OR
     is_admin()` on `tools`), and policy expressions are evaluated with the
     caller's privileges, so revoking it would break the public site.
+11. **`z.url()` is not a protocol check.** Zod v4 only asks whether `new URL()`
+    parses, so `javascript:`, `data:`, `vbscript:`, and `file:` all validate.
+    Use the `httpUrl` schema in `src/lib/schemas.ts`, which delegates to
+    `isHttpUrl()` in `src/lib/safe-url.ts`.
+12. **`target="_blank"` is not a security control.** Chrome refuses
+    `javascript:` for `_blank` navigations, which is why the admin submission
+    link was never exploitable — but that is browser behaviour, not a decision
+    this codebase made. The real controls are the schema, the
+    `tool_submissions_url_check` constraint, and `safeExternalHref()`.
+13. **A `javascript:` URL's return value replaces the document.** If you ever
+    test this, note the navigation is *queued*: reading a marker synchronously
+    after `.click()` gives a false negative. Await a macrotask first.
 
 ---
 
