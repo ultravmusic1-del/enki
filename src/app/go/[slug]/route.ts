@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getToolBySlug } from "@/lib/content";
 import { resolveOutboundTarget } from "@/lib/outbound";
+import { isHttpUrl } from "@/lib/safe-url";
 import { createAnonClient } from "@/lib/supabase/anon";
 import { siteConfig } from "@/lib/site";
 
@@ -21,6 +22,13 @@ export async function GET(
   }
 
   const { url } = resolveOutboundTarget(tool);
+
+  // A stored non-http target (mobile deep link, javascript:, data:) must never
+  // become a Location header. Fall back to the directory rather than 502-ing.
+  if (!isHttpUrl(url)) {
+    console.error("[enki] refusing non-http outbound target", { slug });
+    return NextResponse.redirect(new URL("/tools", siteConfig.url));
+  }
 
   // Same-origin source path only (never the full external referrer).
   let path: string | null = null;

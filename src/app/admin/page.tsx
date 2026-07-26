@@ -8,6 +8,7 @@ import { Container } from "@/components/shared/container";
 import { Icon } from "@/components/shared/icon";
 import { ModerationActions } from "@/app/admin/moderation-actions";
 import { SubmissionActions } from "@/app/admin/submission-actions";
+import { safeExternalHref } from "@/lib/safe-url";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -184,7 +185,9 @@ export default async function AdminPage() {
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <a
-                      href={s.url}
+                      // Submitted by anyone; never trust the scheme. A non-http
+                      // value renders inert rather than executable.
+                      href={safeExternalHref(s.url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 text-sm font-medium hover:text-teal"
