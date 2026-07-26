@@ -210,7 +210,8 @@ Managed via the Supabase MCP connector.
 `admin_foundation` (admins + is_admin + reviews.status + click-stats RPC),
 `create_tool_submissions`, `create_collections`, `create_subscribers`,
 `create_tools_table`, **`harden_review_moderation`**, **`harden_public_input`**,
-**`revoke_admin_rpc_from_public`**.
+**`revoke_admin_rpc_from_public`**, **`tighten_submission_url_scheme`**,
+**`narrow_profiles_read`**, **`revoke_unnecessary_anon_grants`**.
 
 ### Content layer — DB-preferred + seed fallback (IMPORTANT, new)
 `src/lib/content.ts` is now **async**. Tools load from the `tools` table
