@@ -23,7 +23,11 @@ async function loadList(id: string) {
   const [{ data: items }, { data: profile }] = await Promise.all([
     supabase
       .from("collection_items")
-      .select("tool_slug, note, created_at")
+      // `note` is deliberately not selected: the collections UI calls these
+      // "private notes", so a public list must not publish them. Not selecting
+      // is the real fix -- merely not rendering would still ship the text in
+      // the server payload.
+      .select("tool_slug, created_at")
       .eq("collection_id", id)
       .order("created_at", { ascending: true }),
     supabase
@@ -67,10 +71,8 @@ export default async function ListPage({
   const categoryName = new Map((await getCategories()).map((c) => [c.slug, c.name]));
   const toolBySlug = new Map((await getAllTools()).map((t) => [t.slug, t]));
   const entries = list.items
-    .map((it) => ({ tool: toolBySlug.get(it.tool_slug), note: it.note }))
-    .filter((e): e is { tool: NonNullable<typeof e.tool>; note: string | null } =>
-      Boolean(e.tool),
-    );
+    .map((it) => ({ tool: toolBySlug.get(it.tool_slug) }))
+    .filter((e): e is { tool: NonNullable<typeof e.tool> } => Boolean(e.tool));
 
   return (
     <Container className="pt-28 pb-20">
@@ -94,19 +96,12 @@ export default async function ListPage({
           </p>
         ) : (
           <div className="flex flex-col gap-5">
-            {entries.map(({ tool, note }) => (
-              <div key={tool.slug} className="flex flex-col gap-2">
-                <ToolCard
-                  tool={tool}
-                  categoryName={categoryName.get(tool.categorySlug)}
-                />
-                {note && (
-                  <p className="flex items-start gap-2 rounded-xl border border-border bg-card/50 px-4 py-2.5 text-sm text-pretty text-muted-foreground">
-                    <Icon name="Quote" className="mt-0.5 size-3.5 shrink-0 text-teal" />
-                    {note}
-                  </p>
-                )}
-              </div>
+            {entries.map(({ tool }) => (
+              <ToolCard
+                key={tool.slug}
+                tool={tool}
+                categoryName={categoryName.get(tool.categorySlug)}
+              />
             ))}
           </div>
         )}
