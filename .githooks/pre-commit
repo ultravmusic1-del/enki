@@ -1,0 +1,7 @@
+#!/bin/sh
+# Versioned pre-commit hook.
+#
+# Git runs this because core.hooksPath points at .githooks (wired by the
+# `prepare` script on every pnpm install). The real logic lives in Node so it
+# behaves identically on Windows and macOS.
+exec node "$(git rev-parse --show-toplevel)/scripts/hooks/pre-commit.mjs"

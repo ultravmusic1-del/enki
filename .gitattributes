@@ -1,0 +1,5 @@
+# Shell scripts must keep LF endings. A CRLF on the shebang line makes sh fail
+# with "bad interpreter: /bin/sh^M", which would silently disable the git hook
+# on a macOS or Linux machine while working fine on Windows.
+.githooks/* text eol=lf
+*.sh text eol=lf
