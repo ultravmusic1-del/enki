@@ -52,9 +52,9 @@ export default function TermsPage() {
             decisions made based on content on this site. Questions?{" "}
             <a
               className="text-teal hover:underline"
-              href="mailto:hello@enki.tools"
+              href="mailto:enkidirectory@gmail.com"
             >
-              hello@enki.tools
+              enkidirectory@gmail.com
             </a>
             .
           </p>

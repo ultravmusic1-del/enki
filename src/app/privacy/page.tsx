@@ -51,9 +51,9 @@ export default function PrivacyPage() {
             time by contacting us at{" "}
             <a
               className="text-teal hover:underline"
-              href="mailto:hello@enki.tools"
+              href="mailto:enkidirectory@gmail.com"
             >
-              hello@enki.tools
+              enkidirectory@gmail.com
             </a>
             . Newsletter subscriptions can be cancelled at any time.
           </p>
