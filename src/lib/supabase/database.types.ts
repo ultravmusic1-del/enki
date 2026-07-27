@@ -238,6 +238,10 @@ export type Database = {
     Views: { [_ in never]: never }
     Functions: {
       is_admin: { Args: Record<string, never>; Returns: boolean }
+      /** GDPR Art. 17. Takes no arguments: the user id comes from the JWT. */
+      delete_own_account: { Args: Record<string, never>; Returns: undefined }
+      /** The only path anon has to update `subscribers`. */
+      unsubscribe_email: { Args: { target_email: string }; Returns: boolean }
       admin_click_stats: {
         Args: { days?: number }
         Returns: { tool_slug: string; clicks: number }[]

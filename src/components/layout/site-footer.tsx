@@ -162,6 +162,12 @@ export function SiteFooter() {
               >
                 Terms
               </Link>
+              <Link
+                href="/unsubscribe"
+                className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Unsubscribe
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-2">

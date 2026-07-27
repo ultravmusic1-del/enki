@@ -79,6 +79,12 @@ export function AccountMenu({ className }: { className?: string }) {
             Saved tools
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/account" className="gap-2">
+            <Icon name="Settings" className="size-4" />
+            Your data
+          </Link>
+        </DropdownMenuItem>
         {isAdmin && (
           <DropdownMenuItem asChild>
             <Link href="/admin" className="gap-2">
