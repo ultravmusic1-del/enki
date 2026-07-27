@@ -1,44 +1,15 @@
 import type { Author } from "@/lib/schemas";
 
 /**
- * The Enki editorial voices. Reviews reference these by `id`. `accent` tints
- * each reviewer's avatar monogram.
+ * Editorial bylines.
+ *
+ * Deliberately empty. This file previously defined six named reviewers with job
+ * titles ("Mara Okafor, Principal Reviewer" and five others) who did not exist,
+ * and the seeded reviews carried their bylines. Invented experts are a
+ * materially different thing from placeholder copy, especially on a directory
+ * that earns affiliate revenue from its rankings.
+ *
+ * The schema and plumbing are kept so genuine editorial reviews can be added
+ * later under a real byline. Add a person here only when they are real.
  */
-export const authors: Author[] = [
-  {
-    id: "mara-okafor",
-    name: "Mara Okafor",
-    role: "Principal Reviewer",
-    accent: "#00ADB5",
-  },
-  {
-    id: "dev-ramanathan",
-    name: "Dev Ramanathan",
-    role: "Developer Tools Lead",
-    accent: "#59B0FF",
-  },
-  {
-    id: "lena-voss",
-    name: "Lena Voss",
-    role: "Creative Director",
-    accent: "#B58CFF",
-  },
-  {
-    id: "theo-marchetti",
-    name: "Theo Marchetti",
-    role: "Productivity Analyst",
-    accent: "#7CD4A6",
-  },
-  {
-    id: "amira-hassan",
-    name: "Amira Hassan",
-    role: "Research Editor",
-    accent: "#8BD4D9",
-  },
-  {
-    id: "jonah-pierce",
-    name: "Jonah Pierce",
-    role: "Growth & Marketing",
-    accent: "#E86A92",
-  },
-];
+export const authors: Author[] = [];

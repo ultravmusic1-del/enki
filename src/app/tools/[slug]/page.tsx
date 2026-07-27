@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/shared/container";
 import { ToolLogo } from "@/components/shared/tool-logo";
-import { StarRating } from "@/components/shared/star-rating";
+import { EditorScore } from "@/components/shared/editor-score";
 import { PricingBadge } from "@/components/shared/pricing-badge";
 import { SavableToolCard } from "@/components/shared/savable-tool-card";
 import { Reveal } from "@/components/shared/reveal";
@@ -70,11 +70,7 @@ export default async function ToolDetailPage({
   return (
     <article className="pb-16">
       <JsonLd
-        data={toolJsonLd({
-          tool,
-          categoryName: category?.name,
-          reviews,
-        })}
+        data={toolJsonLd({ tool, categoryName: category?.name })}
       />
       {/* Hero */}
       <div className="relative overflow-hidden pt-28 pb-14">
@@ -138,16 +134,7 @@ export default async function ToolDetailPage({
             </div>
 
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-              <div className="flex items-center gap-2">
-                <StarRating value={tool.rating} size={16} />
-                <span className="font-mono text-sm">
-                  {tool.rating.toFixed(1)}
-                  <span className="text-muted-foreground">
-                    {" "}
-                    ({tool.reviewCount.toLocaleString()} reviews)
-                  </span>
-                </span>
-              </div>
+              <EditorScore value={tool.editorScore} size="md" />
               <PricingBadge model={tool.pricing.model} />
               {tool.pricing.startingPrice && (
                 <span className="font-mono text-xs text-muted-foreground">

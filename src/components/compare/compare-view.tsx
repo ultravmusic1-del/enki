@@ -6,7 +6,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { CompareTool } from "@/lib/content";
 import { outboundHref } from "@/lib/outbound";
 import { ToolLogo } from "@/components/shared/tool-logo";
-import { StarRating } from "@/components/shared/star-rating";
 import { PricingBadge } from "@/components/shared/pricing-badge";
 import { Icon } from "@/components/shared/icon";
 import { Button } from "@/components/ui/button";
@@ -79,10 +78,6 @@ export function CompareView({ tools }: { tools: CompareTool[] }) {
   const bestEditor = chosen.length
     ? Math.max(...chosen.map((t) => t.editorScore))
     : 0;
-  const bestRating = chosen.length
-    ? Math.max(...chosen.map((t) => t.rating))
-    : 0;
-
   const gridTemplate = {
     gridTemplateColumns: `minmax(128px, 168px) repeat(${chosen.length}, minmax(212px, 1fr))`,
   };
@@ -214,24 +209,6 @@ export function CompareView({ tools }: { tools: CompareTool[] }) {
                     </div>
                   </Superlative>
                   <Meter pct={t.editorScore / 10} />
-                </Cell>
-              ))}
-            </Row>
-
-            <Row label="Community">
-              {chosen.map((t) => (
-                <Cell key={t.slug}>
-                  <Superlative active={chosen.length > 1 && t.rating === bestRating}>
-                    <div className="flex items-center gap-2">
-                      <span className="font-display text-lg font-semibold tabular-nums">
-                        {t.rating.toFixed(1)}
-                      </span>
-                      <StarRating value={t.rating} size={13} />
-                    </div>
-                  </Superlative>
-                  <span className="mt-1 font-mono text-[0.65rem] text-muted-foreground">
-                    {t.reviewCount.toLocaleString("en-US")} reviews
-                  </span>
                 </Cell>
               ))}
             </Row>

@@ -121,10 +121,18 @@ export const toolSchema = z.object({
   company: z.string().min(1),
   screenshots: z.array(screenshotSchema).min(1),
   verdict: z.string().min(1),
+  /**
+   * Enki's editorial judgement, 0-10. The only score this project can honestly
+   * claim: it is written by the editor, not aggregated from users.
+   *
+   * There is deliberately no `rating` or `reviewCount` here. Those existed as
+   * editorial sample figures but were displayed as a community aggregate
+   * ("N reviews", "Average rating") on a site that earns affiliate revenue from
+   * its rankings. Real community sentiment comes from the `reviews` table via
+   * CommunityRatingSummary, which averages approved reviews only and shows
+   * nothing until there are some.
+   */
   editorScore: z.number().min(0).max(10),
-  /** Canonical displayed aggregate rating, 1–5 with one decimal. */
-  rating: z.number().min(1).max(5),
-  reviewCount: z.number().int().min(0),
 });
 
 export type Tool = z.infer<typeof toolSchema>;

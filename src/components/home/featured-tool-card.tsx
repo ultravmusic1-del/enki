@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Tool } from "@/lib/schemas";
-import { StarRating } from "@/components/shared/star-rating";
+import { EditorScore } from "@/components/shared/editor-score";
 import { PricingBadge } from "@/components/shared/pricing-badge";
 import { Icon } from "@/components/shared/icon";
 
@@ -87,12 +87,7 @@ export function FeaturedToolCard({
           </div>
 
           <div className="mt-auto flex items-center justify-between gap-2 pt-6">
-            <div className="flex items-center gap-2">
-              <StarRating value={tool.rating} size={14} />
-              <span className="font-mono text-xs text-muted-foreground tabular-nums">
-                {tool.rating.toFixed(1)}
-              </span>
-            </div>
+            <EditorScore value={tool.editorScore} />
             <div className="flex items-center gap-2">
               <PricingBadge model={tool.pricing.model} />
               <span className="inline-flex items-center gap-1 text-xs text-teal opacity-0 transition-opacity duration-300 group-hover:opacity-100">

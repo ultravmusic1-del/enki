@@ -6,7 +6,7 @@ import {
   faqJsonLd,
   itemListJsonLd,
 } from "@/lib/structured-data";
-import { getToolBySlug, getReviewsForTool } from "@/lib/content";
+import { getToolBySlug } from "@/lib/content";
 import type { Tool } from "@/lib/schemas";
 
 type Node = { "@type"?: string; [k: string]: unknown };
@@ -37,16 +37,15 @@ describe("structured-data: tool", () => {
   let graph: Node[];
   beforeAll(async () => {
     tool = (await getToolBySlug("cursor"))!;
-    const reviews = getReviewsForTool("cursor");
-    graph = graphOf(toolJsonLd({ tool, categoryName: "Coding & Dev", reviews }));
+    graph = graphOf(toolJsonLd({ tool, categoryName: "Coding & Dev" }));
   });
 
-  it("omits AggregateRating while the seed ratings are unverified", () => {
+  it("omits AggregateRating: there is no rating to claim", () => {
     const app = nodeOfType(graph, "SoftwareApplication");
     expect(app.aggregateRating).toBeUndefined();
   });
 
-  it("omits embedded Review markup while the seed ratings are unverified", () => {
+  it("omits embedded Review markup: there are no reviews to claim", () => {
     const app = nodeOfType(graph, "SoftwareApplication");
     expect(app.review).toBeUndefined();
   });

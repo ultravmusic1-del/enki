@@ -26,10 +26,7 @@ export async function generateStaticParams() {
 async function ranked(slug: string): Promise<Tool[]> {
   return [...(await getToolsByCategory(slug))].sort(
     (a, b) =>
-      b.editorScore - a.editorScore ||
-      b.rating - a.rating ||
-      b.reviewCount - a.reviewCount ||
-      a.name.localeCompare(b.name),
+      b.editorScore - a.editorScore || a.name.localeCompare(b.name),
   );
 }
 

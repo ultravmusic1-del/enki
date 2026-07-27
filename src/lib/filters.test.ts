@@ -29,9 +29,10 @@ describe("filters: applyFilters", () => {
     ).toBe(true);
   });
 
-  it("filters by minimum rating", () => {
-    const result = applyFilters(tools, { minRating: 4.5 });
-    expect(result.every((t) => t.rating >= 4.5)).toBe(true);
+  it("filters by minimum editor score", () => {
+    const result = applyFilters(tools, { minScore: 8.5 });
+    expect(result.length).toBeGreaterThan(0);
+    expect(result.every((t) => t.editorScore >= 8.5)).toBe(true);
   });
 
   it("filters by tags (a tool passes if it has any selected tag)", () => {
@@ -44,33 +45,37 @@ describe("filters: applyFilters", () => {
     const result = applyFilters(tools, {
       category: "coding",
       pricing: ["freemium"],
-      minRating: 4.4,
+      minScore: 8.0,
     });
     expect(
       result.every(
         (t) =>
           t.categorySlug === "coding" &&
           t.pricing.model === "freemium" &&
-          t.rating >= 4.4,
+          t.editorScore >= 8.0,
       ),
     ).toBe(true);
   });
 });
 
 describe("filters: sortTools", () => {
-  it("sorts by rating descending", () => {
-    const sorted = sortTools(tools, "rating");
+  it("sorts by editor score descending", () => {
+    const sorted = sortTools(tools, "score");
     for (let i = 1; i < sorted.length; i++) {
-      expect(sorted[i - 1].rating).toBeGreaterThanOrEqual(sorted[i].rating);
+      expect(sorted[i - 1].editorScore).toBeGreaterThanOrEqual(
+        sorted[i].editorScore,
+      );
     }
   });
 
-  it("sorts by review count descending", () => {
-    const sorted = sortTools(tools, "reviews");
+  it("breaks editor-score ties by name", () => {
+    const sorted = sortTools(tools, "score");
     for (let i = 1; i < sorted.length; i++) {
-      expect(sorted[i - 1].reviewCount).toBeGreaterThanOrEqual(
-        sorted[i].reviewCount,
-      );
+      if (sorted[i - 1].editorScore === sorted[i].editorScore) {
+        expect(
+          sorted[i - 1].name.localeCompare(sorted[i].name),
+        ).toBeLessThanOrEqual(0);
+      }
     }
   });
 

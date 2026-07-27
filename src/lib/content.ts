@@ -165,7 +165,7 @@ export async function getToolBySlug(slug: string): Promise<Tool | undefined> {
 export async function getFeaturedTools(): Promise<Tool[]> {
   return (await loadTools())
     .filter((t) => t.featured)
-    .sort((a, b) => b.rating - a.rating);
+    .sort((a, b) => b.editorScore - a.editorScore);
 }
 
 export async function getToolsByCategory(categorySlug: string): Promise<Tool[]> {
@@ -173,20 +173,20 @@ export async function getToolsByCategory(categorySlug: string): Promise<Tool[]> 
 }
 
 /**
- * Related tools — same category first (by rating), topped up with the highest
+ * Related tools — same category first (by editor score), topped up with the highest
  * rated tools elsewhere until we have `n`. Never includes the source tool.
  */
 export async function getRelatedTools(tool: Tool, n = 3): Promise<Tool[]> {
   const all = await loadTools();
   const sameCategory = all
     .filter((t) => t.categorySlug === tool.categorySlug && t.slug !== tool.slug)
-    .sort((a, b) => b.rating - a.rating);
+    .sort((a, b) => b.editorScore - a.editorScore);
 
   const fillers = all
     .filter(
       (t) => t.categorySlug !== tool.categorySlug && t.slug !== tool.slug,
     )
-    .sort((a, b) => b.rating - a.rating);
+    .sort((a, b) => b.editorScore - a.editorScore);
 
   return [...sameCategory, ...fillers].slice(0, n);
 }
@@ -250,43 +250,30 @@ export type LeaderboardEntry = {
   accent: string;
   categoryName: string;
   editorScore: number;
-  rating: number;
-  reviewCount: number;
   editorRank: number;
-  userRank: number;
 };
 
 export type Leaderboards = {
   editor: LeaderboardEntry[];
-  user: LeaderboardEntry[];
 };
 
 /**
- * Two rankings of the same tool set — the editors' scores and the community
- * ratings. Full orderings are computed first (so every entry can carry its
- * standing on the other board), then sliced to `limit`.
+ * The editorial ranking of the tool set.
+ *
+ * There was a second "People's Choice" board ranked by an aggregate `rating`
+ * and `reviewCount` that no user had ever contributed. Those fields are gone,
+ * so this is the one ranking Enki can stand behind. A community board returns
+ * when there are approved reviews to build it from.
  */
 export async function getLeaderboards(limit = 15): Promise<Leaderboards> {
   const tools = await loadTools();
   const categoryName = new Map(categories.map((c) => [c.slug, c.name]));
 
   const byEditor = [...tools].sort(
-    (a, b) =>
-      b.editorScore - a.editorScore ||
-      b.rating - a.rating ||
-      b.reviewCount - a.reviewCount ||
-      a.name.localeCompare(b.name),
-  );
-  const byUser = [...tools].sort(
-    (a, b) =>
-      b.rating - a.rating ||
-      b.reviewCount - a.reviewCount ||
-      b.editorScore - a.editorScore ||
-      a.name.localeCompare(b.name),
+    (a, b) => b.editorScore - a.editorScore || a.name.localeCompare(b.name),
   );
 
   const editorRankOf = new Map(byEditor.map((t, i) => [t.slug, i + 1]));
-  const userRankOf = new Map(byUser.map((t, i) => [t.slug, i + 1]));
 
   const toEntry = (t: Tool, rank: number): LeaderboardEntry => ({
     rank,
@@ -297,15 +284,11 @@ export async function getLeaderboards(limit = 15): Promise<Leaderboards> {
     accent: t.accent,
     categoryName: categoryName.get(t.categorySlug) ?? "",
     editorScore: t.editorScore,
-    rating: t.rating,
-    reviewCount: t.reviewCount,
     editorRank: editorRankOf.get(t.slug) ?? 0,
-    userRank: userRankOf.get(t.slug) ?? 0,
   });
 
   return {
     editor: byEditor.slice(0, limit).map((t, i) => toEntry(t, i + 1)),
-    user: byUser.slice(0, limit).map((t, i) => toEntry(t, i + 1)),
   };
 }
 
@@ -319,8 +302,6 @@ export type CompareTool = {
   accent: string;
   categoryName: string;
   editorScore: number;
-  rating: number;
-  reviewCount: number;
   pricingModel: Tool["pricing"]["model"];
   startingPrice?: string;
   hasFreeTrial: boolean;
@@ -345,8 +326,6 @@ export async function getCompareTools(): Promise<CompareTool[]> {
       accent: t.accent,
       categoryName: categoryName.get(t.categorySlug) ?? "",
       editorScore: t.editorScore,
-      rating: t.rating,
-      reviewCount: t.reviewCount,
       pricingModel: t.pricing.model,
       startingPrice: t.pricing.startingPrice,
       hasFreeTrial: t.pricing.hasFreeTrial ?? false,
@@ -360,23 +339,28 @@ export async function getCompareTools(): Promise<CompareTool[]> {
 
 /* -------------------------------------------------------------------- stats */
 
+/**
+ * Facts the homepage can state without qualification.
+ *
+ * `reviewCount` and `averageRating` used to live here and were rendered as
+ * "Community reviews" and "Average rating" -- both summed from editorial
+ * sample figures while the reviews table held nothing. `sponsoredCount` is
+ * here instead because it is checkable, and because "no paid placements" is a
+ * stronger trust signal than a number nobody can verify. It reads from the
+ * data, so it stays true the day that changes.
+ */
 export type SiteStats = {
   toolCount: number;
   categoryCount: number;
-  reviewCount: number;
-  averageRating: number;
+  sponsoredCount: number;
 };
 
 export async function getStats(): Promise<SiteStats> {
   const tools = await loadTools();
-  const reviewCount = tools.reduce((sum, t) => sum + t.reviewCount, 0);
-  const averageRating =
-    tools.reduce((sum, t) => sum + t.rating, 0) / (tools.length || 1);
   return {
     toolCount: tools.length,
     categoryCount: categories.length,
-    reviewCount,
-    averageRating: Math.round(averageRating * 10) / 10,
+    sponsoredCount: tools.filter((t) => t.sponsored).length,
   };
 }
 
@@ -391,7 +375,7 @@ export type SearchDoc = {
   category?: string;
   tags: string[];
   accent: string;
-  rating?: number;
+  editorScore?: number;
   icon?: string;
   logo?: string;
   href: string;
@@ -411,7 +395,7 @@ export async function getSearchDocs(): Promise<SearchDoc[]> {
     category: categoryName.get(t.categorySlug),
     tags: t.tags,
     accent: t.accent,
-    rating: t.rating,
+    editorScore: t.editorScore,
     logo: t.logo,
     href: `/tools/${t.slug}`,
   }));

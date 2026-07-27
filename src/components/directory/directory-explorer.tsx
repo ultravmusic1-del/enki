@@ -35,11 +35,13 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
-const RATING_OPTIONS = [
-  { value: 0, label: "Any rating" },
-  { value: 4.5, label: "4.5+" },
-  { value: 4.0, label: "4.0+" },
-  { value: 3.5, label: "3.5+" },
+// Editor scores currently span 7.4-9.1, so these thresholds each cut a
+// meaningful slice rather than returning everything or nothing.
+const SCORE_OPTIONS = [
+  { value: 0, label: "Any score" },
+  { value: 8.5, label: "8.5+" },
+  { value: 8.0, label: "8.0+" },
+  { value: 7.5, label: "7.5+" },
 ];
 
 type Props = {
@@ -61,8 +63,8 @@ export function DirectoryExplorer({ tools, categories, tags }: Props) {
   const [pricing, setPricing] = useState<PricingModel[]>(() =>
     parseList(searchParams.get("price")) as PricingModel[],
   );
-  const [minRating, setMinRating] = useState(() =>
-    Number(searchParams.get("rating") ?? 0),
+  const [minScore, setMinScore] = useState(() =>
+    Number(searchParams.get("score") ?? 0),
   );
   const [selectedTags, setSelectedTags] = useState<string[]>(() =>
     parseList(searchParams.get("tags")),
@@ -117,18 +119,18 @@ export function DirectoryExplorer({ tools, categories, tags }: Props) {
     if (query.trim()) params.set("q", query.trim());
     if (category !== "all") params.set("cat", category);
     if (pricing.length) params.set("price", pricing.join(","));
-    if (minRating) params.set("rating", String(minRating));
+    if (minScore) params.set("score", String(minScore));
     if (selectedTags.length) params.set("tags", selectedTags.join(","));
     if (sort !== "relevance") params.set("sort", sort);
     const qs = params.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-  }, [query, category, pricing, minRating, selectedTags, sort, pathname, router]);
+  }, [query, category, pricing, minScore, selectedTags, sort, pathname, router]);
 
   const results = useMemo(() => {
     const filters: ToolFilters = {
       category,
       pricing,
-      minRating,
+      minScore,
       tags: selectedTags,
     };
 
@@ -149,14 +151,14 @@ export function DirectoryExplorer({ tools, categories, tags }: Props) {
     }
 
     const filtered = applyFilters(base, filters);
-    // With a query, default to relevance (Fuse order); otherwise default to rating.
+    // With a query, default to relevance (Fuse order); otherwise by editor score.
     const effectiveSort: SortKey =
-      sort === "relevance" && !q ? "rating" : sort;
+      sort === "relevance" && !q ? "score" : sort;
     const sorted = sortTools(filtered, effectiveSort);
     // Promoted tools pin to the top when browsing; an explicit search stays
     // merit-ranked so results remain honest.
     return q ? sorted : pinSponsored(sorted);
-  }, [query, category, pricing, minRating, selectedTags, sort, tools, fuse]);
+  }, [query, category, pricing, minScore, selectedTags, sort, tools, fuse]);
 
   const togglePricing = useCallback((model: PricingModel) => {
     setPricing((prev) =>
@@ -176,7 +178,7 @@ export function DirectoryExplorer({ tools, categories, tags }: Props) {
     setQuery("");
     setCategory("all");
     setPricing([]);
-    setMinRating(0);
+    setMinScore(0);
     setSelectedTags([]);
     setSort("relevance");
   }, []);
@@ -184,7 +186,7 @@ export function DirectoryExplorer({ tools, categories, tags }: Props) {
   const activeFilterCount =
     (category !== "all" ? 1 : 0) +
     pricing.length +
-    (minRating ? 1 : 0) +
+    (minScore ? 1 : 0) +
     selectedTags.length;
 
   const rail = (
@@ -195,8 +197,8 @@ export function DirectoryExplorer({ tools, categories, tags }: Props) {
       setCategory={setCategory}
       pricing={pricing}
       togglePricing={togglePricing}
-      minRating={minRating}
-      setMinRating={setMinRating}
+      minScore={minScore}
+      setMinScore={setMinScore}
       selectedTags={selectedTags}
       toggleTag={toggleTag}
       activeFilterCount={activeFilterCount}
@@ -341,8 +343,8 @@ type RailProps = {
   setCategory: (c: string) => void;
   pricing: PricingModel[];
   togglePricing: (m: PricingModel) => void;
-  minRating: number;
-  setMinRating: (r: number) => void;
+  minScore: number;
+  setMinScore: (r: number) => void;
   selectedTags: string[];
   toggleTag: (t: string) => void;
   activeFilterCount: number;
@@ -356,8 +358,8 @@ function FilterRail({
   setCategory,
   pricing,
   togglePricing,
-  minRating,
-  setMinRating,
+  minScore,
+  setMinScore,
   selectedTags,
   toggleTag,
   activeFilterCount,
@@ -416,16 +418,16 @@ function FilterRail({
       </FilterGroup>
 
       {/* Rating */}
-      <FilterGroup label="Minimum rating">
+      <FilterGroup label="Minimum score">
         <div className="flex flex-wrap gap-2">
-          {RATING_OPTIONS.map((opt) => (
+          {SCORE_OPTIONS.map((opt) => (
             <Chip
               key={opt.value}
-              active={minRating === opt.value}
-              onClick={() => setMinRating(opt.value)}
+              active={minScore === opt.value}
+              onClick={() => setMinScore(opt.value)}
             >
               {opt.value > 0 && (
-                <Icon name="Star" className="size-3 text-teal" />
+                <Icon name="Gauge" className="size-3 text-teal" />
               )}
               {opt.label}
             </Chip>

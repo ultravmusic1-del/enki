@@ -1,27 +1,19 @@
 "use client";
 
-import {
-  useEffect,
-  useId,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import Link from "next/link";
 import { animate, stagger, utils } from "animejs";
 import { useReducedMotion } from "motion/react";
 import { ToolLogo } from "@/components/shared/tool-logo";
-import { StarRating } from "@/components/shared/star-rating";
 import { BorderBeam } from "@/components/shared/border-beam";
 import { Icon } from "@/components/shared/icon";
 import { cn } from "@/lib/utils";
 import type { LeaderboardEntry } from "@/lib/content";
 
 /* =========================================================================
-   Leaderboards — two rankings of one tool set, switched by a segmented
-   control. Each board = a podium (top 3) over a ledger (4–15). anime.js
-   drives the entrance: podium plinths rise, score rings draw, numbers count
-   up, and ledger rows stagger their meters into place.
+   Leaderboard — the editorial ranking of the tool set: a podium (top 3) over
+   a ledger (4–15). anime.js drives the entrance: podium plinths rise, score
+   rings draw, numbers count up, and ledger rows stagger their meters in.
 
    Motion strategy: the JSX renders the *final* state (numbers filled, meters
    full, everything visible) so the page is correct with no JS and under
@@ -30,122 +22,48 @@ import type { LeaderboardEntry } from "@/lib/content";
    no flash of the finished state.
    ========================================================================= */
 
-type BoardKey = "editor" | "user";
-
 type BoardConfig = {
-  key: BoardKey;
-  tab: string;
+  key: string;
   eyebrow: string;
-  icon: string;
   /** Denominator shown next to the score, e.g. "/ 10". */
   unit: string;
   max: number;
   value: (e: LeaderboardEntry) => number;
-  /** Label + accessor for this tool's standing on the *other* board. */
-  otherLabel: string;
-  otherRank: (e: LeaderboardEntry) => number;
   ownRank: (e: LeaderboardEntry) => number;
 };
 
-const BOARDS: Record<BoardKey, BoardConfig> = {
-  editor: {
-    key: "editor",
-    tab: "Editors' Verdict",
-    eyebrow: "Scored for capability, craft, and trust",
-    icon: "Gauge",
-    unit: "/ 10",
-    max: 10,
-    value: (e) => e.editorScore,
-    otherLabel: "Community",
-    otherRank: (e) => e.userRank,
-    ownRank: (e) => e.editorRank,
-  },
-  user: {
-    key: "user",
-    tab: "People's Choice",
-    eyebrow: "Aggregated from community ratings",
-    icon: "Users",
-    unit: "/ 5",
-    max: 5,
-    value: (e) => e.rating,
-    otherLabel: "Editors",
-    otherRank: (e) => e.editorRank,
-    ownRank: (e) => e.userRank,
-  },
+/**
+ * One board, not two.
+ *
+ * There was a second "People's Choice" board ranked by an aggregate `rating`
+ * and `reviewCount` that no user had ever contributed -- the figures were
+ * editorial samples. Rather than dress an empty community board in an empty
+ * state, the leaderboard now shows the one ranking Enki can stand behind.
+ * A community board earns its place back when there are approved reviews to
+ * build it from.
+ */
+const EDITOR_BOARD: BoardConfig = {
+  key: "editor",
+  eyebrow: "Scored for capability, craft, and trust",
+  unit: "/ 10",
+  max: 10,
+  value: (e) => e.editorScore,
+  ownRank: (e) => e.editorRank,
 };
 
 const fmtScore = (v: number) => v.toFixed(1);
 const fmtInt = (v: number) => Math.round(v).toLocaleString("en-US");
 
-export function LeaderboardsView({
-  editor,
-  user,
-}: {
-  editor: LeaderboardEntry[];
-  user: LeaderboardEntry[];
-}) {
-  const [active, setActive] = useState<BoardKey>("editor");
-  const baseId = useId();
-  const entries = active === "editor" ? editor : user;
-  const config = BOARDS[active];
-  const order: BoardKey[] = ["editor", "user"];
+export function LeaderboardsView({ editor }: { editor: LeaderboardEntry[] }) {
+  const config = EDITOR_BOARD;
 
   return (
     <div className="mt-12">
-      {/* Segmented control */}
-      <div
-        role="tablist"
-        aria-label="Choose a leaderboard"
-        className="glass ring-hairline relative mx-auto grid w-full max-w-md grid-cols-2 gap-1 rounded-full p-1"
-      >
-        <span
-          aria-hidden
-          className="absolute inset-y-1 left-1 rounded-full bg-teal/15 shadow-[inset_0_0_0_1px_rgb(var(--glow)/0.4)] transition-transform duration-500 [transition-timing-function:cubic-bezier(0.34,1.2,0.64,1)]"
-          style={{
-            width: "calc(50% - 0.25rem)",
-            transform: `translateX(${active === "user" ? "calc(100% + 0.25rem)" : "0"})`,
-          }}
-        />
-        {order.map((key) => {
-          const c = BOARDS[key];
-          const selected = active === key;
-          return (
-            <button
-              key={key}
-              role="tab"
-              id={`${baseId}-tab-${key}`}
-              aria-selected={selected}
-              aria-controls={`${baseId}-panel`}
-              onClick={() => setActive(key)}
-              className={cn(
-                "relative z-10 flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-colors",
-                selected
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <Icon
-                name={c.icon}
-                className={cn("size-4", selected ? "text-teal" : "opacity-70")}
-              />
-              {c.tab}
-            </button>
-          );
-        })}
-      </div>
-
-      <p className="mt-4 text-center font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase">
+      <p className="text-center font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase">
         {config.eyebrow}
       </p>
 
-      {/* Board — keyed so switching remounts and replays the entrance. */}
-      <div
-        role="tabpanel"
-        id={`${baseId}-panel`}
-        aria-labelledby={`${baseId}-tab-${active}`}
-      >
-        <Board key={active} entries={entries} config={config} />
-      </div>
+      <Board entries={editor} config={config} />
     </div>
   );
 }
@@ -408,7 +326,7 @@ function PodiumCard({
         />
       </div>
       <span className="mt-1 font-mono text-[0.6rem] tracking-[0.15em] text-muted-foreground uppercase">
-        {config.unit === "/ 10" ? "out of 10" : "out of 5"}
+        out of {config.max}
       </span>
 
       {/* Identity */}
@@ -432,18 +350,7 @@ function PodiumCard({
         </span>
       </div>
 
-      {config.key === "user" && (
-        <div className="mt-3 flex items-center gap-2">
-          <StarRating value={entry.rating} size={14} />
-          <span className="font-mono text-[0.65rem] text-muted-foreground">
-            {fmtInt(entry.reviewCount)} reviews
-          </span>
-        </div>
-      )}
-
-      <div className="mt-auto pt-5">
-        <CrossRank entry={entry} config={config} />
-      </div>
+      <div className="mt-auto pt-5" />
     </Link>
   );
 }
@@ -571,21 +478,6 @@ function LedgerRow({
           </div>
         </div>
 
-        {/* Cross-rank (hidden on the smallest screens) */}
-        <div className="hidden shrink-0 md:block">
-          <CrossRank entry={entry} config={config} compact />
-        </div>
-
-        {/* Stars for the community board */}
-        {config.key === "user" && (
-          <div className="hidden shrink-0 flex-col items-end gap-0.5 lg:flex">
-            <StarRating value={entry.rating} size={13} />
-            <span className="font-mono text-[0.6rem] text-muted-foreground">
-              {fmtInt(entry.reviewCount)} reviews
-            </span>
-          </div>
-        )}
-
         {/* Value */}
         <div className="flex shrink-0 items-baseline gap-1 tabular-nums">
           <span
@@ -605,43 +497,3 @@ function LedgerRow({
   );
 }
 
-/* --------------------------------------------------------------- cross rank */
-
-/**
- * Shows how the *other* cohort ranks this tool, with a direction cue: an
- * up-tick when the other board rates it higher, a down-tick when lower.
- */
-function CrossRank({
-  entry,
-  config,
-  compact = false,
-}: {
-  entry: LeaderboardEntry;
-  config: BoardConfig;
-  compact?: boolean;
-}) {
-  const own = config.ownRank(entry);
-  const other = config.otherRank(entry);
-  const delta = own - other; // >0 → other board ranks it higher
-  const icon = delta > 0 ? "TrendingUp" : delta < 0 ? "TrendingDown" : "Minus";
-  const tone =
-    delta > 0
-      ? "text-teal-bright"
-      : delta < 0
-        ? "text-muted-foreground"
-        : "text-muted-foreground";
-
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background/40 px-2.5 py-1 font-mono text-[0.65rem] tracking-wide text-muted-foreground",
-        compact && "px-2 py-0.5",
-      )}
-      title={`${config.otherLabel} rank this #${other}`}
-    >
-      <span className="uppercase opacity-70">{config.otherLabel}</span>
-      <span className="text-foreground">#{other}</span>
-      <Icon name={icon} className={cn("size-3", tone)} />
-    </span>
-  );
-}

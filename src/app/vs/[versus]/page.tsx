@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/shared/container";
 import { ToolLogo } from "@/components/shared/tool-logo";
 import { PricingBadge } from "@/components/shared/pricing-badge";
-import { StarRating } from "@/components/shared/star-rating";
 import { Icon } from "@/components/shared/icon";
 import { JsonLd } from "@/components/seo/json-ld";
 import { breadcrumbJsonLd, faqJsonLd } from "@/lib/structured-data";
@@ -110,7 +109,6 @@ export default async function VersusPage({
               <span className="font-mono text-[0.65rem] tracking-wide text-muted-foreground uppercase">
                 Editor score
               </span>
-              <StarRating value={t.rating} size={14} />
               <PricingBadge model={t.pricing.model} />
             </div>
           ))}
@@ -122,11 +120,6 @@ export default async function VersusPage({
             label="Editor score"
             a={`${a.editorScore.toFixed(1)} / 10`}
             b={`${b.editorScore.toFixed(1)} / 10`}
-          />
-          <Row
-            label="Community rating"
-            a={`${a.rating.toFixed(1)} ★`}
-            b={`${b.rating.toFixed(1)} ★`}
           />
           <Row label="Pricing" a={priceLine(a)} b={priceLine(b)} />
           <Row label="Best for" a={a.pros[0] ?? "—"} b={b.pros[0] ?? "—"} />

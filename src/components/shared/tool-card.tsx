@@ -2,7 +2,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { Tool } from "@/lib/schemas";
 import { ToolLogo } from "@/components/shared/tool-logo";
-import { StarRating } from "@/components/shared/star-rating";
+import { EditorScore } from "@/components/shared/editor-score";
 import { PricingBadge } from "@/components/shared/pricing-badge";
 import { BorderBeam } from "@/components/shared/border-beam";
 import { Icon } from "@/components/shared/icon";
@@ -75,14 +75,9 @@ export function ToolCard({ tool, categoryName, className }: ToolCardProps) {
         {tool.tagline}
       </p>
 
-      {/* Meta — rating on the left, pricing badge on the right */}
+      {/* Meta — editor's score on the left, pricing badge on the right */}
       <div className="mt-auto flex items-center justify-between gap-3 pt-1">
-        <div className="flex min-w-0 items-center gap-2">
-          <StarRating value={tool.rating} size={14} />
-          <span className="font-mono text-xs whitespace-nowrap text-muted-foreground tabular-nums">
-            {tool.rating.toFixed(1)}
-          </span>
-        </div>
+        <EditorScore value={tool.editorScore} className="min-w-0" />
         <PricingBadge model={tool.pricing.model} className="shrink-0" />
       </div>
     </Link>

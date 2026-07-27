@@ -71,10 +71,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "The strongest pick for marketing teams that need consistent, on-brand output at volume, less compelling for solo, occasional writers.",
-    editorScore: 8.4,
-    rating: 4.3,
-    reviewCount: 1284,
-  },
+    editorScore: 8.4,  },
   {
     slug: "copy-ai",
     logo: "/logos/copy-ai.png",
@@ -133,10 +130,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "Best when you treat it as a workflow engine for revenue teams; as a pure writing tool it's merely fine.",
-    editorScore: 7.6,
-    rating: 4.1,
-    reviewCount: 842,
-  },
+    editorScore: 7.6,  },
   {
     slug: "sudowrite",
     logo: "/logos/sudowrite.png",
@@ -195,10 +189,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "The best AI companion for fiction writers, full stop, as long as prose, not marketing, is your goal.",
-    editorScore: 8.1,
-    rating: 4.4,
-    reviewCount: 613,
-  },
+    editorScore: 8.1,  },
   {
     slug: "grammarly",
     logo: "/logos/grammarly.png",
@@ -256,10 +247,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "Indispensable as a correctness and clarity layer everywhere; think of the generative side as a bonus, not the reason to buy.",
-    editorScore: 8.0,
-    rating: 4.5,
-    reviewCount: 3120,
-  },
+    editorScore: 8.0,  },
 
   /* ============================================================== IMAGE */
   {
@@ -318,10 +306,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "If you want the most beautiful result with the least fuss, Midjourney is still the one to beat.",
-    editorScore: 9.0,
-    rating: 4.7,
-    reviewCount: 2450,
-  },
+    editorScore: 9.0,  },
   {
     slug: "dall-e-3",
     logo: "/logos/dall-e-3.png",
@@ -379,10 +364,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "The most convenient way to get an image that matches a fussy prompt. Reach for it when accuracy beats artistry.",
-    editorScore: 8.2,
-    rating: 4.3,
-    reviewCount: 1670,
-  },
+    editorScore: 8.2,  },
   {
     slug: "stable-diffusion",
     logo: "/logos/stable-diffusion.png",
@@ -440,10 +422,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "Unbeatable for control, cost, and privacy if you're willing to tinker; not for anyone who wants one-click polish.",
-    editorScore: 8.3,
-    rating: 4.2,
-    reviewCount: 1980,
-  },
+    editorScore: 8.3,  },
   {
     slug: "adobe-firefly",
     logo: "/logos/adobe-firefly.png",
@@ -500,10 +479,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "The obvious choice for teams already in Creative Cloud that need commercially safe assets, less so as a standalone art tool.",
-    editorScore: 7.9,
-    rating: 4.2,
-    reviewCount: 1440,
-  },
+    editorScore: 7.9,  },
 
   /* ============================================================= CODING */
   {
@@ -563,10 +539,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "The safe default for most developers: deeply integrated, reliable, and improving fast, even if purpose-built agents edge it on ambitious tasks.",
-    editorScore: 8.7,
-    rating: 4.5,
-    reviewCount: 3890,
-  },
+    editorScore: 8.7,  },
   {
     slug: "cursor",
     logo: "/logos/cursor.png",
@@ -624,10 +597,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "The most capable agentic editor available today, the tool to beat if you want AI at the center of your workflow.",
-    editorScore: 9.1,
-    rating: 4.6,
-    reviewCount: 2210,
-  },
+    editorScore: 9.1,  },
   {
     slug: "windsurf",
     logo: "/logos/windsurf.png",
@@ -684,10 +654,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "A strong, more affordable rival to Cursor, especially compelling if the free tier covers your needs.",
-    editorScore: 8.5,
-    rating: 4.4,
-    reviewCount: 1120,
-  },
+    editorScore: 8.5,  },
   {
     slug: "replit-agent",
     logo: "/logos/replit-agent.png",
@@ -745,10 +712,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "The fastest path from idea to a deployed app for beginners and prototypers; reach for a local setup once projects grow serious.",
-    editorScore: 8.0,
-    rating: 4.2,
-    reviewCount: 960,
-  },
+    editorScore: 8.0,  },
 
   /* ======================================================== PRODUCTIVITY */
   {
@@ -808,10 +772,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "A no-brainer add-on if your team already runs on Notion; not a reason to switch to it on its own.",
-    editorScore: 7.8,
-    rating: 4.3,
-    reviewCount: 1510,
-  },
+    editorScore: 7.8,  },
   {
     slug: "mem",
     logo: "/logos/mem.png",
@@ -869,10 +830,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "A refreshing take for capture-heavy thinkers who resent organizing; structure lovers may miss the folders.",
-    editorScore: 7.5,
-    rating: 4.1,
-    reviewCount: 540,
-  },
+    editorScore: 7.5,  },
   {
     slug: "motion",
     logo: "/logos/motion.png",
@@ -930,10 +888,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "Genuinely transformative for the over-committed who'll cede control to the algorithm; a poor fit for manual planners.",
-    editorScore: 7.9,
-    rating: 4.0,
-    reviewCount: 720,
-  },
+    editorScore: 7.9,  },
 
   /* =============================================================== VIDEO */
   {
@@ -993,10 +948,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "The pick for creators who want generation plus real editing control in one place. The credit meter is the only real drawback.",
-    editorScore: 8.6,
-    rating: 4.4,
-    reviewCount: 1330,
-  },
+    editorScore: 8.6,  },
   {
     slug: "pika",
     logo: "/logos/pika.png",
@@ -1053,10 +1005,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "The most fun way to make short, social-ready clips; look elsewhere for precise, production-grade control.",
-    editorScore: 7.7,
-    rating: 4.1,
-    reviewCount: 680,
-  },
+    editorScore: 7.7,  },
   {
     slug: "synthesia",
     logo: "/logos/synthesia.png",
@@ -1114,10 +1063,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "The category leader for training and corporate comms video; the wrong tool if you want storytelling or cinematic footage.",
-    editorScore: 8.3,
-    rating: 4.5,
-    reviewCount: 1190,
-  },
+    editorScore: 8.3,  },
 
   /* =============================================================== AUDIO */
   {
@@ -1177,10 +1123,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "The clear leader in AI voice: realistic, flexible, and developer-friendly. The obvious first pick for any speech project.",
-    editorScore: 9.0,
-    rating: 4.7,
-    reviewCount: 2040,
-  },
+    editorScore: 9.0,  },
   {
     slug: "murf",
     logo: "/logos/murf.png",
@@ -1238,10 +1181,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "A dependable choice for teams that value a smooth voiceover workflow over bleeding-edge realism.",
-    editorScore: 7.6,
-    rating: 4.2,
-    reviewCount: 610,
-  },
+    editorScore: 7.6,  },
   {
     slug: "suno",
     logo: "/logos/suno.png",
@@ -1297,10 +1237,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "The most impressive AI music tool for full songs, magical for demos and fun, still short on granular control.",
-    editorScore: 8.2,
-    rating: 4.3,
-    reviewCount: 990,
-  },
+    editorScore: 8.2,  },
 
   /* ============================================================ RESEARCH */
   {
@@ -1358,10 +1295,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "The best everyday answer engine: fast, cited, and trustworthy enough to replace a lot of traditional searching.",
-    editorScore: 8.8,
-    rating: 4.6,
-    reviewCount: 2260,
-  },
+    editorScore: 8.8,  },
   {
     slug: "elicit",
     logo: "/logos/elicit.png",
@@ -1419,10 +1353,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "An outstanding accelerator for anyone doing serious literature review; irrelevant if you're not working with papers.",
-    editorScore: 8.1,
-    rating: 4.4,
-    reviewCount: 430,
-  },
+    editorScore: 8.1,  },
   {
     slug: "consensus",
     logo: "/logos/consensus.png",
@@ -1480,10 +1411,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "A trustworthy shortcut to what the research actually says, best kept to questions science can answer.",
-    editorScore: 7.8,
-    rating: 4.2,
-    reviewCount: 380,
-  },
+    editorScore: 7.8,  },
 
   /* =========================================================== MARKETING */
   {
@@ -1543,10 +1471,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "The go-to for teams serious about ranking; watch that its scores guide, not dictate, your writing.",
-    editorScore: 8.0,
-    rating: 4.3,
-    reviewCount: 870,
-  },
+    editorScore: 8.0,  },
   {
     slug: "adcreative-ai",
     logo: "/logos/adcreative-ai.png",
@@ -1604,10 +1529,7 @@ export const tools: Tool[] = [
     ],
     verdict:
       "A real productivity win for performance marketers who need creative volume; expect to art-direct away the templated feel.",
-    editorScore: 7.4,
-    rating: 4.0,
-    reviewCount: 560,
-  },
+    editorScore: 7.4,  },
   {
     slug: "clay",
     logo: "/logos/clay.png",
@@ -1665,8 +1587,5 @@ export const tools: Tool[] = [
     ],
     verdict:
       "Extraordinarily powerful for modern outbound if you invest in learning it; overkill for simple list-building.",
-    editorScore: 8.4,
-    rating: 4.5,
-    reviewCount: 720,
-  },
+    editorScore: 8.4,  },
 ];

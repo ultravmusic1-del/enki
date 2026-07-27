@@ -188,12 +188,14 @@ export default async function Image({
               fontSize: "28px",
             }}
           >
-            <div style={{ display: "flex", color: OG.tealBright }}>Rated</div>
+            <div style={{ display: "flex", color: OG.tealBright }}>
+              Editor&rsquo;s score
+            </div>
             <div style={{ display: "flex", fontWeight: 600 }}>
-              {tool.rating.toFixed(1)}
+              {tool.editorScore.toFixed(1)}
             </div>
             <div style={{ display: "flex", color: OG.muted, fontSize: "22px" }}>
-              / 5
+              / 10
             </div>
           </div>
           <div

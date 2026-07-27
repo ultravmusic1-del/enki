@@ -1,6 +1,5 @@
 import { siteConfig } from "@/lib/site";
 import type { Tool } from "@/lib/schemas";
-import type { ReviewWithAuthor } from "@/lib/content";
 
 /* =========================================================================
    Schema.org JSON-LD builders. Kept out of the components so the shapes are
@@ -60,15 +59,18 @@ function toolOffer(tool: Tool): Record<string, unknown> | null {
   };
 }
 
-/** SoftwareApplication (with ratings + reviews) + BreadcrumbList for a tool. */
+/**
+ * SoftwareApplication + BreadcrumbList for a tool.
+ *
+ * Deliberately carries no AggregateRating or Review: it previously took a
+ * `reviews` argument for that, gated behind a flag that was never true.
+ */
 export function toolJsonLd({
   tool,
   categoryName,
-  reviews,
 }: {
   tool: Tool;
   categoryName?: string;
-  reviews: ReviewWithAuthor[];
 }) {
   const url = abs(`/tools/${tool.slug}`);
   const offer = toolOffer(tool);
@@ -83,30 +85,12 @@ export function toolJsonLd({
     operatingSystem: tool.platforms.join(", ") || "Web",
   };
 
-  // Ratings are only ever claimed to search engines when they are real.
-  // See siteConfig.hasVerifiedRatings.
-  if (siteConfig.hasVerifiedRatings) {
-    application.aggregateRating = {
-      "@type": "AggregateRating",
-      ratingValue: tool.rating,
-      reviewCount: tool.reviewCount,
-      bestRating: 5,
-      worstRating: 1,
-    };
-    application.review = reviews.slice(0, 5).map((r) => ({
-      "@type": "Review",
-      reviewRating: {
-        "@type": "Rating",
-        ratingValue: r.rating,
-        bestRating: 5,
-        worstRating: 1,
-      },
-      author: { "@type": "Person", name: r.author?.name ?? "Anonymous" },
-      datePublished: r.date,
-      name: r.title,
-      reviewBody: r.body,
-    }));
-  }
+  // No AggregateRating or Review markup is emitted. Structured data is a
+  // machine-readable claim to search engines, and marking up ratings that are
+  // not genuine breaches Google's review-snippet policy -- on a site that
+  // earns affiliate revenue from its rankings, that is also an FTC exposure.
+  // The fields this used to read (tool.rating, tool.reviewCount) no longer
+  // exist. Add this back only when real moderated reviews can populate it.
 
   if (tool.logo) application.image = abs(tool.logo);
   if (offer) application.offers = offer;

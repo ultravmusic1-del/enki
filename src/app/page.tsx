@@ -160,16 +160,20 @@ export default async function Home() {
 
           {/* Trust stats reinforce the vetting story */}
           <Reveal>
-            <div className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border ring-hairline md:grid-cols-4">
-              <StatCell value={`${stats.toolCount}`} label="Tools vetted" />
+            {/*
+              Every cell here must be checkable. "Community reviews" and
+              "Average rating" used to sit alongside these, summed from
+              editorial sample figures while no user had written a review.
+              "Tools listed" replaces "Tools vetted" because no tool currently
+              carries a lastVetted date. Paid placements reads from the data,
+              so it stays true the day that changes.
+            */}
+            <div className="mt-8 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-border bg-border ring-hairline sm:grid-cols-3">
+              <StatCell value={`${stats.toolCount}`} label="Tools listed" />
               <StatCell value={`${stats.categoryCount}`} label="Categories" />
               <StatCell
-                value={`${stats.reviewCount.toLocaleString()}`}
-                label="Community reviews"
-              />
-              <StatCell
-                value={`${stats.averageRating.toFixed(1)}`}
-                label="Average rating"
+                value={stats.sponsoredCount === 0 ? "None" : `${stats.sponsoredCount}`}
+                label="Paid placements"
               />
             </div>
           </Reveal>

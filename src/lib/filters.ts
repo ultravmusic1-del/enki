@@ -1,21 +1,26 @@
 import type { PricingModel, Tool } from "@/lib/schemas";
 
-export type SortKey = "relevance" | "rating" | "reviews" | "name" | "newest";
+/**
+ * "rating" and "reviews" are gone: they sorted by an aggregate rating and a
+ * review count that no user had contributed. "score" sorts by Enki's editorial
+ * score, which is the only ranking signal this project can stand behind.
+ */
+export type SortKey = "relevance" | "score" | "name" | "newest";
 
 export type ToolFilters = {
   /** Category slug; undefined or "all" means every category. */
   category?: string;
   /** Pricing models to include; empty means all. */
   pricing?: PricingModel[];
-  /** Minimum aggregate rating (inclusive). */
-  minRating?: number;
+  /** Minimum editorial score, 0-10 (inclusive). */
+  minScore?: number;
   /** Tags to match; a tool passes if it has ANY of them (OR). */
   tags?: string[];
 };
 
 /** Pure, order-preserving filter. Search (Fuse) is applied separately. */
 export function applyFilters(tools: Tool[], filters: ToolFilters): Tool[] {
-  const { category, pricing, minRating, tags } = filters;
+  const { category, pricing, minScore, tags } = filters;
   return tools.filter((tool) => {
     if (category && category !== "all" && tool.categorySlug !== category) {
       return false;
@@ -23,7 +28,7 @@ export function applyFilters(tools: Tool[], filters: ToolFilters): Tool[] {
     if (pricing && pricing.length > 0 && !pricing.includes(tool.pricing.model)) {
       return false;
     }
-    if (minRating && tool.rating < minRating) {
+    if (minScore && tool.editorScore < minScore) {
       return false;
     }
     if (tags && tags.length > 0) {
@@ -38,12 +43,10 @@ export function applyFilters(tools: Tool[], filters: ToolFilters): Tool[] {
 export function sortTools(tools: Tool[], sort: SortKey): Tool[] {
   const list = [...tools];
   switch (sort) {
-    case "rating":
+    case "score":
       return list.sort(
-        (a, b) => b.rating - a.rating || b.reviewCount - a.reviewCount,
+        (a, b) => b.editorScore - a.editorScore || a.name.localeCompare(b.name),
       );
-    case "reviews":
-      return list.sort((a, b) => b.reviewCount - a.reviewCount);
     case "name":
       return list.sort((a, b) => a.name.localeCompare(b.name));
     case "newest":
@@ -89,8 +92,7 @@ export const PRICING_OPTIONS: { value: PricingModel; label: string }[] = [
 
 export const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: "relevance", label: "Relevance" },
-  { value: "rating", label: "Top rated" },
-  { value: "reviews", label: "Most reviewed" },
+  { value: "score", label: "Editor's score" },
   { value: "newest", label: "Newest" },
   { value: "name", label: "Name (A–Z)" },
 ];

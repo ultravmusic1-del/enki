@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function LeaderboardsPage() {
-  const { editor, user } = await getLeaderboards(15);
+  const { editor } = await getLeaderboards(15);
 
   return (
     <div className="relative overflow-hidden pt-28 pb-24">
@@ -38,7 +38,7 @@ export default async function LeaderboardsPage() {
           </p>
         </header>
 
-        <LeaderboardsView editor={editor} user={user} />
+        <LeaderboardsView editor={editor} />
       </Container>
     </div>
   );

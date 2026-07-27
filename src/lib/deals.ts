@@ -26,9 +26,6 @@ export function getActiveDeals(tools: Tool[], now: Date): ToolWithDeal[] {
   return tools
     .filter((t): t is ToolWithDeal => isDealActive(t.deal, now))
     .sort(
-      (a, b) =>
-        b.editorScore - a.editorScore ||
-        b.rating - a.rating ||
-        a.name.localeCompare(b.name),
+      (a, b) => b.editorScore - a.editorScore || a.name.localeCompare(b.name),
     );
 }

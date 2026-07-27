@@ -55,7 +55,6 @@ function scoreOne(
 
   // Quality baseline — always present so ranking is sensible with no answers.
   score += tool.editorScore * 2; // 0..20
-  score += tool.rating * 2; //     2..10
   if (tool.featured) score += 2;
 
   // Use-case (category) — the dominant signal.
@@ -106,8 +105,6 @@ function scoreOne(
   // A single quality flourish, only for genuine standouts.
   if (tool.editorScore >= 8.7) {
     reasons.push(`Editor's pick · ${tool.editorScore.toFixed(1)}`);
-  } else if (tool.rating >= 4.6) {
-    reasons.push(`Loved by users · ${tool.rating.toFixed(1)}`);
   }
 
   return { tool, score, reasons: reasons.slice(0, 3) };
@@ -125,8 +122,6 @@ export function scoreTools(
       (a, b) =>
         b.score - a.score ||
         b.tool.editorScore - a.tool.editorScore ||
-        b.tool.rating - a.tool.rating ||
-        b.tool.reviewCount - a.tool.reviewCount ||
         a.tool.name.localeCompare(b.tool.name),
     );
 }

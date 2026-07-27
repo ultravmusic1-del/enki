@@ -27,12 +27,14 @@ describe("content: tools", () => {
     expect(await getToolBySlug("does-not-exist")).toBeUndefined();
   });
 
-  it("returns only featured tools, highest rated first", async () => {
+  it("returns only featured tools, highest editor score first", async () => {
     const featured = await getFeaturedTools();
     expect(featured.length).toBeGreaterThan(0);
     expect(featured.every((t) => t.featured)).toBe(true);
     for (let i = 1; i < featured.length; i++) {
-      expect(featured[i - 1].rating).toBeGreaterThanOrEqual(featured[i].rating);
+      expect(featured[i - 1].editorScore).toBeGreaterThanOrEqual(
+        featured[i].editorScore,
+      );
     }
   });
 });
@@ -76,10 +78,17 @@ describe("content: related tools", () => {
 });
 
 describe("content: reviews", () => {
-  it("returns authored reviews with resolved authors, newest first", () => {
+  it("ships no seeded editorial reviews", () => {
+    // The 27 seeded reviews were written under six invented bylines. They are
+    // retired rather than relabelled: a review attributed to a person who does
+    // not exist is not a placeholder, it is a fabrication. Real reviews come
+    // from the Supabase `reviews` table once users write them.
+    expect(getReviewsForTool("cursor")).toEqual([]);
+  });
+
+  it("still resolves authors and orders newest-first when reviews exist", () => {
+    // Guards the plumbing that stays in place for genuine editorial reviews.
     const reviews = getReviewsForTool("cursor");
-    expect(reviews.length).toBeGreaterThan(0);
-    expect(reviews[0].author?.name).toBeTruthy();
     for (let i = 1; i < reviews.length; i++) {
       expect(
         reviews[i - 1].date.localeCompare(reviews[i].date),
@@ -100,9 +109,11 @@ describe("content: stats & search", () => {
     const stats = await getStats();
     expect(stats.toolCount).toBe((await getAllTools()).length);
     expect(stats.categoryCount).toBe((await getCategories()).length);
-    expect(stats.reviewCount).toBeGreaterThan(0);
-    expect(stats.averageRating).toBeGreaterThan(0);
-    expect(stats.averageRating).toBeLessThanOrEqual(5);
+    // No fabricated aggregates here: only facts that can be checked against
+    // the data. sponsoredCount is 0 until a placement is actually sold.
+    expect(stats.sponsoredCount).toBe(
+      (await getAllTools()).filter((t) => t.sponsored).length,
+    );
   });
 
   it("produces search docs for every tool and category", async () => {
@@ -118,13 +129,11 @@ describe("content: stats & search", () => {
 });
 
 describe("content: leaderboards", () => {
-  it("returns both boards capped at the requested limit", async () => {
-    const { editor, user } = await getLeaderboards(15);
+  it("caps the board at the requested limit", async () => {
+    const { editor } = await getLeaderboards(15);
     expect(editor).toHaveLength(15);
-    expect(user).toHaveLength(15);
     const small = await getLeaderboards(5);
     expect(small.editor).toHaveLength(5);
-    expect(small.user).toHaveLength(5);
   });
 
   it("orders the editor board by descending editor score with 1-based ranks", async () => {
@@ -138,28 +147,19 @@ describe("content: leaderboards", () => {
     }
   });
 
-  it("orders the user board by rating, breaking ties by review count", async () => {
-    const { user } = await getLeaderboards(15);
-    for (let i = 1; i < user.length; i++) {
-      const prev = user[i - 1];
-      const cur = user[i];
-      const ok =
-        prev.rating > cur.rating ||
-        (prev.rating === cur.rating && prev.reviewCount >= cur.reviewCount);
-      expect(ok).toBe(true);
-    }
+  it("exposes no community board, since no user has rated anything", async () => {
+    const boards = await getLeaderboards(15);
+    expect(Object.keys(boards)).toEqual(["editor"]);
   });
 
-  it("carries each entry's standing on the other board", async () => {
+  it("carries each entry's own rank", async () => {
     const { editor } = await getLeaderboards(15);
     expect(editor[0].editorRank).toBe(1);
-    expect(editor[0].userRank).toBeGreaterThanOrEqual(1);
   });
 
-  it("puts Cursor atop editors and Midjourney atop the community", async () => {
-    const { editor, user } = await getLeaderboards(15);
+  it("puts Cursor atop the editorial board", async () => {
+    const { editor } = await getLeaderboards(15);
     expect(editor[0].slug).toBe("cursor");
-    expect(user[0].slug).toBe("midjourney");
   });
 });
 
@@ -191,7 +191,6 @@ describe("content: compare tools", () => {
     const cursor = (await getCompareTools()).find((c) => c.slug === "cursor")!;
     const source = (await getToolBySlug("cursor"))!;
     expect(cursor.editorScore).toBe(source.editorScore);
-    expect(cursor.rating).toBe(source.rating);
     expect(cursor.platforms).toEqual(source.platforms);
   });
 });

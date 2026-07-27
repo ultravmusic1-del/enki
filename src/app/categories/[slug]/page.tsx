@@ -42,7 +42,9 @@ export default async function CategoryDetailPage({
   const category = await getCategoryBySlug(slug);
   if (!category) notFound();
 
-  const tools = pinSponsored(sortTools(await getToolsByCategory(category.slug), "rating"));
+  const tools = pinSponsored(
+    sortTools(await getToolsByCategory(category.slug), "score"),
+  );
   const otherCategories = (await getCategories())
     .filter((c) => c.slug !== category.slug)
     .slice(0, 3);

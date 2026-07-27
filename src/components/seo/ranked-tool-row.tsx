@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Tool } from "@/lib/schemas";
 import { ToolLogo } from "@/components/shared/tool-logo";
-import { StarRating } from "@/components/shared/star-rating";
+import { EditorScore } from "@/components/shared/editor-score";
 import { PricingBadge } from "@/components/shared/pricing-badge";
 import { Icon } from "@/components/shared/icon";
 
@@ -48,12 +48,7 @@ export function RankedToolRow({
         </div>
         <p className="text-sm text-pretty text-muted-foreground">{note}</p>
         <div className="flex items-center justify-between gap-3">
-          <span className="flex items-center gap-2">
-            <StarRating value={tool.rating} size={13} />
-            <span className="font-mono text-xs text-muted-foreground tabular-nums">
-              {tool.rating.toFixed(1)}
-            </span>
-          </span>
+          <EditorScore value={tool.editorScore} />
           <Link
             href={`/tools/${tool.slug}`}
             className="inline-flex items-center gap-1 font-mono text-xs text-teal hover:underline"
