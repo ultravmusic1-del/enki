@@ -8,4 +8,7 @@ Sentry.init({
   // Errors thrown while developing are already visible in the terminal; sending
   // them would burn quota and bury real production issues in noise.
   enabled: process.env.NODE_ENV === "production",
+  // TEMPORARY: diagnosing why keep-warm check-ins never reach Sentry. Prints
+  // SDK activity to Vercel runtime logs. Remove once the cause is found.
+  debug: true,
 });
