@@ -6,7 +6,10 @@ import { getAllTools, getCategories } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Saved tools",
   description: "Your shortlist of AI tools, saved for quick access on Enki.",
-  alternates: { canonical: "/saved" },
+  // A per-device shortlist with no shared content worth indexing. No canonical:
+  // a self-canonical asserts "this is the indexable version of this page",
+  // which directly contradicts noindex.
+  robots: { index: false, follow: false },
 };
 
 export default async function SavedPage() {
