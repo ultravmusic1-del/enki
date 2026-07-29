@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 import { CANONICAL_SITE_URL } from "./src/lib/site";
 import {
+  SENTRY_ENVIRONMENT,
   SENTRY_INGEST_ORIGIN,
   SENTRY_TUNNEL_ROUTE,
   securityReportUrl,
@@ -10,12 +11,10 @@ import {
 /**
  * Where browsers post CSP violation reports.
  *
- * The environment is baked into the URL so production noise and local
- * experimentation stay separable in Sentry.
+ * Uses the same SENTRY_ENVIRONMENT the SDK reports under, so violations and
+ * errors sit in one environment and can be filtered together.
  */
-const reportUri = securityReportUrl(
-  process.env.VERCEL_ENV === "production" ? "production" : "development",
-);
+const reportUri = securityReportUrl(SENTRY_ENVIRONMENT);
 
 /**
  * Report-only to start. Enforcing requires removing `'unsafe-inline'` from

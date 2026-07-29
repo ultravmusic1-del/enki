@@ -1,5 +1,9 @@
 import * as Sentry from "@sentry/nextjs";
-import { SENTRY_DSN, tracesSampleRate } from "./lib/sentry";
+import {
+  SENTRY_DSN,
+  SENTRY_ENVIRONMENT,
+  tracesSampleRate,
+} from "./lib/sentry";
 
 /**
  * Browser SDK.
@@ -11,6 +15,7 @@ import { SENTRY_DSN, tracesSampleRate } from "./lib/sentry";
  */
 Sentry.init({
   dsn: SENTRY_DSN,
+  environment: SENTRY_ENVIRONMENT,
   tracesSampleRate,
   enabled: process.env.NODE_ENV === "production",
 });

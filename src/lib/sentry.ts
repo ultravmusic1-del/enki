@@ -39,6 +39,24 @@ const projectId = dsn.pathname.replace(/^\//, "");
 export const SENTRY_INGEST_ORIGIN = dsn.origin;
 
 /**
+ * The environment every Sentry signal is tagged with.
+ *
+ * Stated once and passed explicitly to all three SDK entry points *and* the CSP
+ * report URL. Left to itself the Next SDK derives this from Vercel and reports
+ * `vercel-production`, while the CSP endpoint took a separate literal — so
+ * violations and errors landed in two different environments and could not be
+ * filtered together.
+ *
+ * Reads the NEXT_PUBLIC_ copy first because this module is imported by a client
+ * component: only NEXT_PUBLIC_* variables are inlined into the browser bundle,
+ * and a mismatch between server and client would split the data again.
+ */
+export const SENTRY_ENVIRONMENT =
+  process.env.NEXT_PUBLIC_VERCEL_ENV ??
+  process.env.VERCEL_ENV ??
+  (process.env.NODE_ENV === "production" ? "production" : "development");
+
+/**
  * Browser CSP violation reports go here.
  *
  * Enki's CSP has been report-only since it was introduced but never named a
