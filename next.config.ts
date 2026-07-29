@@ -1,5 +1,21 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 import { CANONICAL_SITE_URL } from "./src/lib/site";
+import {
+  SENTRY_INGEST_ORIGIN,
+  SENTRY_TUNNEL_ROUTE,
+  securityReportUrl,
+} from "./src/lib/sentry";
+
+/**
+ * Where browsers post CSP violation reports.
+ *
+ * The environment is baked into the URL so production noise and local
+ * experimentation stay separable in Sentry.
+ */
+const reportUri = securityReportUrl(
+  process.env.VERCEL_ENV === "production" ? "production" : "development",
+);
 
 /**
  * Report-only to start. Enforcing requires removing `'unsafe-inline'` from
@@ -23,11 +39,23 @@ const csp = [
   "font-src 'self' data:",
   "style-src 'self' 'unsafe-inline'",
   "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
-  "connect-src 'self' https://*.supabase.co https://va.vercel-scripts.com https://vitals.vercel-insights.com",
+  // Sentry error events are NOT sent cross-origin: tunnelRoute proxies them
+  // through this origin, so 'self' covers them. The ingest origin is listed
+  // only because the browser posts CSP reports to it directly.
+  `connect-src 'self' https://*.supabase.co https://va.vercel-scripts.com https://vitals.vercel-insights.com ${SENTRY_INGEST_ORIGIN}`,
   "worker-src 'self' blob:",
   // `upgrade-insecure-requests` is deliberately absent: browsers ignore it in a
   // report-only policy and log a console error on every page for it. Add it
   // when this policy moves to enforcing. HSTS already covers the live site.
+
+  // Both directives on purpose. `report-uri` is deprecated but universally
+  // supported; `report-to` is the replacement and reached broad support in
+  // March 2026. Naming both means current browsers report today and newer ones
+  // use the modern path. Until this policy named a collector, every violation
+  // the browser computed was discarded -- the data needed to write an enforcing
+  // nonce-based policy never existed.
+  `report-uri ${reportUri}`,
+  "report-to csp-endpoint",
 ].join("; ");
 
 // Applied to every route.
@@ -42,6 +70,12 @@ const securityHeaders = [
   {
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=(), browsing-topics=()",
+  },
+  // Declares the group `report-to` above refers to. Without this header the
+  // report-to directive names a group that does not exist and is ignored.
+  {
+    key: "Reporting-Endpoints",
+    value: `csp-endpoint="${reportUri}"`,
   },
   { key: "Content-Security-Policy-Report-Only", value: csp },
 ];
@@ -74,4 +108,22 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  org: "enki-tools",
+  project: "enki",
+
+  // Quiet locally, verbose in CI where the output is the only diagnostic.
+  silent: !process.env.CI,
+
+  // Proxies events through this origin. Two wins: ad blockers cannot drop them,
+  // and connect-src stays 'self' rather than gaining a third-party origin in a
+  // policy this project intends to tighten. src/proxy.ts excludes this path.
+  tunnelRoute: SENTRY_TUNNEL_ROUTE,
+
+  // Strips the SDK's own debug/logging statements from the production bundle.
+  disableLogger: true,
+
+  // Source maps are uploaded only when SENTRY_AUTH_TOKEN is present, so local
+  // and fork builds succeed without it; production stack traces stay readable.
+  widenClientFileUpload: true,
+});

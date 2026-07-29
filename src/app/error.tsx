@@ -2,15 +2,15 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import * as Sentry from "@sentry/nextjs";
 import { Icon } from "@/components/shared/icon";
 
 /**
  * Route-level error boundary.
  *
  * Without this, an unhandled runtime error drops the visitor onto Next's raw
- * error page. It also logs to the server, where Vercel captures it -- until a
- * real error tracker (Sentry) is wired up, that log is the only signal that
- * anything broke for a real user.
+ * error page. React swallows errors caught by a boundary, so without the
+ * explicit capture below Sentry would never see them.
  */
 export default function Error({
   error,
@@ -20,6 +20,7 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
+    Sentry.captureException(error);
     console.error("[enki] unhandled route error", {
       message: error.message,
       digest: error.digest,

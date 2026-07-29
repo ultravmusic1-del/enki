@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { createAnonClient } from "@/lib/supabase/anon";
 
 /**
@@ -12,8 +13,26 @@ import { createAnonClient } from "@/lib/supabase/anon";
  *
  * Move to Supabase Pro when there is user data worth restoring; Pro's real
  * value is daily backups, not uptime.
+ *
+ * Wrapped in a Sentry check-in because this job's failure mode is silence. If
+ * it stops running -- or runs and fails -- the public pages carry on serving
+ * the seed and nothing looks wrong from outside, right up until a visitor
+ * tries to sign up. `checkInMonitor` also reports a *missed* run, which a
+ * try/catch inside the handler cannot: an invocation that never happens throws
+ * nothing.
  */
 export const dynamic = "force-dynamic";
+
+/** Must match vercel.json's cron entry, or Sentry reports phantom misses. */
+const MONITOR_SLUG = "keep-warm";
+const MONITOR_CONFIG = {
+  schedule: { type: "crontab", value: "0 6 * * *" },
+  // The job is a single trivial query; a minute is generous.
+  maxRuntime: 1,
+  // Vercel cron firing time drifts a little; allow for it before alerting.
+  checkinMargin: 10,
+  timezone: "Etc/UTC",
+} as const;
 
 export async function GET(request: NextRequest) {
   // Vercel signs cron invocations with CRON_SECRET when it is configured.
@@ -27,24 +46,30 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // `tools` is public-readable, so this needs no privileged key. head:true
-    // asks for a count with no rows, which is the cheapest round trip that
-    // still counts as database activity.
-    const { error } = await createAnonClient()
-      .from("tools")
-      .select("slug", { count: "exact", head: true });
+    await Sentry.withMonitor(
+      MONITOR_SLUG,
+      async () => {
+        // `tools` is public-readable, so this needs no privileged key.
+        // head:true asks for a count with no rows, which is the cheapest round
+        // trip that still counts as database activity.
+        const { error } = await createAnonClient()
+          .from("tools")
+          .select("slug", { count: "exact", head: true });
 
-    if (error) {
-      console.error("[enki] keep-warm query failed", error);
-      return NextResponse.json(
-        { ok: false, error: error.message },
-        { status: 503 },
-      );
-    }
+        // Thrown rather than returned on purpose. withMonitor derives the
+        // check-in status from whether this callback throws, so returning the
+        // failure would record a healthy run and defeat the monitor.
+        if (error) {
+          throw new Error(`keep-warm query failed: ${error.message}`);
+        }
+      },
+      MONITOR_CONFIG,
+    );
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error("[enki] keep-warm threw", error);
+    console.error("[enki] keep-warm failed", error);
+    Sentry.captureException(error);
     return NextResponse.json({ ok: false }, { status: 503 });
   }
 }

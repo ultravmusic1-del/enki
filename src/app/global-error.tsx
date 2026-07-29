@@ -1,14 +1,21 @@
 "use client";
 
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 
 /**
  * Last-resort boundary for errors thrown in the root layout itself.
  *
  * It replaces the whole document, so it must render its own <html> and <body>
  * and cannot rely on the app's fonts, providers, or CSS variables. Styles are
- * inline for that reason. Keep it dependency-free: anything imported here is
- * something that can also fail here.
+ * inline for that reason. Keep the render path dependency-free: anything
+ * imported for rendering here is something that can also fail here.
+ *
+ * The Sentry import is the deliberate exception. It is already initialised by
+ * instrumentation-client before any layout code runs, and this is the one
+ * boundary that catches failures nothing else will — an error here with no
+ * report is completely invisible. The capture is confined to the effect, so a
+ * failure inside it cannot stop the fallback UI rendering.
  */
 export default function GlobalError({
   error,
@@ -18,6 +25,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
+    Sentry.captureException(error);
     console.error("[enki] unhandled root error", {
       message: error.message,
       digest: error.digest,
