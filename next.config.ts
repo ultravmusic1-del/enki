@@ -120,8 +120,11 @@ export default withSentryConfig(nextConfig, {
   // policy this project intends to tighten. src/proxy.ts excludes this path.
   tunnelRoute: SENTRY_TUNNEL_ROUTE,
 
-  // Strips the SDK's own debug/logging statements from the production bundle.
-  disableLogger: true,
+  // `disableLogger` is deliberately absent. It is deprecated, and this project
+  // builds with Turbopack, where it does nothing at all except print a
+  // deprecation warning twice per build. Its replacement
+  // (webpack.treeshake.removeDebugLogging) is webpack-only, so there is nothing
+  // to migrate to until Turbopack gains an equivalent.
 
   // Source maps are uploaded only when SENTRY_AUTH_TOKEN is present, so local
   // and fork builds succeed without it; production stack traces stay readable.
