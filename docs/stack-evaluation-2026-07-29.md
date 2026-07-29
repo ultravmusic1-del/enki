@@ -136,6 +136,11 @@ BotID checks, email) and Tier 3 argues against client-side analytics.
 
 ## 7. If picking one
 
+> **Superseded as a task list.** Sentry has since been implemented (errors, CSP
+> collector, cron monitoring). Anything still outstanding from this evaluation now
+> lives in `handoff.md` §12, the single pre-launch to-do list. Kept here for the
+> reasoning, not as work to pick up.
+
 **Sentry, done fully** — errors, CSP collector, cron monitor. One vendor, three open loops
 closed, and it unblocks the nonce-CSP work that several other items wait behind.
 

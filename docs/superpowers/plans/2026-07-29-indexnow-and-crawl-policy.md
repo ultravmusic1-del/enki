@@ -589,6 +589,10 @@ Expected: no `Disallow:` lines.
 
 ## Operator Checklist
 
+> **Superseded.** This plan is implemented and deployed. Any step still outstanding
+> (Bing Webmaster Tools) is tracked in `handoff.md` §12, the single pre-launch
+> to-do list. Kept as a record of what was done.
+
 **Bing Webmaster Tools** — a console action, best done now that Search Console is verified
 and the sitemap is submitted.
 

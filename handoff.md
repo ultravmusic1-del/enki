@@ -62,6 +62,31 @@ JSON editor). See §2c to grant yourself admin.
 - **SEO/PWA/legal/a11y baseline** — canonicals on every page, security headers,
   web manifest + apple-touch-icon, `/privacy` + `/terms`, skip-link + global
   focus ring.
+- **Canonical domain** (2026-07-29) — everything resolves to `enkitools.com`:
+  canonicals, OG, 111 sitemap entries, robots, `llms.txt`, JSON-LD ids.
+  `enki-five.vercel.app` and `www` 308 to the apex. `CANONICAL_SITE_URL` is
+  committed in `src/lib/site.ts` rather than read from a dashboard variable, and
+  `src/lib/site.test.ts` fails the build if a production build could ever resolve
+  a `.vercel.app` origin again.
+- **IndexNow** (2026-07-29) — `pnpm indexnow` pushes URLs to Bing, Yandex, Naver,
+  Seznam and Yep (and via Bing: DuckDuckGo, Copilot, ChatGPT search). Manual by
+  design; a host guard refuses any URL not on `enkitools.com`, and a drift test
+  pins the script's key to the library and the published key file.
+- **One index-control mechanism** (2026-07-29) — `robots.txt` no longer disallows
+  anything; private routes carry `noindex`, which crawlers can now actually see.
+  A blocked crawler never fetches the page, so it never reads the `noindex`.
+- **Observability** (2026-07-29) — Sentry captures errors from all three runtimes,
+  collects CSP violations (the policy had been report-only with no collector, so
+  every violation was discarded), and monitors the `keep-warm` cron. Source maps
+  upload on every build.
+- **Hero first paint** (2026-07-29) — the intro reveal is CSS, not GSAP. It used
+  to run after hydration and `.from({opacity: 0})` hid copy the visitor was
+  already reading; measured as four seconds of correct hero followed by a blank
+  one on a throttled cold load.
+- **Hero payload** (2026-07-29) — model 1286 KB → 124 KB (200k → 20k triangles,
+  unused textures and UVs stripped), preloaded so it no longer waits on the
+  ~900 KB three.js chunk, and the placeholder is now a render of the model itself
+  instead of a 415 KB flat emblem. Emblem mask 415 KB → 42 KB sitewide.
 
 **Gates:** `pnpm verify` (typecheck + lint + test) is the gate, and the
 pre-commit hook runs it for any commit touching code. `pnpm build` is
@@ -256,7 +281,9 @@ Categories/authors/seed-reviews remain seed-only.
 | **Backend/Auth/CMS** | **Supabase** (`@supabase/supabase-js`, `@supabase/ssr`) — see §4 |
 | Server mutations | **Next server actions** (submit, newsletter, admin moderation + tool CRUD). Reviews, saved tools, and collections write from the **browser client** under RLS, not through server actions. **Every admin action calls `assertAdmin()` itself** — server actions are public POST endpoints, and RLS alone does not stop an unauthorized caller from triggering their side effects. |
 | Toasts / Analytics | Sonner; Vercel Web Analytics + Speed Insights |
-| Tests | Vitest (jsdom) + Playwright |
+| **Observability** | **Sentry** (`@sentry/nextjs`) — errors on node/edge/client, CSP violation collector, cron check-ins. DSN committed in `src/lib/sentry.ts` (public by design); `SENTRY_AUTH_TOKEN` in Vercel for source maps |
+| Tests | Vitest (jsdom) + Playwright (**installed; `e2e/` is empty — no specs yet**) |
+| Asset pipeline | `@gltf-transform/*` + `meshoptimizer` (hero model), `sharp` (brand mask, poster). Sources live in `assets/`, never served; `public/` artefacts are generated |
 | Dev tooling | code-review-graph MCP (§10) |
 | Theme / Hosting | Dark only (`class="dark"`); Vercel — live, auto-deploys on push to `main` |
 
@@ -441,42 +468,64 @@ stats: `code-review-graph status`. Requires a Claude Code restart to load the MC
 
 ## 12. Open items / next steps
 
-### Operator decisions needed before a public launch
+**This is the only pre-launch to-do list.** Earlier lists in
+`docs/launch-readiness-audit-2026-07-29.md`, `docs/stack-evaluation-2026-07-29.md`
+and the Operator Checklists inside `docs/superpowers/plans/*` are superseded and
+point here. Do not start a second one.
 
-- **The seed `rating` / `reviewCount` on tools are editorial sample figures, not
-  real community aggregates**, and the six reviewers in `src/data/authors.ts` are
-  invented personas. The parts that could not be substantiated at all are now
-  gone — the "verified reviewer" badge, the invented "helpful" counts, the star
-  histogram synthesized from an aggregate, and all `AggregateRating`/`Review`
-  structured data (gated behind `siteConfig.hasVerifiedRatings`, currently
-  `false`). **The displayed numbers and the bylines remain.** For a site that
-  earns affiliate revenue off these rankings, decide before launch whether to
-  (a) replace them with real moderated-review aggregates, (b) relabel them
-  plainly as editorial estimates, or (c) remove them. Flip
-  `hasVerifiedRatings` to `true` only once (a) is done.
-- **Edge rate limiting.** The public forms have honeypots and Postgres CHECK
-  constraints, but no request-rate ceiling. Add Vercel WAF / firewall rules for
-  `/submit`, `/go/*`, and the newsletter action at deploy time.
-- **Enable leaked-password protection** in Supabase → Auth (flagged by the
-  security advisors; dashboard-only setting).
+Resolved and removed from this list: the fabricated per-tool ratings and the six
+invented reviewer personas are **gone** — `src/data/authors.ts` is deliberately
+empty, no `rating:` fields remain in the seed, and `hasVerifiedRatings` stays
+`false`. Deploy, admin grant, and the domain migration are done.
 
-### Still to build
+Owner: **You** = dashboard/account access only you have. **Claude** = in-repo work.
 
-- **Deploy** (§2b) — Vercel git import + env vars (your action), then verify; grant
-  yourself admin (§2c).
-- **Email sending** — the newsletter *captures* subscribers but doesn't send.
-  Wire a provider (Resend/Postmark) + `RESEND_API_KEY` for the weekly digest +
-  per-tool "notify me when this changes" alerts (the freshness `changelog` is the
-  source).
-- **Link-health cron** — a Vercel Cron that pings each tool's site and flags dead
-  links into the admin re-vet queue (folded conceptually into freshness; not built).
-- **CMS authoring UX** — the tool editor is a Zod-validated **JSON editor** (fully
-  functional). A field-by-field form (array editors for keyFeatures/screenshots/
-  pros/cons, Supabase Storage for logo/screenshot uploads) is the polish pass.
-- **A nonce-based CSP** — deliberately omitted in `next.config.ts` because the 3D
-  hero and Vercel Analytics need a validated policy first.
-- **Component/E2E tests** — `lib` logic and the admin/CMS server actions are now
-  covered (121 tests); the React components remain largely untested.
-- **Consider a real `createdAt`/`updatedAt` on tools** (now that they can be
-  DB-backed) to power an honest RSS feed / "recently added" digest.
+### A. Blockers — must land before the first public visitor
+
+| # | Item | Owner |
+|---|---|---|
+| A1 | **Rate-limit the public write paths.** `outbound_clicks`, `subscribers` and `tool_submissions` all accept unauthenticated `INSERT` with `WITH CHECK (true)` (confirmed by Supabase advisors). Protection today is a honeypot and CHECK constraints — no rate ceiling. Anyone can inflate affiliate click counts, subscribe third-party addresses, or flood the moderation queue. Use `@vercel/firewall` `checkRateLimit()` + BotID (`withBotId` / `checkBotId`) — first-party, no CAPTCHA, no new CSP origin. | Claude |
+| A2 | **Enable leaked-password protection** in Supabase → Auth. Users can currently register with known-breached passwords. One toggle. | You |
+| A3 | **Configure a Sentry alert rule** so the first real error reaches a human instead of sitting in a dashboard. | You |
+| A4 | **Decide the newsletter.** Addresses are being collected and nothing has ever been sent — an unfulfilled promise that grows with every signup. Either build sending (see B1) or stop collecting until it exists. | You |
+| A5 | **E2E smoke tests** over signup → confirm → login, `/submit`, and admin moderation; wire Playwright into CI. `e2e/` is currently **empty** and CI runs only `pnpm verify`. These are precisely the paths a first public user walks. | Claude |
+| A6 | **Verify a real signup end to end** on `enkitools.com` (needs a mailbox). | You |
+| A7 | **Add a real favicon.** `/favicon.ico` currently **404s** — only `/icon.svg` and `/apple-icon` exist. Google's SERP favicon fetcher and several other clients request the `.ico` path specifically, so the brand is likely showing blank in search results. Also delete Next's leftover template art from `public/` (`next.svg`, `vercel.svg`, `globe.svg`, `file.svg`, `window.svg`). | Claude |
+| A8 | **Final pre-launch sweep:** visual (`pnpm sweep` across every route, both viewports), functionality (auth, submit, review moderation, saved, collections, compare, finder, outbound `/go/*`), and security (`pnpm audit:rls`, `pnpm audit --prod`, Supabase advisors re-run, headers re-checked). | Claude + You |
+
+### B. Build — the internal-tools push
+
+| # | Item | Owner |
+|---|---|---|
+| B1 | **Self-hosted newsletter, managed from the admin panel.** Own the sending, list management, campaign composition and delivery reporting rather than renting a SaaS dashboard. Depends on B2. *Reference repo to be supplied.* | Claude |
+| B2 | **Full admin panel.** Today's `/admin` is deliberately barebones — KPI tiles, review moderation, re-vet and submission queues, and a Zod-validated **JSON** tool editor. Wanted: a real field-by-field CMS (array editors for `keyFeatures`/`screenshots`/`pros`/`cons`, Supabase Storage uploads for logos and screenshots), plus the surfaces B1 and B3 hang off. | Claude |
+| B3 | **Analytics board inside the admin panel.** Own the numbers instead of reading them in Vercel's dashboard. `outbound_clicks` already records the money event. *Reference repo to be supplied.* | Claude |
+
+### C. Growth — brand search
+
+| # | Item | Owner |
+|---|---|---|
+| C1 | **Rank for "Enki tools" (two words), not only "enkitools".** The domain and wordmark are one word; the phrase people type is often two. Tactics, cheapest first: add `alternateName: ["Enki Tools", "EnkiTools"]` to the Organization JSON-LD so Google is told the alternates explicitly; use the two-word form naturally in the title tag, an `/about` page and footer copy (currently the exact phrase barely appears anywhere); strengthen the entity with more `sameAs` profiles as they exist; and use "Enki Tools" as anchor text in any directory or listing submissions. Note "Enki" alone is a Sumerian deity — high-competition, wrong intent — so target the qualified phrase, not the bare name. | Claude |
+
+### D. Soon after launch
+
+| # | Item | Owner |
+|---|---|---|
+| D1 | **Supabase Pro for daily backups**, the moment real user data exists. Free tier has none, and an accident is unrecoverable. | You |
+| D2 | **Watch for the 403 `Vercel Security Checkpoint` recurring.** Every URL returned it for ~20 minutes on 2026-07-29, then self-recovered. Attack Challenge Mode and bot protection are both confirmed **off**, so the cause is unknown. Likely automatic DDoS mitigation reacting to heavy automated traffic from one IP, but unconfirmed. If it happens to real users it becomes a blocker. | Both |
+| D3 | **Bing Webmaster Tools** — "Import from Google Search Console" carries verification and the sitemap in one step; its IndexNow tab confirms submissions. | You |
+| D4 | **Remove the transitional `enki-five.vercel.app/auth/callback`** from Supabase redirect URLs (kept during the domain migration). | You |
+| D5 | **Branded contact address.** `/privacy`, `/terms` and both error boundaries name a personal Gmail. Vercel has no mailbox product — add MX records pointing at a forwarder or provider, then swap the references. Keep **one** SPF TXT record covering every sender. | Both |
+| D6 | **Link-health cron** — ping each tool's site and flag dead links into the re-vet queue. | Claude |
+
+### E. When there is time
+
+| # | Item | Owner |
+|---|---|---|
+| E1 | **Thin-content pass** on the ~100 generated `/best`, `/alternatives` and `/vs` pages — 90% of the sitemap, and the shape Google's doorway-page guidance targets. Largest structural SEO risk. | Claude |
+| E2 | **Enforcing nonce-based CSP.** Now that violations report to Sentry, the data to write it safely will accumulate; `script-src` still carries `'unsafe-inline'`. | Claude |
+| E3 | **Shrink or split the ~909 KB three.js/R3F chunk** — the hero model no longer waits on it, but it is still the largest asset. | Claude |
+| E4 | **Optimise `public/brand/logo.png` (1.1 MB) and `inspiration.png` (500 KB)** — not on the homepage critical path, but large. | Claude |
+| E5 | **Component-level tests** — React components remain largely untested. | Claude |
+| E6 | **Real `createdAt`/`updatedAt` on tools** to power an honest RSS feed and "recently added" digest. | Claude |
 ```

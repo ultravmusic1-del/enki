@@ -500,6 +500,10 @@ verbatim when claiming the branch is ready.
 
 ## Operator Checklist
 
+> **Superseded.** This plan is implemented and deployed. Any step still outstanding
+> (removing the transitional auth callback) is tracked in `handoff.md` §12, the
+> single pre-launch to-do list. Kept as a record of what was done.
+
 These are dashboard actions on accounts the implementer cannot access. **Step 1 must be
 completed before this branch merges to `main`**, because merging deploys the Task 2
 redirect.

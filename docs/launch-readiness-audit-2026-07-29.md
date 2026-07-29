@@ -122,42 +122,14 @@ before pushing hard on acquisition.
 
 ---
 
-## 3. Checklist
+## 3. Checklist — moved
 
-Ordered by what would hurt most if skipped. **You** = dashboard or account access I do
-not have; **Me** = in-repo work.
+The actions from this audit now live in **`handoff.md` §12**, which is the single
+pre-launch to-do list. This document keeps only the findings and the evidence behind
+them; do not re-add a checklist here.
 
-### Before opening to the public
-
-| # | Action | Owner | Size |
-|---|---|---|---|
-| 1 | Rate-limit `/submit`, `/go/*` and the newsletter action (`@vercel/firewall` + BotID) | Me | M |
-| 2 | Enable leaked-password protection in Supabase Auth | You | XS |
-| 3 | Re-enable or delete the `keep-warm` Sentry monitor — it is disabled, so nothing is watching the cron | You | XS |
-| 4 | Configure at least one Sentry alert rule so a first error reaches a human | You | XS |
-| 5 | Decide the newsletter: wire Resend, or stop collecting addresses | You + Me | M |
-| 6 | E2E smoke tests for signup, `/submit`, admin moderation; run Playwright in CI | Me | M |
-| 7 | Verify a real signup end to end on `enkitools.com` (needs a mailbox) | You | S |
-
-### Soon after launch
-
-| # | Action | Owner | Size |
-|---|---|---|---|
-| 8 | Supabase Pro for daily backups, once real user data exists | You | XS |
-| 9 | Watch for the 403 challenge recurring under real traffic | Both | — |
-| 10 | Refresh `handoff.md` §12 — the ratings/reviewers item is resolved | Me | XS |
-| 11 | Submit the sitemap to Bing Webmaster Tools (import from GSC) | You | XS |
-| 12 | Remove the transitional `enki-five.vercel.app/auth/callback` from Supabase redirect URLs | You | XS |
-
-### When there is time
-
-| # | Action | Owner | Size |
-|---|---|---|---|
-| 13 | Thin-content pass on `/best`, `/alternatives`, `/vs` | Me | L |
-| 14 | Move the CSP to an enforcing nonce-based policy, using the Sentry reports | Me | M |
-| 15 | Shrink or split the 909 KB three.js chunk | Me | L |
-| 16 | Optimise `logo.png` (1.1 MB) and `inspiration.png` (500 KB) | Me | S |
-| 17 | Component-level test coverage — React components are largely untested | Me | L |
+The `keep-warm` monitor item is closed — the monitor was deleted, and `withMonitor`
+upserts it again on the next check-in.
 
 ---
 
