@@ -22,25 +22,17 @@ export function OracleHero() {
         "(prefers-reduced-motion: reduce)",
       ).matches;
 
-      // Static end-state for reduced motion — everything simply visible.
-      if (reduce) {
-        gsap.set("[data-hero-reveal], [data-halo]", { opacity: 1, y: 0 });
-        return;
-      }
+      if (reduce) return;
 
-      gsap
-        .timeline({ defaults: { ease: "power3.out" } })
-        .from("[data-halo]", { opacity: 0, duration: 1.3, ease: "power2.out" })
-        .from(
-          "[data-hero-reveal]",
-          { opacity: 0, y: 24, duration: 0.8, stagger: 0.12 },
-          "-=0.7",
-        );
+      // The entrance reveal is CSS (see globals.css, "Home hero entrance").
+      // It must not live here: this effect runs only after hydration, and a
+      // `.from({opacity: 0})` at that point hides hero copy the visitor is
+      // already reading. Only the scroll-linked parallax belongs in JS.
 
       // Parallax drift + fade as the hero scrolls away (depth). Explicit
-      // fromTo (opacity 1 -> 0.35) with immediateRender:false so it never
-      // captures the intro's opacity:0 as its start — otherwise scrubbing back
-      // to the top would leave the model hidden.
+      // fromTo (opacity 1 -> 0.35) with immediateRender:false so the start
+      // state is captured on first scroll rather than at creation — otherwise
+      // it can fight the CSS entrance and leave the model hidden.
       gsap.fromTo(
         "[data-halo]",
         { yPercent: 0, opacity: 1 },
@@ -93,7 +85,7 @@ export function OracleHero() {
       {/* Copy */}
       <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-5 text-center">
         <span
-          data-hero-reveal
+          data-hero-reveal="1"
           className="tagline-pill relative mb-6 inline-flex items-center gap-2.5 overflow-hidden rounded-full px-4 py-1.5 font-mono text-xs tracking-wide text-mist/85"
         >
           {/* light that glints across the pill */}
@@ -110,7 +102,7 @@ export function OracleHero() {
         </span>
 
         <h1
-          data-hero-reveal
+          data-hero-reveal="2"
           className="text-balance text-5xl leading-[1.05] font-semibold sm:text-6xl lg:text-7xl"
         >
           The oracle for{" "}
@@ -119,7 +111,7 @@ export function OracleHero() {
         </h1>
 
         <div
-          data-hero-reveal
+          data-hero-reveal="3"
           className="mt-9 flex flex-col items-center gap-3 sm:flex-row"
         >
           <button
@@ -146,7 +138,7 @@ export function OracleHero() {
 
       {/* Scroll cue */}
       <div
-        data-hero-reveal
+        data-hero-reveal="4"
         className="absolute bottom-6 left-1/2 -translate-x-1/2 text-muted-foreground/60"
         aria-hidden
       >

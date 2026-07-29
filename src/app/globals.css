@@ -588,6 +588,60 @@
 }
 
 /* =========================================================================
+   Home hero entrance.
+
+   CSS rather than GSAP, deliberately. The hero is server-rendered, so its copy
+   paints with the first frame. Running the intro from a `useGSAP` effect meant
+   it fired only after hydration and, being a `.from({opacity: 0})`, it *hid
+   content the visitor was already reading* before fading it back in. On a cold
+   cache the measured gap was four seconds of correct hero followed by a blank
+   one — the slower the connection, the worse it looked.
+
+   A CSS animation runs at first paint instead, so the reveal happens once, in
+   the right place, and never un-paints anything. Same `from`-only keyframe and
+   `backwards` fill as .page-transition below: no lingering transform, so the
+   ScrollTrigger parallax on [data-halo] still owns that property afterwards.
+
+   Delays are kept short on purpose. An element at opacity 0 does not count for
+   LCP, so a long pre-delay would postpone the largest paint; the headline
+   starts at 140ms.
+
+   `prefers-reduced-motion` needs no special case — the universal block below
+   collapses every animation to 0.001ms.
+   ========================================================================= */
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+@keyframes hero-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+[data-halo] {
+  animation: hero-fade 1.2s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+[data-hero-reveal] {
+  animation: hero-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) 60ms backwards;
+}
+[data-hero-reveal="2"] {
+  animation-delay: 140ms;
+}
+[data-hero-reveal="3"] {
+  animation-delay: 220ms;
+}
+/* The scroll cue is centred with `-translate-x-1/2`. Animating `transform`
+   would overwrite that and drop it to the left edge mid-reveal, so it fades. */
+[data-hero-reveal="4"] {
+  animation-name: hero-fade;
+  animation-delay: 300ms;
+}
+
+/* =========================================================================
    Route transition — every client navigation fades + lifts its page in,
    reusing the Reveal easing so the whole site shares one entrance language.
    A `from`-only keyframe leaves NO lingering transform once it settles, so
