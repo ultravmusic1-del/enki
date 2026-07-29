@@ -10,6 +10,10 @@ allowBuilds:
   unrs-resolver: true
   '@tailwindcss/oxide': true
   esbuild: true
+  # Downloads the sentry-cli binary, which withSentryConfig uses to upload
+  # source maps at build time. Without it, production stack traces stay
+  # minified and unreadable.
+  '@sentry/cli': true
 minimumReleaseAgeExclude:
   - '@next/env@16.2.12'
   - '@next/swc-darwin-arm64@16.2.12'
@@ -28,3 +32,4 @@ onlyBuiltDependencies:
   - unrs-resolver
   - '@tailwindcss/oxide'
   - esbuild
+  - '@sentry/cli'
