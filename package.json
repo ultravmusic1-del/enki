@@ -20,6 +20,7 @@
     "doctor": "node scripts/doctor.mjs",
     "audit:rls": "node scripts/audit-rls.mjs",
     "sweep": "node scripts/visual-sweep.mjs",
+    "indexnow": "node scripts/indexnow.mjs",
     "prepare": "node scripts/install-hooks.mjs"
   },
   "dependencies": {
