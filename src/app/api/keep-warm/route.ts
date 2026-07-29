@@ -71,5 +71,13 @@ export async function GET(request: NextRequest) {
     console.error("[enki] keep-warm failed", error);
     Sentry.captureException(error);
     return NextResponse.json({ ok: false }, { status: 503 });
+  } finally {
+    // Serverless functions can be frozen the instant a response is returned,
+    // before Sentry's transport has flushed. The check-in is then computed and
+    // discarded -- indistinguishable, from Sentry's side, from the job never
+    // running at all, which would make this monitor worse than useless: it
+    // would alert on healthy runs. This costs a few hundred milliseconds on a
+    // once-a-day job.
+    await Sentry.flush(2000);
   }
 }
