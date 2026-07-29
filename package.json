@@ -21,6 +21,9 @@
     "audit:rls": "node scripts/audit-rls.mjs",
     "sweep": "node scripts/visual-sweep.mjs",
     "indexnow": "node scripts/indexnow.mjs",
+    "optimize:model": "node scripts/optimize-model.mjs",
+    "optimize:brand": "node scripts/optimize-brand-assets.mjs",
+    "poster": "node scripts/render-poster.mjs",
     "prepare": "node scripts/install-hooks.mjs"
   },
   "dependencies": {
@@ -54,6 +57,9 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@gltf-transform/core": "^4.4.2",
+    "@gltf-transform/extensions": "^4.4.2",
+    "@gltf-transform/functions": "^4.4.2",
     "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.1",
@@ -67,8 +73,10 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.12",
     "jsdom": "^29.1.1",
+    "meshoptimizer": "^1.2.0",
     "pngjs": "^7.0.0",
     "shadcn": "^4.14.1",
+    "sharp": "^0.35.3",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.10"
