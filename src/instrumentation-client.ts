@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/nextjs";
-import { SENTRY_DSN, tracesSampleRate } from "./src/lib/sentry";
+import { SENTRY_DSN, tracesSampleRate } from "./lib/sentry";
 
 /**
  * Browser SDK.
