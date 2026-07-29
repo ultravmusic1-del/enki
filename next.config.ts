@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { CANONICAL_SITE_URL } from "./src/lib/site";
 
 /**
  * Report-only to start. Enforcing requires removing `'unsafe-inline'` from
@@ -45,9 +46,31 @@ const securityHeaders = [
   { key: "Content-Security-Policy-Report-Only", value: csp },
 ];
 
+/**
+ * The project's original Vercel alias. It still serves a complete second copy of
+ * every URL on the site, competing with enkitools.com for the same ranking
+ * signal, so it is permanently redirected rather than left to be indexed.
+ *
+ * next.config redirects are evaluated before middleware, so a bounced request
+ * never runs the Supabase session refresh in src/proxy.ts. The host condition
+ * matches only this exact alias: preview deployments and localhost are
+ * untouched, and no loop is possible because enkitools.com never matches it.
+ */
+const LEGACY_HOST = "enki-five.vercel.app";
+
 const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
+  },
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: LEGACY_HOST }],
+        destination: `${CANONICAL_SITE_URL}/:path*`,
+        permanent: true,
+      },
+    ];
   },
 };
 

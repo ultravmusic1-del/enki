@@ -1,29 +1,53 @@
 /**
+ * The domain Enki owns and serves from.
+ *
+ * Committed rather than left to configuration on purpose. An unset
+ * `NEXT_PUBLIC_SITE_URL` is exactly how every canonical, sitemap entry, robots
+ * directive and JSON-LD `@id` came to point at the Vercel subdomain while the
+ * site was already serving from this domain — telling search engines the real
+ * page lived somewhere else. A production build is now correct with no
+ * dashboard configuration at all.
+ */
+export const CANONICAL_SITE_URL = "https://enkitools.com";
+
+const stripTrailingSlash = (value: string) => value.replace(/\/+$/, "");
+
+/**
  * The site's canonical origin, with no trailing slash.
  *
  * This is not cosmetic: it backs every `<link rel="canonical">`, the sitemap,
- * robots.txt, the absolute OG/Twitter image URLs, and the `/go/[slug]` fallback
- * redirect. Hard-coding a domain the deployment does not actually serve tells
- * search engines the real page lives somewhere else and sends users to a dead
- * host, so it is resolved from the environment instead.
+ * robots.txt, `llms.txt`, the absolute OG/Twitter image URLs, all JSON-LD
+ * identifiers, and the `/go/[slug]` fallback redirect.
  *
  * Order of preference:
- *  1. `NEXT_PUBLIC_SITE_URL` — set this once you own a custom domain.
- *  2. Vercel's own production domain, which it injects automatically, so a
- *     fresh deploy is correct with no configuration.
- *  3. localhost for local development.
+ *  1. `NEXT_PUBLIC_SITE_URL` — an explicit override, e.g. a staging origin.
+ *  2. Vercel preview deployments — their own origin, so a preview can never
+ *     claim the production canonical.
+ *  3. Any production build — the committed canonical above.
+ *  4. Local development.
+ *
+ * Step 3 keys off `NODE_ENV`, not `VERCEL_ENV`, deliberately. This module is
+ * imported by `site-footer.tsx`, a client component, so it is evaluated in the
+ * browser bundle as well as on the server — and Next only inlines `NEXT_PUBLIC_*`
+ * variables there. A bare `VERCEL_ENV` read would be `undefined` client-side and
+ * resolve a different origin than the server did, which is a hydration mismatch.
+ * `NODE_ENV` is inlined identically on both sides.
  */
-function resolveSiteUrl(): string {
+export function resolveSiteUrl(): string {
   const explicit = process.env.NEXT_PUBLIC_SITE_URL;
-  if (explicit) return explicit.replace(/\/+$/, "");
+  if (explicit) return stripTrailingSlash(explicit);
 
-  // Vercel exposes the stable production domain (bare host, no protocol). The
-  // NEXT_PUBLIC_ copy exists when "Automatically expose System Environment
-  // Variables" is on (the default); the bare one covers server-only rendering.
-  const vercelHost =
-    process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL ??
-    process.env.VERCEL_PROJECT_PRODUCTION_URL;
-  if (vercelHost) return `https://${vercelHost.replace(/\/+$/, "")}`;
+  // The NEXT_PUBLIC_ copies exist when "Automatically expose System Environment
+  // Variables" is on (the default); the bare ones cover server-only rendering.
+  const vercelEnv =
+    process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.VERCEL_ENV;
+  if (vercelEnv === "preview") {
+    const previewHost =
+      process.env.NEXT_PUBLIC_VERCEL_URL ?? process.env.VERCEL_URL;
+    if (previewHost) return `https://${stripTrailingSlash(previewHost)}`;
+  }
+
+  if (process.env.NODE_ENV === "production") return CANONICAL_SITE_URL;
 
   return "http://localhost:3000";
 }
@@ -56,10 +80,13 @@ export const siteConfig = {
     { title: "Compare", href: "/compare" },
     { title: "Leaderboards", href: "/leaderboards" },
   ],
+  /**
+   * Real, owned accounts only. These render as clickable links in the footer and
+   * are asserted to search engines as `sameAs` on the Organization, so a
+   * placeholder here is both a dead outbound link and a false entity claim.
+   */
   social: {
-    twitter: "https://twitter.com",
-    github: "https://github.com",
-    linkedin: "https://linkedin.com",
+    instagram: "https://www.instagram.com/enkitools.ai/",
   },
 } as const;
 

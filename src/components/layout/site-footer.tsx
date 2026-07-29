@@ -25,9 +25,11 @@ const exploreLinks = [
 ];
 
 const socialLinks = [
-  { name: "Twitter", href: siteConfig.social.twitter, icon: "ArrowUpRight" },
-  { name: "GitHub", href: siteConfig.social.github, icon: "ArrowUpRight" },
-  { name: "LinkedIn", href: siteConfig.social.linkedin, icon: "ArrowUpRight" },
+  {
+    name: "Instagram",
+    href: siteConfig.social.instagram,
+    icon: "ArrowUpRight",
+  },
 ];
 
 export function SiteFooter() {

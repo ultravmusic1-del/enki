@@ -69,9 +69,10 @@ authoritative for routing, `pnpm sweep` for layout. Counts are deliberately not
 recorded here — they go stale. Run the commands.
 
 **Repo:** `https://github.com/ultravmusic1-del/enki.git` (branch `main`, pushed).
-**Live:** https://enki-five.vercel.app (Vercel project `enki`, auto-deploys on
-push to `main`). Deployment Protection is on, which gates the *deployment-specific*
-and preview URLs behind Vercel SSO; the production alias above is public.
+**Live:** https://enkitools.com (Vercel project `enki`, auto-deploys on push to
+`main`). `enki-five.vercel.app` 308-redirects here. Deployment Protection is on,
+which gates the *deployment-specific* and preview URLs behind Vercel SSO; the
+production domain above is public.
 
 ---
 
@@ -89,19 +90,23 @@ Both are the **publishable/anon** kind — safe client-side; RLS enforces access
 The `service_role` key is never used or stored. **No new env vars are required**
 for the current features; the (unbuilt) email digest would add `RESEND_API_KEY`.
 
-### 2b. Deployed ✅ — one auth setting still outstanding
-Live at **https://enki-five.vercel.app**; `git push` to `main` auto-deploys.
+### 2b. Deployed ✅
+Live at **https://enkitools.com**; `git push` to `main` auto-deploys.
 Env vars set: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 
-**Still to do:** add the Vercel URL to **Supabase → Auth → URL Configuration**
-(Site URL = `https://enki-five.vercel.app`, Redirect URLs += 
-`https://enki-five.vercel.app/auth/callback`). Password sign-in works without
-this, but confirmation and recovery emails will point at the wrong origin.
+**Supabase → Auth → URL Configuration** must have Site URL =
+`https://enkitools.com` and `https://enkitools.com/auth/callback` in Redirect
+URLs. Password sign-in works without this, but confirmation and recovery emails
+point at the wrong origin — and since `enki-five.vercel.app` now 308s to the
+apex, a stale entry sends the PKCE exchange across an origin boundary and the
+sign-up fails to complete.
 
-**Canonical origin:** `siteConfig.url` is resolved from the environment, not
-hard-coded — `NEXT_PUBLIC_SITE_URL` if set, else Vercel's injected production
-domain, else localhost. Set `NEXT_PUBLIC_SITE_URL` when a custom domain is
-attached; nothing needs changing until then.
+**Canonical origin:** `siteConfig.url` resolves in this order —
+`NEXT_PUBLIC_SITE_URL` if set, else a preview deployment's own origin, else the
+committed `CANONICAL_SITE_URL` (`https://enkitools.com`) for any production
+build, else localhost. It is deliberately not dependent on a dashboard variable:
+`src/lib/site.test.ts` asserts a production build can never resolve a
+`.vercel.app` origin.
 **Build note:** the content layer now reads tools from Supabase at build time
 (with a 2.5s timeout + seed fallback), so the DB should be **awake** during a
 deploy for freshest content; if it's paused the build still succeeds on the seed.
