@@ -45,6 +45,24 @@ export default async function Home() {
 
   return (
     <>
+      {/* The 3D scene chunk is what imports the model, so without this the .glb
+          cannot even begin downloading until ~900KB of three.js has arrived and
+          executed — measured at 9.7s to 14.8s on a throttled cold load. This
+          overlaps the two instead of chaining them.
+
+          `crossOrigin` is required, not optional. A preload only satisfies a
+          later request when their modes match: `as="fetch"` without the
+          attribute is a no-CORS preload, while three's FileLoader fetches in
+          cors mode. Omitting it was measured downloading the model twice.
+          React 19 hoists this into <head>. */}
+      <link
+        rel="preload"
+        href="/models/enki-model.glb"
+        as="fetch"
+        type="model/gltf-binary"
+        crossOrigin="anonymous"
+      />
+
       <OracleHero />
 
       {/* Featured tools */}

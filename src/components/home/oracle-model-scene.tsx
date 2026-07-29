@@ -30,9 +30,11 @@ type PointerState = {
 function OracleTablet({
   active,
   reduce,
+  onReady,
 }: {
   active: boolean;
   reduce: boolean;
+  onReady?: () => void;
 }) {
   const { scene } = useGLTF(MODEL_URL, false, true);
   const group = useRef<THREE.Group>(null);
@@ -55,6 +57,22 @@ function OracleTablet({
       emissiveIntensity: 0.16,
     });
   }
+
+  // useGLTF suspends until the model is parsed, so reaching this effect means
+  // there is geometry to draw. Two frames are allowed to pass before saying so:
+  // the placeholder crossfades out on this signal, and firing it before WebGL
+  // has actually painted would briefly reveal an empty canvas.
+  useEffect(() => {
+    if (!onReady) return;
+    let inner = 0;
+    const outer = requestAnimationFrame(() => {
+      inner = requestAnimationFrame(() => onReady());
+    });
+    return () => {
+      cancelAnimationFrame(outer);
+      cancelAnimationFrame(inner);
+    };
+  }, [onReady]);
 
   // Track pointer position, movement impulse, and engagement energy.
   useEffect(() => {
@@ -242,7 +260,13 @@ function OracleTablet({
   );
 }
 
-export function OracleModelScene({ active }: { active: boolean }) {
+export function OracleModelScene({
+  active,
+  onReady,
+}: {
+  active: boolean;
+  onReady?: () => void;
+}) {
   const [reduce, setReduce] = useState(false);
 
   useEffect(() => {
@@ -267,7 +291,7 @@ export function OracleModelScene({ active }: { active: boolean }) {
       <directionalLight position={[3, 5, 6]} intensity={1.5} color="#eafdff" />
       <directionalLight position={[-5, -1, 3]} intensity={0.5} color="#35e4ec" />
       <Suspense fallback={null}>
-        <OracleTablet active={active} reduce={reduce} />
+        <OracleTablet active={active} reduce={reduce} onReady={onReady} />
       </Suspense>
     </Canvas>
   );
