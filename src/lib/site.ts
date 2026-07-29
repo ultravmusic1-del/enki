@@ -80,10 +80,13 @@ export const siteConfig = {
     { title: "Compare", href: "/compare" },
     { title: "Leaderboards", href: "/leaderboards" },
   ],
+  /**
+   * Real, owned accounts only. These render as clickable links in the footer and
+   * are asserted to search engines as `sameAs` on the Organization, so a
+   * placeholder here is both a dead outbound link and a false entity claim.
+   */
   social: {
-    twitter: "https://twitter.com",
-    github: "https://github.com",
-    linkedin: "https://linkedin.com",
+    instagram: "https://www.instagram.com/enkitools.ai/",
   },
 } as const;
 

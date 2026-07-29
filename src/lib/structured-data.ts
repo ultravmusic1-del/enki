@@ -22,6 +22,9 @@ export function siteJsonLd() {
         url: BASE,
         description: siteConfig.description,
         logo: abs(siteConfig.ogImage),
+        // Connects the entity to its verified profile. Only accounts Enki
+        // actually controls belong here.
+        sameAs: [siteConfig.social.instagram],
       },
       {
         "@type": "WebSite",
