@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type FuseType from "fuse.js";
 import type { Tool } from "@/lib/schemas";
 import type { CategoryWithCount } from "@/lib/content";
@@ -15,6 +15,7 @@ import {
   type ToolFilters,
 } from "@/lib/filters";
 import type { PricingModel } from "@/lib/schemas";
+import { useSearchParamsOnMount } from "@/lib/use-search-params-on-mount";
 import { SavableToolCard } from "@/components/shared/savable-tool-card";
 import { Reveal } from "@/components/shared/reveal";
 import { Icon } from "@/components/shared/icon";
@@ -53,25 +54,33 @@ type Props = {
 export function DirectoryExplorer({ tools, categories, tags }: Props) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
-  // Initialize state from the URL (once).
-  const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
-  const [category, setCategory] = useState(
-    () => searchParams.get("cat") ?? "all",
-  );
-  const [pricing, setPricing] = useState<PricingModel[]>(() =>
-    parseList(searchParams.get("price")) as PricingModel[],
-  );
-  const [minScore, setMinScore] = useState(() =>
-    Number(searchParams.get("score") ?? 0),
-  );
-  const [selectedTags, setSelectedTags] = useState<string[]>(() =>
-    parseList(searchParams.get("tags")),
-  );
-  const [sort, setSort] = useState<SortKey>(
-    () => (searchParams.get("sort") as SortKey) ?? "relevance",
-  );
+  // Defaults render on the server and in the first client pass, so the markup
+  // matches and the grid is crawlable. The URL is applied just after mount.
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("all");
+  const [pricing, setPricing] = useState<PricingModel[]>([]);
+  const [minScore, setMinScore] = useState(0);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [sort, setSort] = useState<SortKey>("relevance");
+
+  // Each check below relies on the parsed falsy value being identical to that
+  // field's default, so skipping the setter is a no-op. Do not copy this shape
+  // for a filter where falsy is a real selection: it would silently drop it.
+  const urlRead = useSearchParamsOnMount((params) => {
+    const q = params.get("q");
+    if (q) setQuery(q);
+    const cat = params.get("cat");
+    if (cat) setCategory(cat);
+    const price = parseList(params.get("price")) as PricingModel[];
+    if (price.length) setPricing(price);
+    const score = Number(params.get("score") ?? 0);
+    if (score) setMinScore(score);
+    const tags = parseList(params.get("tags"));
+    if (tags.length) setSelectedTags(tags);
+    const s = params.get("sort") as SortKey | null;
+    if (s) setSort(s);
+  });
 
   const categoryName = useMemo(
     () => new Map(categories.map((c) => [c.slug, c.name])),
@@ -113,8 +122,10 @@ export function DirectoryExplorer({ tools, categories, tags }: Props) {
     };
   }, [tools, categoryName]);
 
-  // Sync state → URL (shallow, no scroll jump).
+  // Sync state → URL (shallow, no scroll jump). Waits for the initial read:
+  // running first with default state would strip a shared link's filters.
   useEffect(() => {
+    if (!urlRead) return;
     const params = new URLSearchParams();
     if (query.trim()) params.set("q", query.trim());
     if (category !== "all") params.set("cat", category);
@@ -124,7 +135,17 @@ export function DirectoryExplorer({ tools, categories, tags }: Props) {
     if (sort !== "relevance") params.set("sort", sort);
     const qs = params.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-  }, [query, category, pricing, minScore, selectedTags, sort, pathname, router]);
+  }, [
+    urlRead,
+    query,
+    category,
+    pricing,
+    minScore,
+    selectedTags,
+    sort,
+    pathname,
+    router,
+  ]);
 
   const results = useMemo(() => {
     const filters: ToolFilters = {

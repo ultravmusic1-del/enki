@@ -7,6 +7,9 @@ import {
   getCategoryBySlug,
   getToolsByCategory,
   getRelatedTools,
+  getAlternatives,
+  getAlternativesSlugs,
+  MIN_ALTERNATIVES,
   getReviewsForTool,
   getStats,
   getSearchDocs,
@@ -74,6 +77,66 @@ describe("content: related tools", () => {
     const tool = (await getToolBySlug("cursor"))!;
     const related = await getRelatedTools(tool, 3);
     expect(related[0].categorySlug).toBe(tool.categorySlug);
+  });
+
+  it("returns only same-category tools as alternatives", async () => {
+    const cursor = await getToolBySlug("cursor");
+    expect(cursor).toBeDefined();
+    const alts = await getAlternatives(cursor!, 6);
+    expect(alts.length).toBeGreaterThan(0);
+    expect(alts.every((t) => t.categorySlug === cursor!.categorySlug)).toBe(
+      true,
+    );
+    expect(alts.some((t) => t.slug === cursor!.slug)).toBe(false);
+  });
+
+  it("returns fewer than n rather than padding a sparse category", async () => {
+    const cursor = await getToolBySlug("cursor");
+    const sameCategory = (await getToolsByCategory(cursor!.categorySlug)).filter(
+      (t) => t.slug !== cursor!.slug,
+    );
+    // Ask for far more than exist. A padded implementation returns 50.
+    const alts = await getAlternatives(cursor!, 50);
+    expect(alts.length).toBe(sameCategory.length);
+  });
+
+  it("orders alternatives by editor score, highest first", async () => {
+    const cursor = await getToolBySlug("cursor");
+    const alts = await getAlternatives(cursor!, 6);
+    for (let i = 1; i < alts.length; i++) {
+      expect(alts[i - 1].editorScore).toBeGreaterThanOrEqual(
+        alts[i].editorScore,
+      );
+    }
+  });
+
+  it("keeps getRelatedTools padding for the discovery rail", async () => {
+    const cursor = await getToolBySlug("cursor");
+    const related = await getRelatedTools(cursor!, 6);
+    expect(related.length).toBe(6);
+  });
+});
+
+describe("content: alternatives publishing gate", () => {
+  it("only lists slugs with at least three real alternatives", async () => {
+    const slugs = await getAlternativesSlugs();
+    expect(slugs.length).toBeGreaterThan(0);
+    for (const slug of slugs) {
+      const tool = await getToolBySlug(slug);
+      expect((await getAlternatives(tool!, 50)).length).toBeGreaterThanOrEqual(
+        MIN_ALTERNATIVES,
+      );
+    }
+  });
+
+  it("excludes tools whose category is too sparse to compare", async () => {
+    const slugs = new Set(await getAlternativesSlugs());
+    const all = await getAllTools();
+    for (const tool of all) {
+      if ((await getAlternatives(tool, 50)).length < MIN_ALTERNATIVES) {
+        expect(slugs.has(tool.slug)).toBe(false);
+      }
+    }
   });
 });
 

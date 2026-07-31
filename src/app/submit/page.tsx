@@ -6,7 +6,7 @@ import { getCategories } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Submit a tool",
   description:
-    "Know an AI tool worth vetting? Submit it and our editors will review it for the Enki directory.",
+    "Know an AI tool worth vetting? Submit it and I will review it for the Enki directory.",
   alternates: { canonical: "/submit" },
 };
 
@@ -25,7 +25,7 @@ export default async function SubmitPage() {
           </h1>
           <p className="text-pretty text-muted-foreground">
             Found an AI tool the directory is missing? Tell us about it. Every
-            submission is reviewed and vetted by our editors before it&apos;s
+            submission is reviewed and tested by me before it&apos;s
             listed — nothing is published automatically.
           </p>
         </header>

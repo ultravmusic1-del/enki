@@ -19,6 +19,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Icon } from "@/components/shared/icon";
+import { ShortcutHint } from "@/components/shared/shortcut-hint";
 import { useCommandMenu } from "@/components/layout/command-menu";
 import { useSavedTools } from "@/components/saved/saved-tools";
 import { AccountMenu } from "@/components/auth/account-menu";
@@ -160,9 +161,7 @@ export function SiteHeader() {
             className="hidden gap-2 rounded-full text-muted-foreground hover:text-foreground sm:inline-flex"
           >
             <Icon name="Search" className="size-4" />
-            <kbd className="pointer-events-none rounded border border-border bg-muted/60 px-1.5 py-0.5 font-mono text-[0.6rem] text-muted-foreground">
-              ⌘K
-            </kbd>
+            <ShortcutHint keyName="K" />
           </Button>
 
           <Button

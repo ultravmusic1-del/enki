@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { Container } from "@/components/shared/container";
 import { CompareView } from "@/components/compare/compare-view";
 import { getCompareTools } from "@/lib/content";
@@ -33,10 +32,7 @@ export default async function ComparePage() {
           </p>
         </header>
 
-        {/* useSearchParams requires a Suspense boundary during prerender. */}
-        <Suspense fallback={null}>
-          <CompareView tools={tools} />
-        </Suspense>
+        <CompareView tools={tools} />
       </Container>
     </div>
   );

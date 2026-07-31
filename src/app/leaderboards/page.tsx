@@ -6,7 +6,7 @@ import { getLeaderboards } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Leaderboards",
   description:
-    "The top AI tools on Enki, ranked two ways — by our editors' scores and by the community's ratings. See where the experts and the crowd agree, and where they don't.",
+    "The top AI tools on Enki, ranked by my editorial scores.",
   alternates: { canonical: "/leaderboards" },
 };
 
@@ -32,9 +32,7 @@ export default async function LeaderboardsPage() {
             Leaderboards
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-pretty text-muted-foreground">
-            The same tools, ranked two ways. Our editors score for capability and
-            craft; the community rates from lived experience. Switch between the
-            boards to see where the verdict is unanimous and where it splits.
+            Scored for capability and craft, then ranked from top to bottom.
           </p>
         </header>
 

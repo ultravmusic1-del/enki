@@ -1,7 +1,9 @@
 "use server";
 
+import { headers } from "next/headers";
 import { z } from "zod";
 import { createAnonClient } from "@/lib/supabase/anon";
+import { allowWrite } from "@/lib/rate-limit";
 
 const schema = z.object({ email: z.email().max(254) });
 
@@ -20,6 +22,14 @@ const schema = z.object({ email: z.email().max(254) });
  * email sending is wired up, the link should carry a signed token instead.
  */
 export async function unsubscribe(email: string) {
+  // The only destructive public write path, with no honeypot and no proof the
+  // caller owns the address. Ungated, a loop could walk a list of addresses and
+  // unsubscribe every one. Headers are passed explicitly: the limiter reads an
+  // ambient request context otherwise, and throws when it is absent.
+  if (!(await allowWrite("unsubscribe", { headers: await headers() }))) {
+    return { ok: false as const, error: "Too many attempts. Try again later." };
+  }
+
   const parsed = schema.safeParse({ email });
   if (!parsed.success) {
     return { ok: false as const, error: "Enter a valid email address." };

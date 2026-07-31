@@ -173,14 +173,31 @@ export async function getToolsByCategory(categorySlug: string): Promise<Tool[]> 
 }
 
 /**
- * Related tools — same category first (by editor score), topped up with the highest
- * rated tools elsewhere until we have `n`. Never includes the source tool.
+ * Same-category tools, excluding the source.
+ *
+ * Shared so the publish gate and the page it gates cannot drift apart: they
+ * used to derive this list independently, and a filter added to one would
+ * silently not apply to the other.
+ */
+function categoryPeers(all: Tool[], tool: Tool): Tool[] {
+  return all.filter(
+    (t) => t.categorySlug === tool.categorySlug && t.slug !== tool.slug,
+  );
+}
+
+/**
+ * Related tools for the detail-page discovery rail — same category first (by
+ * editor score), topped up with the highest rated tools elsewhere until we have
+ * `n`. Never includes the source tool.
+ *
+ * The top-up crosses categories, so this must never back a page that claims its
+ * entries are alternatives. Use `getAlternatives` for that.
  */
 export async function getRelatedTools(tool: Tool, n = 3): Promise<Tool[]> {
   const all = await loadTools();
-  const sameCategory = all
-    .filter((t) => t.categorySlug === tool.categorySlug && t.slug !== tool.slug)
-    .sort((a, b) => b.editorScore - a.editorScore);
+  const sameCategory = categoryPeers(all, tool).sort(
+    (a, b) => b.editorScore - a.editorScore,
+  );
 
   const fillers = all
     .filter(
@@ -189,6 +206,41 @@ export async function getRelatedTools(tool: Tool, n = 3): Promise<Tool[]> {
     .sort((a, b) => b.editorScore - a.editorScore);
 
   return [...sameCategory, ...fillers].slice(0, n);
+}
+
+/**
+ * Genuine alternatives to a tool: same category only, best editor score first.
+ *
+ * Deliberately NOT `getRelatedTools`. That function tops its list up with
+ * high-scoring tools from other categories, which is a reasonable discovery
+ * rail on a detail page and indefensible on a page titled "the best X
+ * alternatives" — it listed an image generator as a Cursor alternative. If a
+ * category holds two real alternatives, this returns two. Never pads.
+ */
+export async function getAlternatives(tool: Tool, n = 6): Promise<Tool[]> {
+  const all = await loadTools();
+  return categoryPeers(all, tool)
+    .sort((a, b) => b.editorScore - a.editorScore || a.name.localeCompare(b.name))
+    .slice(0, n);
+}
+
+/** Minimum genuine alternatives before an /alternatives page earns publication. */
+export const MIN_ALTERNATIVES = 3;
+
+/**
+ * Slugs whose alternatives page is worth publishing.
+ *
+ * A page listing one alternative is a thin page: it is the shape Google's
+ * scaled-content guidance targets, and it reads as automation to a human. Tools
+ * below the threshold simply have no alternatives page, and 404.
+ */
+export async function getAlternativesSlugs(): Promise<string[]> {
+  const all = await loadTools();
+  const out: string[] = [];
+  for (const tool of all) {
+    if (categoryPeers(all, tool).length >= MIN_ALTERNATIVES) out.push(tool.slug);
+  }
+  return out.sort();
 }
 
 /* -------------------------------------------------------------- categories */

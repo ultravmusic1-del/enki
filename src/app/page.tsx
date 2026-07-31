@@ -18,22 +18,22 @@ const vetSteps = [
   {
     icon: "Telescope",
     title: "Discover",
-    body: "We scan the fast-moving AI landscape continuously, tracking launches, updates, and the tools people actually reach for.",
+    body: "I scan the fast-moving AI landscape continuously, tracking launches, updates, and the tools people actually reach for.",
   },
   {
     icon: "Eye",
     title: "Test",
-    body: "Every tool is used in real workflows by our editors, not judged from a landing page. We probe strengths, limits, and edge cases.",
+    body: "Every tool here is one I have used in a real workflow, not judged from a landing page. I probe strengths, limits, and edge cases.",
   },
   {
     icon: "Scale",
     title: "Score",
-    body: "We weigh capability, craft, pricing, and trust into a clear editor score, then pair it with real, human review context.",
+    body: "I weigh capability, craft, pricing, and trust into a clear editor score, then pair it with real, human review context.",
   },
   {
     icon: "BadgeCheck",
     title: "Vet",
-    body: "Only tools that earn it are published with our mark. When something slips, we revisit and revise. The oracle stays current.",
+    body: "Only tools that earn it are published with my mark. When something slips, I revisit and revise. The oracle stays current.",
   },
 ] as const;
 
@@ -63,7 +63,7 @@ export default async function Home() {
         crossOrigin="anonymous"
       />
 
-      <OracleHero />
+      <OracleHero toolCount={stats.toolCount} />
 
       {/* Featured tools */}
       <section className="py-16 sm:py-20">
@@ -73,7 +73,7 @@ export default async function Home() {
               <SectionHeading
                 eyebrow="Editor's picks"
                 title="Featured tools"
-                description="The standouts our editors keep coming back to, vetted, scored, and worth your attention."
+                description="The standouts I keep coming back to, tested, scored, and worth your attention."
               />
               <Link
                 href="/tools"
@@ -147,7 +147,7 @@ export default async function Home() {
             <SectionHeading
               align="center"
               eyebrow="Verify to trust"
-              title="How we vet"
+              title="How I vet"
               description="Enki exists to make AI adoption trustworthy. Every listing passes through the same deliberate process."
               className="mx-auto max-w-2xl"
             />

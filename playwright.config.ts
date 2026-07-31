@@ -13,7 +13,13 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: process.env.CI ? "github" : "list",
+  // `github` alone annotates the PR but writes nothing to disk, so a failed
+  // run would leave the workflow's upload-artifact step with nothing to
+  // upload. `html` writes playwright-report/ on every run; `open: "never"`
+  // keeps CI from trying to launch a browser to view it.
+  reporter: process.env.CI
+    ? [["github"], ["html", { open: "never" }]]
+    : "list",
   use: {
     baseURL,
     trace: "on-first-retry",
@@ -27,7 +33,14 @@ export default defineConfig({
   webServer: {
     command: `pnpm build && pnpm start --port ${PORT}`,
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
+    // Never reuse. This used to be `!process.env.CI`, so a local run silently
+    // attached to whatever was already on the port. A stale server left behind
+    // by an earlier session was serving a build made from mutated source, and
+    // the suite reported eight failures that had nothing to do with the working
+    // tree. Always building what is tested costs a rebuild; the alternative
+    // costs a result that does not mean what it says. If the port is occupied,
+    // startup now fails loudly instead of measuring the wrong thing.
+    reuseExistingServer: false,
     timeout: 180_000,
   },
 });

@@ -39,7 +39,7 @@ export default async function DealsPage() {
             AI tool deals &amp; discounts
           </h1>
           <p className="mx-auto max-w-xl text-pretty text-lg text-muted-foreground">
-            Current offers on the tools our editors actually recommend — no
+            Current offers on the tools I actually recommend — no
             filler, and never at the expense of an honest rating.
           </p>
         </header>
@@ -55,7 +55,7 @@ export default async function DealsPage() {
               No active deals right now
             </p>
             <p className="max-w-sm text-sm text-muted-foreground">
-              We only list deals we can stand behind. Check back soon, or browse
+              I only list deals I can stand behind. Check back soon, or browse
               the full directory in the meantime.
             </p>
             <Link

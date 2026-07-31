@@ -6,7 +6,7 @@
 
 **Architecture:** Three independent workstreams. (1) **Content correctness** — split "alternatives" from "related tools" in the content layer so alternatives pages stop padding with unrelated tools. (2) **Render correctness** — remove `useSearchParams()` from the three client components that use it only to seed initial state, replacing it with a read-after-mount hook; this deletes the prerender bail-out that currently ships crawlers an empty skeleton on `/tools`, `/compare` and `/finder`. (3) **Trust and safety** — an honest single-reviewer byline, a data-driven tool count, a platform-correct shortcut badge, rate limits on the three unauthenticated write paths, a real favicon, and E2E coverage in CI.
 
-**Tech Stack:** Next.js 16 (App Router, Turbopack), React 19, TypeScript strict, Tailwind v4, Zod v4, Supabase (`@supabase/ssr`), Vitest + jsdom, Playwright, `@vercel/firewall` + BotID.
+**Tech Stack:** Next.js 16 (App Router, Turbopack), React 19, TypeScript strict, Tailwind v4, Zod v4, Supabase (`@supabase/ssr`), Vitest + jsdom, Playwright, `@vercel/firewall`.
 
 ---
 
@@ -63,7 +63,7 @@ pnpm sweep
 | `src/lib/use-search-params-on-mount.test.ts` | Unit tests for the hook. |
 | `src/components/shared/shortcut-hint.tsx` | Platform-aware keyboard badge (`⌘K` on Mac, `Ctrl K` elsewhere). Renders the neutral form during SSR. |
 | `src/components/shared/shortcut-hint.test.tsx` | Unit tests for the badge. |
-| `src/lib/rate-limit.ts` | One wrapper over `@vercel/firewall` + BotID so the three write paths share a single policy and a single failure mode. |
+| `src/lib/rate-limit.ts` | One wrapper over `@vercel/firewall` so the three write paths share a single policy and a single failure mode. |
 | `src/lib/rate-limit.test.ts` | Unit tests for the wrapper's decision logic. |
 | `src/app/favicon.ico` | The `.ico` Google's SERP fetcher asks for. |
 | `tests/e2e/trust.spec.ts` | E2E over the auth gate, `/submit`, and the admin gate. |
@@ -87,7 +87,7 @@ pnpm sweep
 | `src/data/authors.ts` | One real byline. |
 | ~10 copy sites | "our editors" → first person singular. |
 | `src/app/go/[slug]/route.ts`, `src/app/actions/newsletter.ts`, `src/app/submit/actions.ts` | Apply the rate limit. |
-| `next.config.ts` | Wrap with `withBotId`. |
+| `next.config.ts` | Untouched. The BotID wrapper this once specified was dropped; see Task 10. |
 | `.github/workflows/verify.yml` | Add a Playwright job. |
 | `public/` | Delete five Next template SVGs. |
 
@@ -824,7 +824,7 @@ Expected: `true`. The first question's options should also appear in the raw HTM
 
 - [ ] **Step 4: Visual Sweep (MANDATORY)**
 
-Load `/finder` and a completed link such as `/finder?use=coding&budget=paid&platform=web` at both viewports. Zero console errors, no hydration warning. Confirm the shared link lands on results. Measure that the option cards stay inside their container.
+Load `/finder` and a completed link such as `/finder?use=coding&budget=pay&platform=web` at both viewports. Zero console errors, no hydration warning. Confirm the shared link lands on results. Measure that the option cards stay inside their container.
 
 - [ ] **Step 5: Run the gate and commit**
 
@@ -1135,212 +1135,47 @@ copy kept crediting them."
 
 ---
 
-## Task 10: Rate-limit the three unauthenticated write paths
+## Task 10: Rate-limit the unauthenticated write paths — SUPERSEDED, DONE
 
-`outbound_clicks`, `subscribers` and `tool_submissions` all accept anonymous `INSERT` with `WITH CHECK (true)`. The only protection today is a honeypot and CHECK constraints, so anyone can inflate affiliate click counts, subscribe third-party addresses, or flood the moderation queue.
+**Do not follow the steps that used to be here. They prescribed BotID, which
+would have been wrong, and re-adding it would reverse a deliberate decision.**
 
-**Before writing code:** confirm the installed package APIs. These are first-party Vercel packages and their exports move; the code below is the intended shape, and the typecheck in Step 3 is what proves it.
+Implemented as `@vercel/firewall` only, in `src/lib/rate-limit.ts`. Read that
+file's doc comment for the rationale; it is the authority, not this plan.
 
-**Files:**
-- Create: `src/lib/rate-limit.ts`
-- Create: `src/lib/rate-limit.test.ts`
-- Modify: `src/app/go/[slug]/route.ts`, `src/app/actions/newsletter.ts`, `src/app/submit/actions.ts`, `next.config.ts`
+Why BotID was dropped, established by reading the shipped packages rather than
+their docs:
 
-- [ ] **Step 1: Install and confirm the API**
+- It attaches its `x-is-human` header by patching `window.fetch` and
+  `XMLHttpRequest`. `/go/[slug]` is a top-level document navigation with no
+  fetch to patch, so BotID cannot work there at all, and would log a
+  "possible misconfiguration or malicious request" warning on every outbound
+  affiliate click forever.
+- The newsletter form lives in `SiteFooter`, mounted on every route, so
+  covering it needs roughly `{path: "/*", method: "POST"}` in the protect
+  list. That is a site-wide bot-protection decision with latency cost, not an
+  implementation detail.
+- `allowWrite` consults the bot verdict first. Shipping BotID without correct
+  client instrumentation risks rejecting **every real signup and submission**,
+  which is worse than the abuse it prevents.
 
-```bash
-pnpm add @vercel/firewall botid
-```
+BotID remains a legitimate option and is tracked as its own decision.
 
-Then read the shipped types to confirm the exports before using them:
+**Two things this task established that outlive it:**
 
-```bash
-node -e "console.log(require('fs').readFileSync('node_modules/@vercel/firewall/dist/index.d.ts','utf8').slice(0,2000))"
-```
+1. `checkRateLimit` answers `{rateLimited: false, error: "not-found"}` when no
+   Firewall rule matches the id. A missing rule is therefore indistinguishable
+   from a passing check. The wrapper logs and reports when it sees this,
+   because the diff looks complete either way.
+2. A 403 on the SDK internal probe answers `{rateLimited: true, error:
+   "blocked"}`, which means firewall misconfiguration, not abuse. Treating it
+   as a limit would reject every user site-wide. This site already served a
+   403 on every URL for about twenty minutes on 2026-07-29 (handoff D2).
 
-Confirm `checkRateLimit` exists and note its exact signature and return shape. Do the same for `botid/server` and `checkBotId`. If either differs from Step 3's code, adapt Step 3 to the real API and keep the wrapper's own interface unchanged.
-
-- [ ] **Step 2: Write the failing test**
-
-The wrapper's decision logic is what deserves a test; the network calls do not.
-
-```ts
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-const checkRateLimit = vi.fn();
-const checkBotId = vi.fn();
-
-vi.mock("@vercel/firewall", () => ({ checkRateLimit: (...a: unknown[]) => checkRateLimit(...a) }));
-vi.mock("botid/server", () => ({ checkBotId: (...a: unknown[]) => checkBotId(...a) }));
-
-const { allowWrite } = await import("@/lib/rate-limit");
-
-beforeEach(() => {
-  checkRateLimit.mockReset();
-  checkBotId.mockReset();
-});
-
-describe("allowWrite", () => {
-  it("allows a human within the limit", async () => {
-    checkBotId.mockResolvedValue({ isBot: false });
-    checkRateLimit.mockResolvedValue({ rateLimited: false });
-    expect(await allowWrite("newsletter")).toBe(true);
-  });
-
-  it("blocks a caller over the limit", async () => {
-    checkBotId.mockResolvedValue({ isBot: false });
-    checkRateLimit.mockResolvedValue({ rateLimited: true });
-    expect(await allowWrite("newsletter")).toBe(false);
-  });
-
-  it("blocks a detected bot without consulting the rate limiter", async () => {
-    checkBotId.mockResolvedValue({ isBot: true });
-    expect(await allowWrite("submit")).toBe(false);
-    expect(checkRateLimit).not.toHaveBeenCalled();
-  });
-
-  it("fails open when the limiter itself errors", async () => {
-    // A limiter outage must not take the site's write paths down with it.
-    checkBotId.mockResolvedValue({ isBot: false });
-    checkRateLimit.mockRejectedValue(new Error("network"));
-    expect(await allowWrite("outbound")).toBe(true);
-  });
-});
-```
-
-- [ ] **Step 3: Run it to verify it fails, then implement**
-
-```bash
-npx vitest run src/lib/rate-limit.test.ts
-```
-
-Expected: FAIL, cannot resolve `@/lib/rate-limit`.
-
-Create `src/lib/rate-limit.ts`:
-
-```ts
-import { checkRateLimit } from "@vercel/firewall";
-import { checkBotId } from "botid/server";
-
-/**
- * One gate for every unauthenticated write path.
- *
- * outbound_clicks, subscribers and tool_submissions all accept anonymous
- * INSERT with WITH CHECK (true). A honeypot stops naive form-fillers and
- * nothing stops a script, so click counts, the subscriber list and the
- * moderation queue were all floodable.
- *
- * Fails OPEN. A rate limiter that takes the newsletter down when it has an
- * outage is worse than the abuse it prevents, and every one of these paths is
- * already validated and constrained in Postgres behind it.
- */
-export type WritePath = "outbound" | "newsletter" | "submit";
-
-export async function allowWrite(path: WritePath): Promise<boolean> {
-  try {
-    const { isBot } = await checkBotId();
-    if (isBot) return false;
-
-    const { rateLimited } = await checkRateLimit(`enki-${path}`);
-    return !rateLimited;
-  } catch {
-    return true;
-  }
-}
-```
-
-```bash
-npx vitest run src/lib/rate-limit.test.ts
-```
-
-Expected: PASS, all four.
-
-- [ ] **Step 4: Configure the limits and enable BotID**
-
-`next.config.ts` currently ends with `export default withSentryConfig(nextConfig, { ... })` at line 110. Add the import beside the Sentry one at the top:
-
-```ts
-import { withBotId } from "botid/next/config";
-```
-
-Then wrap `nextConfig` **inside** the Sentry call, leaving the entire options object at lines 111-131 untouched:
-
-```ts
-export default withSentryConfig(withBotId(nextConfig), {
-```
-
-Order matters: BotID rewrites routes and Sentry must wrap the finished config, so `withSentryConfig` stays outermost. Do not touch `headers()`, `redirects()`, or the CSP block: BotID calls the same origin, so `connect-src 'self'` already covers it and the policy needs no new origin.
-
-Define the three limits in the Vercel dashboard under Firewall, keyed `enki-outbound`, `enki-newsletter`, `enki-submit`. Suggested ceilings, per IP: outbound 60/min, newsletter 5/hour, submit 5/hour.
-
-- [ ] **Step 5: Apply the gate to the newsletter**
-
-In `src/app/actions/newsletter.ts`, after the honeypot check on line 13:
-
-```ts
-  if (!(await allowWrite("newsletter"))) {
-    return { ok: false as const, error: "Too many attempts. Try again later." };
-  }
-```
-
-Add the import: `import { allowWrite } from "@/lib/rate-limit";`
-
-- [ ] **Step 6: Apply the gate to submissions**
-
-In `src/app/submit/actions.ts`, after the honeypot check on line 15:
-
-```ts
-  if (!(await allowWrite("submit"))) {
-    return {
-      ok: false as const,
-      error: "Too many submissions from here. Try again later.",
-    };
-  }
-```
-
-Add the same import.
-
-- [ ] **Step 7: Apply the gate to outbound clicks**
-
-`/go/[slug]` is different: the visitor must still reach the tool. Rate-limit the **logging**, never the redirect. In `src/app/go/[slug]/route.ts`, replace the insert block at lines 45-51:
-
-```ts
-  try {
-    if (await allowWrite("outbound")) {
-      await createAnonClient()
-        .from("outbound_clicks")
-        .insert({ tool_slug: slug, path });
-    }
-  } catch {
-    // Never let logging failure block the user's navigation.
-  }
-```
-
-Add the same import.
-
-- [ ] **Step 8: Verify**
-
-```bash
-pnpm verify
-```
-
-```bash
-pnpm build
-```
-
-Expected: both pass. Rate limiting is inert on localhost, so functional proof comes from the preview deployment: submit the newsletter form six times in a minute and confirm the sixth is refused with the friendly message rather than an error.
-
-- [ ] **Step 9: Commit**
-
-```bash
-git add src/lib/rate-limit.ts src/lib/rate-limit.test.ts src/app/actions/newsletter.ts src/app/submit/actions.ts "src/app/go/[slug]/route.ts" next.config.ts package.json pnpm-lock.yaml
-git commit -m "feat(security): rate-limit the anonymous write paths
-
-outbound_clicks, subscribers and tool_submissions accepted unlimited
-anonymous inserts. Fails open so a limiter outage cannot break the forms."
-```
-
----
+**Operator prerequisite, or this ships zero protection:** create rate-limit
+rules in Vercel, Firewall, Configure, whose `@vercel/firewall` rule-condition
+IDs are exactly `enki-outbound` (60/min), `enki-newsletter` (5/hour) and
+`enki-submit` (5/hour), per IP.
 
 ## Task 11: A real favicon
 
@@ -1638,7 +1473,7 @@ Pushing deploys to `enkitools.com`. Confirm the deployment is green and re-check
 These are Phase 0 items only you can do. The plan above is not finished until they are.
 
 - [ ] **Enable leaked-password protection** — Supabase → Auth → Policies. One toggle. Users can currently register with known-breached passwords.
-- [ ] **Configure a Sentry alert rule** so the first real error reaches a human instead of sitting in a dashboard.
+- [ ] **Configure a Sentry alert rule** so the first real error reaches a human instead of sitting in a dashboard. **Scope it to `environment:[production, preview]`, not production alone.** A preview deployment is a production build, so `NODE_ENV` is `production` there, Sentry is enabled, and the firewall SDK runs its real probe rather than short-circuiting. Preview is therefore exactly where the rate limiter's 401-behind-Deployment-Protection failure fires. A production-only alert captures that report and notifies nobody, so verifying on a preview URL shows silence and reads as success when it means the opposite.
 - [ ] **Decide the newsletter.** Addresses are being collected and nothing has ever been sent. Either commit to building sending (roadmap 5.1) or stop collecting until it exists. Also resolve the cadence contradiction: `src/components/layout/site-footer.tsx:113` promises "A monthly dispatch" while the plan has been weekly.
 - [ ] **Verify a real signup end to end** on `enkitools.com` with a real mailbox: sign up, confirm, log in, write a review, see it queued as pending.
 - [ ] **Confirm the byline** in Task 9 — display name and role.

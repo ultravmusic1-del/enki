@@ -7,14 +7,15 @@ import { RankedToolRow } from "@/components/seo/ranked-tool-row";
 import { JsonLd } from "@/components/seo/json-ld";
 import { breadcrumbJsonLd, itemListJsonLd } from "@/lib/structured-data";
 import {
-  getAllTools,
+  getAlternatives,
+  getAlternativesSlugs,
   getToolBySlug,
-  getRelatedTools,
   getCategoryBySlug,
+  MIN_ALTERNATIVES,
 } from "@/lib/content";
 
 export async function generateStaticParams() {
-  return (await getAllTools()).map((t) => ({ slug: t.slug }));
+  return (await getAlternativesSlugs()).map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({
@@ -25,13 +26,13 @@ export async function generateMetadata({
   const { slug } = await params;
   const tool = await getToolBySlug(slug);
   if (!tool) return { title: "Not found" };
-  const alts = await getRelatedTools(tool, 6);
+  const alts = await getAlternatives(tool, 6);
   return {
-    title: `${alts.length} best ${tool.name} alternatives (2026)`,
-    description: `Looking for an alternative to ${tool.name}? Our editors' vetted picks: ${alts
+    title: `The best ${tool.name} alternatives (2026)`,
+    description: `Looking for an alternative to ${tool.name}? My tested picks: ${alts
       .slice(0, 3)
       .map((t) => t.name)
-      .join(", ")} and more.`,
+      .join(", ")}.`,
     alternates: { canonical: `/alternatives/${slug}` },
   };
 }
@@ -45,7 +46,9 @@ export default async function AlternativesPage({
   const tool = await getToolBySlug(slug);
   if (!tool) notFound();
 
-  const alts = await getRelatedTools(tool, 6);
+  const alts = await getAlternatives(tool, 6);
+  if (alts.length < MIN_ALTERNATIVES) notFound();
+
   const category = await getCategoryBySlug(tool.categorySlug);
 
   return (
@@ -73,8 +76,8 @@ export default async function AlternativesPage({
           </h1>
           <p className="text-pretty text-lg text-muted-foreground">
             {tool.name} is a strong {category?.name.toLowerCase() ?? "AI"} tool,
-            but it isn&apos;t the only option. Here are the vetted alternatives
-            our editors rate most highly.
+            but it isn&apos;t the only option. Here are the alternatives I rate
+            most highly, all in the same category.
           </p>
           <div className="flex flex-wrap gap-2 font-mono text-xs">
             <Link
@@ -100,11 +103,7 @@ export default async function AlternativesPage({
               key={t.slug}
               rank={i + 1}
               tool={t}
-              note={
-                t.categorySlug === tool.categorySlug
-                  ? `A direct ${category?.name.toLowerCase() ?? ""} alternative. ${t.verdict}`
-                  : t.verdict
-              }
+              note={t.verdict}
             />
           ))}
         </div>

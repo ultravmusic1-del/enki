@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { OracleFinder } from "@/components/finder/oracle-finder";
 import { getAllTools, getCategories } from "@/lib/content";
 import { siteConfig } from "@/lib/site";
@@ -23,9 +22,5 @@ export default async function FinderPage() {
     (await getCategories()).map((c) => [c.slug, c.name]),
   );
 
-  return (
-    <Suspense>
-      <OracleFinder tools={tools} categoryNames={categoryNames} />
-    </Suspense>
-  );
+  return <OracleFinder tools={tools} categoryNames={categoryNames} />;
 }
