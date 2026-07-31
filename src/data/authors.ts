@@ -3,8 +3,9 @@ import type { Author } from "@/lib/schemas";
 /**
  * Editorial bylines.
  *
- * Deliberately empty. This file previously defined six named reviewers with job
- * titles ("Mara Okafor, Principal Reviewer" and five others) who did not exist,
+ * Deliberately minimal: only real, disclosed people are added here. This file
+ * previously defined six named reviewers with job titles ("Mara Okafor,
+ * Principal Reviewer" and five others) who did not exist,
  * and the seeded reviews carried their bylines. Invented experts are a
  * materially different thing from placeholder copy, especially on a directory
  * that earns affiliate revenue from its rankings.

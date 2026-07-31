@@ -30,7 +30,7 @@ export async function generateMetadata({
   if (!a || !b) return { title: "Not found" };
   return {
     title: `${a.name} vs ${b.name}: which is better? (2026)`,
-    description: `${a.name} vs ${b.name} compared on editor score, pricing, and features. Our verdict on which AI tool to choose in 2026.`,
+    description: `${a.name} vs ${b.name} compared on editor score, pricing, and features. My verdict on which AI tool to choose in 2026.`,
     alternates: { canonical: `/vs/${versusSlug(a.slug, b.slug)}` },
   };
 }
@@ -84,9 +84,8 @@ export default async function VersusPage({
             {a.name} vs {b.name}
           </h1>
           <p className="max-w-xl text-pretty text-muted-foreground">
-            Two {category?.name.toLowerCase() ?? "AI"} tools compared on our
-            editor score, community rating, pricing, and the trade-offs that
-            actually matter.
+            Two {category?.name.toLowerCase() ?? "AI"} tools compared on my
+            editor score, pricing, and the trade-offs that actually matter.
           </p>
         </header>
 

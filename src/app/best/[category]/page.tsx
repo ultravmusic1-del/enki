@@ -66,13 +66,13 @@ export default async function BestCategoryPage({
 
   const noteFor = (rank: number, t: Tool) =>
     rank === 1
-      ? `Our top ${cat.name.toLowerCase()} pick — editor score ${t.editorScore.toFixed(1)}/10. ${t.verdict}`
+      ? `My top ${cat.name.toLowerCase()} pick — editor score ${t.editorScore.toFixed(1)}/10. ${t.verdict}`
       : t.verdict;
 
   const faqs = [
     {
       question: `What is the best ${cat.name} AI tool in ${YEAR}?`,
-      answer: `${top.name} is our top-rated ${cat.name.toLowerCase()} tool, with an editor score of ${top.editorScore.toFixed(1)}/10. ${top.verdict}`,
+      answer: `${top.name} is my top-rated ${cat.name.toLowerCase()} tool, with an editor score of ${top.editorScore.toFixed(1)}/10. ${top.verdict}`,
     },
     {
       question: `Are there free ${cat.name} AI tools?`,

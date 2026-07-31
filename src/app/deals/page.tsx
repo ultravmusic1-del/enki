@@ -55,7 +55,7 @@ export default async function DealsPage() {
               No active deals right now
             </p>
             <p className="max-w-sm text-sm text-muted-foreground">
-              We only list deals we can stand behind. Check back soon, or browse
+              I only list deals I can stand behind. Check back soon, or browse
               the full directory in the meantime.
             </p>
             <Link

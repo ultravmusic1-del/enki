@@ -18,7 +18,7 @@ const vetSteps = [
   {
     icon: "Telescope",
     title: "Discover",
-    body: "We scan the fast-moving AI landscape continuously, tracking launches, updates, and the tools people actually reach for.",
+    body: "I scan the fast-moving AI landscape continuously, tracking launches, updates, and the tools people actually reach for.",
   },
   {
     icon: "Eye",
@@ -28,12 +28,12 @@ const vetSteps = [
   {
     icon: "Scale",
     title: "Score",
-    body: "We weigh capability, craft, pricing, and trust into a clear editor score, then pair it with real, human review context.",
+    body: "I weigh capability, craft, pricing, and trust into a clear editor score, then pair it with real, human review context.",
   },
   {
     icon: "BadgeCheck",
     title: "Vet",
-    body: "Only tools that earn it are published with our mark. When something slips, we revisit and revise. The oracle stays current.",
+    body: "Only tools that earn it are published with my mark. When something slips, I revisit and revise. The oracle stays current.",
   },
 ] as const;
 
@@ -147,7 +147,7 @@ export default async function Home() {
             <SectionHeading
               align="center"
               eyebrow="Verify to trust"
-              title="How we vet"
+              title="How I vet"
               description="Enki exists to make AI adoption trustworthy. Every listing passes through the same deliberate process."
               className="mx-auto max-w-2xl"
             />
