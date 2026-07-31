@@ -34,6 +34,9 @@ importers:
       '@vercel/analytics':
         specifier: ^2.0.1
         version: 2.0.1(next@16.2.12(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@20.19.43)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)
+      '@vercel/firewall':
+        specifier: ^1.2.2
+        version: 1.2.2
       '@vercel/speed-insights':
         specifier: ^2.0.0
         version: 2.0.0(next@16.2.12(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@20.19.43)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)
@@ -2422,6 +2425,10 @@ packages:
         optional: true
       vue-router:
         optional: true
+
+  '@vercel/firewall@1.2.2':
+    resolution: {integrity: sha512-y5bzJ9xkYSKNVmGNjFvLB9Rv0mr+ZXsHZYF8Kw99NJpgo6Sahynk8epd+EGI3womRG0WhW9NZ7c92FfVY82cng==}
+    engines: {node: '>= 20'}
 
   '@vercel/speed-insights@2.0.0':
     resolution: {integrity: sha512-jwkNcrTeafWxjmWq4AHBaptSqZiJkYU5adLC9QBSqeim0GcqDMgN5Ievh8OG1rJ6W3A4l1oiP7qr9CWxGuzu3w==}
@@ -7671,6 +7678,8 @@ snapshots:
     optionalDependencies:
       next: 16.2.12(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@20.19.43)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       react: 19.2.4
+
+  '@vercel/firewall@1.2.2': {}
 
   '@vercel/speed-insights@2.0.0(next@16.2.12(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@20.19.43)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)':
     optionalDependencies:

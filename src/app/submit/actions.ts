@@ -2,6 +2,7 @@
 
 import { createAnonClient } from "@/lib/supabase/anon";
 import { submissionFormSchema, type SubmissionValues } from "@/lib/schemas";
+import { allowWrite } from "@/lib/rate-limit";
 
 /**
  * Record a public tool submission. Validated server-side with the same Zod
@@ -13,6 +14,15 @@ import { submissionFormSchema, type SubmissionValues } from "@/lib/schemas";
 export async function submitTool(values: SubmissionValues) {
   // A filled honeypot means a bot. Report success so it learns nothing.
   if (values.hp) return { ok: true as const };
+
+  // Without a ceiling a script can flood the moderation queue faster than a
+  // human can clear it. The honeypot above only stops naive form-fillers.
+  if (!(await allowWrite("submit"))) {
+    return {
+      ok: false as const,
+      error: "Too many submissions from here. Try again later.",
+    };
+  }
 
   const parsed = submissionFormSchema.safeParse(values);
   if (!parsed.success) {

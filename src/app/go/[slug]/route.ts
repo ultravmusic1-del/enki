@@ -4,6 +4,7 @@ import { resolveOutboundTarget } from "@/lib/outbound";
 import { isHttpUrl } from "@/lib/safe-url";
 import { createAnonClient } from "@/lib/supabase/anon";
 import { siteConfig } from "@/lib/site";
+import { allowWrite } from "@/lib/rate-limit";
 
 /**
  * Tracked outbound redirect. Records an anonymous click (tool + source path,
@@ -42,10 +43,16 @@ export async function GET(
     }
   }
 
+  // The limit gates the LOGGING only, never the redirect. This route is a real
+  // visitor on their way to a tool, so a rate-limited click still travels; it
+  // just stops inflating the affiliate click count. Rejecting the navigation
+  // would punish the reader for a script's behaviour.
   try {
-    await createAnonClient()
-      .from("outbound_clicks")
-      .insert({ tool_slug: slug, path });
+    if (await allowWrite("outbound")) {
+      await createAnonClient()
+        .from("outbound_clicks")
+        .insert({ tool_slug: slug, path });
+    }
   } catch {
     // Never let logging failure block the user's navigation.
   }
