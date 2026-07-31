@@ -9,6 +9,7 @@ import {
   getRelatedTools,
   getAlternatives,
   getAlternativesSlugs,
+  MIN_ALTERNATIVES,
   getReviewsForTool,
   getStats,
   getSearchDocs,
@@ -122,7 +123,9 @@ describe("content: alternatives publishing gate", () => {
     expect(slugs.length).toBeGreaterThan(0);
     for (const slug of slugs) {
       const tool = await getToolBySlug(slug);
-      expect((await getAlternatives(tool!, 50)).length).toBeGreaterThanOrEqual(3);
+      expect((await getAlternatives(tool!, 50)).length).toBeGreaterThanOrEqual(
+        MIN_ALTERNATIVES,
+      );
     }
   });
 
@@ -130,7 +133,7 @@ describe("content: alternatives publishing gate", () => {
     const slugs = new Set(await getAlternativesSlugs());
     const all = await getAllTools();
     for (const tool of all) {
-      if ((await getAlternatives(tool, 50)).length < 3) {
+      if ((await getAlternatives(tool, 50)).length < MIN_ALTERNATIVES) {
         expect(slugs.has(tool.slug)).toBe(false);
       }
     }

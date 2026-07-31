@@ -173,6 +173,19 @@ export async function getToolsByCategory(categorySlug: string): Promise<Tool[]> 
 }
 
 /**
+ * Same-category tools, excluding the source.
+ *
+ * Shared so the publish gate and the page it gates cannot drift apart: they
+ * used to derive this list independently, and a filter added to one would
+ * silently not apply to the other.
+ */
+function categoryPeers(all: Tool[], tool: Tool): Tool[] {
+  return all.filter(
+    (t) => t.categorySlug === tool.categorySlug && t.slug !== tool.slug,
+  );
+}
+
+/**
  * Related tools for the detail-page discovery rail — same category first (by
  * editor score), topped up with the highest rated tools elsewhere until we have
  * `n`. Never includes the source tool.
@@ -182,9 +195,9 @@ export async function getToolsByCategory(categorySlug: string): Promise<Tool[]> 
  */
 export async function getRelatedTools(tool: Tool, n = 3): Promise<Tool[]> {
   const all = await loadTools();
-  const sameCategory = all
-    .filter((t) => t.categorySlug === tool.categorySlug && t.slug !== tool.slug)
-    .sort((a, b) => b.editorScore - a.editorScore);
+  const sameCategory = categoryPeers(all, tool).sort(
+    (a, b) => b.editorScore - a.editorScore,
+  );
 
   const fillers = all
     .filter(
@@ -205,8 +218,8 @@ export async function getRelatedTools(tool: Tool, n = 3): Promise<Tool[]> {
  * category holds two real alternatives, this returns two. Never pads.
  */
 export async function getAlternatives(tool: Tool, n = 6): Promise<Tool[]> {
-  return (await loadTools())
-    .filter((t) => t.categorySlug === tool.categorySlug && t.slug !== tool.slug)
+  const all = await loadTools();
+  return categoryPeers(all, tool)
     .sort((a, b) => b.editorScore - a.editorScore || a.name.localeCompare(b.name))
     .slice(0, n);
 }
@@ -225,10 +238,7 @@ export async function getAlternativesSlugs(): Promise<string[]> {
   const all = await loadTools();
   const out: string[] = [];
   for (const tool of all) {
-    const count = all.filter(
-      (t) => t.categorySlug === tool.categorySlug && t.slug !== tool.slug,
-    ).length;
-    if (count >= MIN_ALTERNATIVES) out.push(tool.slug);
+    if (categoryPeers(all, tool).length >= MIN_ALTERNATIVES) out.push(tool.slug);
   }
   return out.sort();
 }
