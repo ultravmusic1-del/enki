@@ -8,13 +8,17 @@ import { useEffect, useRef, useState } from "react";
  * This exists to replace `useSearchParams()` in components that only need the
  * query string to seed initial state. Calling `useSearchParams()` opts the
  * enclosing Suspense boundary out of the prerender, so the static HTML ships
- * the fallback: /tools served crawlers six grey skeleton boxes and not one link
- * to a tool. Reading `window.location.search` after mount costs nothing at
- * render time and lets the server emit the real markup.
+ * the fallback: /tools served crawlers a grid of skeleton boxes and not one
+ * link to a tool. Reading `window.location.search` after mount costs nothing
+ * at render time and lets the server emit the real markup.
  *
  * The trade-off is deliberate: a visitor arriving on a filtered link sees the
  * unfiltered view for one frame before the filters apply. Crawlable content is
  * worth more than that frame.
+ *
+ * Unlike the `useSearchParams()` this replaces, the hook is mount-only and
+ * non-reactive: it does not respond to back/forward navigation, `popstate`,
+ * or client-side route changes after the initial read.
  *
  * The returned boolean gates any effect that writes state back to the URL.
  * Without it, that effect fires first with default state and wipes the very
@@ -23,30 +27,23 @@ import { useEffect, useRef, useState } from "react";
 export function useSearchParamsOnMount(
   apply: (params: URLSearchParams) => void,
 ): boolean {
-  // Keep the latest callback in a ref instead of the mount effect's dependency
-  // array. Consumers pass an inline arrow function, so its identity changes on
-  // every render; depending on it directly would re-run the mount effect (and
-  // re-apply params, resetting state) on every keystroke.
+  // Capture the callback in a ref so the mount effect below can read it
+  // without listing it as a dependency. Consumers pass an inline arrow
+  // function, which is a new identity on every render; if the effect
+  // depended on `apply` directly, react-hooks/exhaustive-deps would demand
+  // it be added to the array. The effect's `[]` deps are what keep it from
+  // re-running — the ref just lets that empty array satisfy the linter too.
   const applyRef = useRef(apply);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    applyRef.current = apply;
-  }, [apply]);
-
-  useEffect(() => {
-    // Read the URL and flip `ready` from a nested function rather than
-    // inline. Calling setState as a direct statement in an effect body trips
-    // react-hooks/set-state-in-effect ("cascading renders"), which assumes
-    // the value could have been derived from props/state during render. It
-    // can't here — window.location doesn't exist during the server render
-    // this effect is deliberately skipped on — so the read has to happen
-    // after mount, and that read is genuine work, not a bare setState proxy.
-    const read = () => {
-      applyRef.current(new URLSearchParams(window.location.search));
-      setReady(true);
-    };
-    read();
+    applyRef.current(new URLSearchParams(window.location.search));
+    // window.location has no server-side equivalent, so this genuinely cannot
+    // be derived during render — the rule's "you might not need an effect"
+    // premise does not apply. Disabled visibly rather than hidden behind a
+    // nested function.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setReady(true);
   }, []);
 
   return ready;
