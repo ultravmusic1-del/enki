@@ -64,6 +64,9 @@ export function DirectoryExplorer({ tools, categories, tags }: Props) {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sort, setSort] = useState<SortKey>("relevance");
 
+  // Each check below relies on the parsed falsy value being identical to that
+  // field's default, so skipping the setter is a no-op. Do not copy this shape
+  // for a filter where falsy is a real selection: it would silently drop it.
   const urlRead = useSearchParamsOnMount((params) => {
     const q = params.get("q");
     if (q) setQuery(q);

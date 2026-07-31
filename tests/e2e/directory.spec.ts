@@ -45,6 +45,17 @@ test.describe("Enki critical flow", () => {
     await expect(page.getByText(/\d+ tools?/).first()).toBeVisible();
   });
 
+  test("a filtered deep link applies its filter and keeps the query string", async ({
+    page,
+  }) => {
+    // Guards the mount-read gate: the URL-sync effect must not fire with
+    // default state before the URL has been read, or it strips these params.
+    await page.goto("/tools?cat=coding");
+    const cards = page.locator('a[href^="/tools/"]');
+    await expect.poll(() => cards.count()).toBeLessThan(27);
+    await expect(page).toHaveURL(/cat=coding/);
+  });
+
   test("review modal validates required fields", async ({ page }) => {
     await page.goto("/tools/elevenlabs");
     await page
