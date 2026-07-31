@@ -824,7 +824,7 @@ Expected: `true`. The first question's options should also appear in the raw HTM
 
 - [ ] **Step 4: Visual Sweep (MANDATORY)**
 
-Load `/finder` and a completed link such as `/finder?use=coding&budget=paid&platform=web` at both viewports. Zero console errors, no hydration warning. Confirm the shared link lands on results. Measure that the option cards stay inside their container.
+Load `/finder` and a completed link such as `/finder?use=coding&budget=pay&platform=web` at both viewports. Zero console errors, no hydration warning. Confirm the shared link lands on results. Measure that the option cards stay inside their container.
 
 - [ ] **Step 5: Run the gate and commit**
 

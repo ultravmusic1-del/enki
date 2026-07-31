@@ -363,7 +363,12 @@ Keep `class="dark"` on `<html>`.
   `Home`→`House` alias). Missing names fall back + warn in dev.
 - **No em-dashes in displayed copy** (comments exempt).
 - **React-hooks lint on** (no setState synchronously in an effect — async fetch is
-  OK; the collections manager has one justified `eslint-disable` for its load effect).
+  OK). Three files carry a justified `eslint-disable` for it: the collections
+  manager's load effect, `detail/community-reviews.tsx`, and
+  `lib/use-search-params-on-mount.ts`. When the rule fires on a genuine false
+  positive, add a **visible** disable with a one-line reason. Do **not** wrap the
+  effect body in a nested function to silence it: that defeats the rule for any
+  body, including a bare setState, so it suppresses real findings too.
 - **Integrity guardrails (don't break):** never ship a fabricated sponsored tool,
   deal, coupon, or vetting date in the committed seed — those are operator-set.
   Sponsored placement **never** touches editorial score/verdict/search/leaderboards.
@@ -417,7 +422,16 @@ This exists because a pricing-badge clip once shipped on HTML-only inspection.
 5. **Turbopack stale chunks / console buffer** — verify against a fresh tab +
    `build`, not the stale dev console. `rm -rf .next` clears the server side.
 6. **Automated screenshots time out** on the GPU-heavy hero — use DOM measurement
-   (`getBoundingClientRect`) to verify layout, not screenshots.
+   (`getBoundingClientRect`) to verify layout, not screenshots. Worse, the
+   in-app browser pane often does not composite frames at all, and when it does
+   not, **`requestAnimationFrame` callbacks never fire**. Anything built on rAF
+   is therefore invisible to a sweep run through that pane, and will look
+   broken when it is fine: focus management in `finder/oracle-finder.tsx` is
+   the known case. Two consequences. First, right after `navigate` the pane can
+   report `innerWidth: 0`; a `resize_window` plus a short wait fixes it, and a
+   0-width viewport is not a layout bug. Second, to verify anything
+   rAF-dependent, drive a real headless browser (a throwaway Playwright script)
+   instead of trusting the pane.
 7. **Git hooks live in `.githooks/`, not `.git/hooks`.** `.git/hooks` is never
    pushed, so a hook installed by hand on one machine does not exist on the
    other — this is why an earlier pre-commit hook silently vanished. The
