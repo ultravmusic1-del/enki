@@ -33,7 +33,14 @@ export default defineConfig({
   webServer: {
     command: `pnpm build && pnpm start --port ${PORT}`,
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
+    // Never reuse. This used to be `!process.env.CI`, so a local run silently
+    // attached to whatever was already on the port. A stale server left behind
+    // by an earlier session was serving a build made from mutated source, and
+    // the suite reported eight failures that had nothing to do with the working
+    // tree. Always building what is tested costs a rebuild; the alternative
+    // costs a result that does not mean what it says. If the port is occupied,
+    // startup now fails loudly instead of measuring the wrong thing.
+    reuseExistingServer: false,
     timeout: 180_000,
   },
 });
