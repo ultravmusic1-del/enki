@@ -32,6 +32,37 @@ claim rather than repeating it.
 Anything here either breaks a promise the site makes out loud or exposes an
 unmetered write path.
 
+### Status as of 2026-08-01 — every in-repo item has landed
+
+Executed on branch `phase-0-launch-gate`. The item descriptions below are kept
+as written, in the present tense, so the reasoning survives; the status here is
+authoritative.
+
+| # | Item | Status |
+|---|---|---|
+| 0.1 | Alternatives padding | **Done.** `getAlternatives()` is same-category only and never pads. `/alternatives/cursor` verified to contain zero links to Midjourney or ElevenLabs |
+| 0.1b | Thin-page gate | **Done.** `MIN_ALTERNATIVES = 3`; the route count fell from 27 to 12. **See the open question below** |
+| 0.2 | Prerender bail-out | **Done.** `/tools` went from **0 to 27** tool links in raw HTML. `/compare` and `/finder` moved from dynamic to static and now carry real content. Guarded by a JavaScript-disabled E2E test |
+| 0.3 | "Our editors" | **Done.** One real byline in `authors.ts`, pinned by the `no-fabricated-metrics` guardrail. Copy converted to first-person singular across 7 files. Two stale factual claims removed alongside it: the leaderboards' promise of a community board, and `/vs/`'s claim to compare on community rating |
+| 0.4 | Hardcoded tool count | **Done.** Derived from `getStats()`; the prop is required so a forgotten call site fails the typecheck |
+| 0.5 | Mac-only shortcut badge | **Done.** `ShortcutHint` renders `Ctrl K` off-Mac. Also fixed a hover regression the extraction introduced |
+| 0.6 | Rate limiting | **Code done, NOT YET ACTIVE.** Four paths gated, including `unsubscribe`, which this roadmap originally missed and which is the only destructive one. **Requires four Vercel Firewall rules before it limits anything** — see the operator list |
+| 0.7d | E2E in CI | **Done.** Playwright now runs on every push and PR. 12 specs passing. This is the gap that let a spec stay red for two and a half weeks |
+| 0.7f | Favicon | **Done.** `/favicon.ico` returns 200; Next's five template SVGs deleted |
+| 0.7g | Final sweep | **Done.** 36 route/viewport pairs PASS, build clean, `pnpm audit --prod` clean, `pnpm audit:rls` holds, 325 unit tests, 12 E2E |
+| 0.7a, 0.7b, 0.7c, 0.7e | Operator items | **Outstanding — yours.** Nothing in the repo can complete these |
+
+**Not in the original plan, added because the work exposed them:** two silent
+false-pass bugs in `pnpm sweep` (it reported "Sweep clean" against an unstyled
+page, and against routes it had silently substituted for the ones requested), a
+stale E2E spec that had been red since 2026-07-16, and the `unsubscribe` write
+path.
+
+**One open question for the owner:** the thin-page gate makes 15 previously-live
+`/alternatives/*` URLs 404. They are in the current sitemap and may be indexed.
+The alternative is a 301 to `/tools/<slug>`, which preserves link equity and
+serves the visitor better. Not yet decided.
+
 ### 0.1 — Alternatives pages recommend unrelated tools · Claude · M
 
 **The single most damaging defect on the site.** `/alternatives/cursor` lists
@@ -189,6 +220,7 @@ no new CSP origin.
 | 0.7e | **Verify a real signup end to end** on `enkitools.com` (needs a mailbox). | You |
 | 0.7f | **Add a real favicon** — `/favicon.ico` 404s, so the SERP favicon is likely blank. Delete Next's leftover `next.svg`/`vercel.svg`/`globe.svg`/`file.svg`/`window.svg`. | Claude |
 | 0.7g | **Final pre-launch sweep** — visual (`pnpm sweep`, every route, both viewports), functional (auth, submit, moderation, saved, collections, compare, finder, `/go/*`), security (`pnpm audit:rls`, `pnpm audit --prod`, Supabase advisors, headers). | Claude + You |
+| 0.7h | **Create four Vercel Firewall rate-limit rules**, with rule-condition ids exactly `enki-outbound` (60/min), `enki-newsletter` (5/hour), `enki-submit` (5/hour), `enki-unsubscribe` (5/hour), all per IP. **Until these exist the shipped rate-limiting code limits nothing at all**: `checkRateLimit` answers "not limited" for an id it cannot find, which is byte-identical to a passing check. The code reports the missing rule to Sentry, so the positive confirmation you are looking for is the *absence* of `"does not exist in the Vercel Firewall"` in Sentry after deploying. Also ensure no deny rule or Attack Challenge Mode matches `/.well-known/vercel/rate-limit-api/`, or the probe 403s and the limiter fails open again. | You |
 
 ---
 
