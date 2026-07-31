@@ -29,7 +29,12 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const PATHS: WritePath[] = ["outbound", "newsletter", "submit"];
+const PATHS: WritePath[] = [
+  "outbound",
+  "newsletter",
+  "submit",
+  "unsubscribe",
+];
 
 describe("allowWrite", () => {
   it("allows a caller within the limit", async () => {
@@ -42,7 +47,7 @@ describe("allowWrite", () => {
     await expect(allowWrite("newsletter")).resolves.toBe(false);
   });
 
-  // Asserting all three ids, not just one: a typo in a single rule id silently
+  // Asserting every id, not just one: a typo in a single rule id silently
   // disables that one path and every other test would still pass.
   it.each(PATHS)("looks up the enki-%s rule", async (path) => {
     checkRateLimit.mockResolvedValue({ rateLimited: false });

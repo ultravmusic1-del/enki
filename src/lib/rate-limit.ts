@@ -9,14 +9,20 @@ import { checkRateLimit } from "@vercel/firewall";
  * nothing stops a script, so click counts, the subscriber list and the
  * moderation queue were all floodable.
  *
+ * `unsubscribe` is the fourth and the only DESTRUCTIVE one. It is unauthenticated,
+ * has no honeypot, and identifies its target by email alone, so by its own
+ * documented limitation anyone can unsubscribe an address that is not theirs.
+ * Ungated, that is a loop away from emptying the list.
+ *
  * OPERATOR PREREQUISITE. `checkRateLimit` does not define a limit, it looks one
  * up: the id must exist as a rate-limit rule condition in the Vercel Firewall
  * dashboard. Until those rules are created this module rate-limits nothing at
  * all. The intended ceilings, per IP:
  *
- *   enki-outbound    60 / minute
- *   enki-newsletter   5 / hour
- *   enki-submit       5 / hour
+ *   enki-outbound      60 / minute
+ *   enki-newsletter     5 / hour
+ *   enki-submit         5 / hour
+ *   enki-unsubscribe    5 / hour
  *
  * FAILS OPEN, ALWAYS. A limiter that takes the newsletter down during its own
  * outage is worse than the abuse it prevents, and every path here is still
@@ -55,7 +61,11 @@ import { checkRateLimit } from "@vercel/firewall";
  * need site-wide POST protection to cover the footer newsletter form, and an
  * unchallenged request risks being classed as a bot, rejecting real signups.
  */
-export type WritePath = "outbound" | "newsletter" | "submit";
+export type WritePath =
+  | "outbound"
+  | "newsletter"
+  | "submit"
+  | "unsubscribe";
 
 /**
  * Explicit request context. The SDK otherwise reads an ambient
