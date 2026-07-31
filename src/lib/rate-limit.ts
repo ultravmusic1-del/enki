@@ -87,12 +87,21 @@ export type WriteContext = {
 const reported = new Set<string>();
 
 function reportOnce(key: string, message: string, cause?: unknown): void {
-  if (cause === undefined) console.error(message);
-  else console.error(message, cause);
+  // A telemetry failure must never break the write path it is reporting on.
+  // This runs inside allowWrite's own catch, so an unguarded throw here would
+  // escape and reject a caller that was promised a boolean.
+  try {
+    if (cause === undefined) console.error(message);
+    else console.error(message, cause);
 
-  if (reported.has(key)) return;
-  reported.add(key);
-  Sentry.captureMessage(message, "error");
+    if (reported.has(key)) return;
+    // Marked before sending, so a transport that throws on every call is not
+    // retried on every request.
+    reported.add(key);
+    Sentry.captureMessage(message, "error");
+  } catch {
+    // Swallowed: there is nowhere left to report a failure of the reporter.
+  }
 }
 
 export async function allowWrite(

@@ -139,4 +139,37 @@ describe("allowWrite", () => {
     expect(spy).toHaveBeenCalledTimes(3);
     expect(captureMessage).toHaveBeenCalledTimes(1);
   });
+
+  // Pins the dedup key to `kind:ruleId` rather than bare `ruleId`. Under a bare
+  // id the first report for a rule suppresses every later one, so a missing
+  // rule would mask a blocked probe on the same path -- the more urgent of the
+  // two, and the one that used to reject real users. This asserts 2; a
+  // ruleId-only key makes it 1.
+  it("reports both a missing rule and a blocked probe for the same id", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    checkRateLimit.mockResolvedValue({ rateLimited: false, error: "not-found" });
+    await expect(allowWrite("newsletter")).resolves.toBe(true);
+
+    checkRateLimit.mockResolvedValue({ rateLimited: true, error: "blocked" });
+    await expect(allowWrite("newsletter")).resolves.toBe(true);
+
+    expect(captureMessage).toHaveBeenCalledTimes(2);
+  });
+
+  // "Fails open" has to mean "returns a boolean, always". reportOnce runs
+  // inside allowWrite's own catch, so a throw from the reporter would escape
+  // and reject a caller that neither server action wraps.
+  it("still returns a verdict when the reporter itself throws", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    captureMessage.mockImplementation(() => {
+      throw new Error("sentry transport down");
+    });
+
+    checkRateLimit.mockRejectedValue(new Error("no request context"));
+    await expect(allowWrite("outbound")).resolves.toBe(true);
+
+    checkRateLimit.mockResolvedValue({ rateLimited: false, error: "not-found" });
+    await expect(allowWrite("newsletter")).resolves.toBe(true);
+  });
 });
