@@ -13,7 +13,7 @@ import { useCommandMenu } from "@/components/layout/command-menu";
 
 gsap.registerPlugin(ScrollTrigger);
 
-export function OracleHero() {
+export function OracleHero({ toolCount }: { toolCount: number }) {
   const root = useRef<HTMLElement>(null);
   const { setOpen } = useCommandMenu();
 
@@ -121,7 +121,7 @@ export function OracleHero() {
             className="group inline-flex w-64 items-center gap-3 rounded-full border border-border glass px-4 py-2.5 text-sm text-muted-foreground transition-colors hover:border-teal/40 hover:text-foreground"
           >
             <Icon name="Search" className="size-4 text-teal" />
-            Search 27 tools…
+            Search {toolCount} tools…
             <ShortcutHint keyName="K" className="ml-auto" />
           </button>
 

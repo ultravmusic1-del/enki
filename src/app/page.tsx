@@ -63,7 +63,7 @@ export default async function Home() {
         crossOrigin="anonymous"
       />
 
-      <OracleHero />
+      <OracleHero toolCount={stats.toolCount} />
 
       {/* Featured tools */}
       <section className="py-16 sm:py-20">
