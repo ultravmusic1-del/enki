@@ -7,6 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@/lib/use-gsap";
 import { Aurora } from "@/components/shared/aurora";
 import { Icon } from "@/components/shared/icon";
+import { ShortcutHint } from "@/components/shared/shortcut-hint";
 import { OracleModel } from "@/components/home/oracle-model";
 import { useCommandMenu } from "@/components/layout/command-menu";
 
@@ -121,9 +122,7 @@ export function OracleHero() {
           >
             <Icon name="Search" className="size-4 text-teal" />
             Search 27 tools…
-            <kbd className="ml-auto rounded border border-border bg-muted/60 px-1.5 py-0.5 font-mono text-[0.6rem]">
-              ⌘K
-            </kbd>
+            <ShortcutHint keyName="K" className="ml-auto" />
           </button>
 
           <Link
