@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { CompareTool } from "@/lib/content";
@@ -42,6 +42,9 @@ export function CompareView({ tools }: { tools: CompareTool[] }) {
   // picker and its tool list are crawlable. The URL is applied just after mount.
   const [selected, setSelected] = useState<string[]>([]);
 
+  // Reads bySlug from the first render's closure, which is safe only while
+  // `tools` stays a static server prop. If it ever becomes dynamic, a stale
+  // map here would silently drop valid slugs from a shared link.
   const urlRead = useSearchParamsOnMount((params) => {
     const raw = params.get("tools");
     if (!raw) return;
