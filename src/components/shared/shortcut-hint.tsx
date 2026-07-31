@@ -36,7 +36,13 @@ export function ShortcutHint({
     <kbd
       aria-label={`Keyboard shortcut: ${isMac ? "Command" : "Control"} ${keyName}`}
       className={cn(
-        "pointer-events-none rounded border border-border bg-muted/60 px-1.5 py-0.5 font-mono text-[0.6rem] text-muted-foreground",
+        // group-hover:text-foreground keeps the hero badge brightening in
+        // step with the button's icon and label on hover (the button
+        // declares `group`, and the original hero <kbd> had no color class
+        // of its own, so it inherited that hover brightening). On the
+        // header, the parent <Button> has no `group` class, so this utility
+        // compiles but never matches, leaving that badge's static color.
+        "pointer-events-none rounded border border-border bg-muted/60 px-1.5 py-0.5 font-mono text-[0.6rem] text-muted-foreground group-hover:text-foreground",
         className,
       )}
     >
