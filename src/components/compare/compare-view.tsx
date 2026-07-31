@@ -2,9 +2,10 @@
 
 import { Fragment, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { CompareTool } from "@/lib/content";
 import { outboundHref } from "@/lib/outbound";
+import { useSearchParamsOnMount } from "@/lib/use-search-params-on-mount";
 import { ToolLogo } from "@/components/shared/tool-logo";
 import { PricingBadge } from "@/components/shared/pricing-badge";
 import { Icon } from "@/components/shared/icon";
@@ -31,34 +32,41 @@ const SUGGESTED = ["cursor", "github-copilot", "perplexity", "jasper"];
 export function CompareView({ tools }: { tools: CompareTool[] }) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   const bySlug = useMemo(
     () => new Map(tools.map((t) => [t.slug, t])),
     [tools],
   );
 
-  const [selected, setSelected] = useState<string[]>(() => {
-    const raw = searchParams.get("tools");
-    if (!raw) return [];
-    return raw
-      .split(",")
-      .map((s) => s.trim())
-      .filter((s) => bySlug.has(s))
-      .slice(0, MAX);
+  // Empty selection renders on the server and in the first client pass, so the
+  // picker and its tool list are crawlable. The URL is applied just after mount.
+  const [selected, setSelected] = useState<string[]>([]);
+
+  const urlRead = useSearchParamsOnMount((params) => {
+    const raw = params.get("tools");
+    if (!raw) return;
+    setSelected(
+      raw
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => bySlug.has(s))
+        .slice(0, MAX),
+    );
   });
   const [pickerOpen, setPickerOpen] = useState(false);
 
-  // Mirror the selection into the URL so a comparison is shareable.
+  // Mirror the selection into the URL so a comparison is shareable. Waits for
+  // the initial read, which would otherwise be erased by this effect.
   useEffect(() => {
-    const params = new URLSearchParams(Array.from(searchParams.entries()));
+    if (!urlRead) return;
+    const params = new URLSearchParams(window.location.search);
     if (selected.length) params.set("tools", selected.join(","));
     else params.delete("tools");
     const qs = params.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     // Only re-sync when the selection itself changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected]);
+  }, [selected, urlRead]);
 
   const chosen = selected
     .map((s) => bySlug.get(s))
