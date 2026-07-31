@@ -211,6 +211,28 @@ export async function getAlternatives(tool: Tool, n = 6): Promise<Tool[]> {
     .slice(0, n);
 }
 
+/** Minimum genuine alternatives before an /alternatives page earns publication. */
+export const MIN_ALTERNATIVES = 3;
+
+/**
+ * Slugs whose alternatives page is worth publishing.
+ *
+ * A page listing one alternative is a thin page: it is the shape Google's
+ * scaled-content guidance targets, and it reads as automation to a human. Tools
+ * below the threshold simply have no alternatives page, and 404.
+ */
+export async function getAlternativesSlugs(): Promise<string[]> {
+  const all = await loadTools();
+  const out: string[] = [];
+  for (const tool of all) {
+    const count = all.filter(
+      (t) => t.categorySlug === tool.categorySlug && t.slug !== tool.slug,
+    ).length;
+    if (count >= MIN_ALTERNATIVES) out.push(tool.slug);
+  }
+  return out.sort();
+}
+
 /* -------------------------------------------------------------- categories */
 
 export type CategoryWithCount = Category & { toolCount: number };

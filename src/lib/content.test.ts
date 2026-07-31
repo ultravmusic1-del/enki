@@ -8,6 +8,7 @@ import {
   getToolsByCategory,
   getRelatedTools,
   getAlternatives,
+  getAlternativesSlugs,
   getReviewsForTool,
   getStats,
   getSearchDocs,
@@ -112,6 +113,27 @@ describe("content: related tools", () => {
     const cursor = await getToolBySlug("cursor");
     const related = await getRelatedTools(cursor!, 6);
     expect(related.length).toBe(6);
+  });
+});
+
+describe("content: alternatives publishing gate", () => {
+  it("only lists slugs with at least three real alternatives", async () => {
+    const slugs = await getAlternativesSlugs();
+    expect(slugs.length).toBeGreaterThan(0);
+    for (const slug of slugs) {
+      const tool = await getToolBySlug(slug);
+      expect((await getAlternatives(tool!, 50)).length).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it("excludes tools whose category is too sparse to compare", async () => {
+    const slugs = new Set(await getAlternativesSlugs());
+    const all = await getAllTools();
+    for (const tool of all) {
+      if ((await getAlternatives(tool, 50)).length < 3) {
+        expect(slugs.has(tool.slug)).toBe(false);
+      }
+    }
   });
 });
 
