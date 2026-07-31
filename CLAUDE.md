@@ -32,7 +32,13 @@ Fall back to Grep/Glob/Read **only** when the graph doesn't cover what you need.
 
 ### Workflow
 
-1. The graph auto-updates on file changes (via hooks).
+1. The graph auto-updates twice over: a `PostToolUse` hook catches edits made
+   through Claude Code, and the versioned git hooks (`post-commit`,
+   `post-merge`, `post-rewrite` → `scripts/hooks/graph-sync.mjs`) catch
+   everything else, including a `git pull` from the other machine. Both no-op
+   silently if `code-review-graph` is not installed, so on a fresh machine
+   check `list_graph_stats_tool` — `head_matches_build: false` means the graph
+   is describing code that is no longer there.
 2. Use `detect_changes_tool` for code review.
 3. Use `get_affected_flows_tool` to understand impact.
 4. Use `query_graph_tool` pattern="tests_for" to check coverage.

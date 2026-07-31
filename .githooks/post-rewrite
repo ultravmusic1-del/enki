@@ -1,0 +1,4 @@
+#!/bin/sh
+# Versioned post-rewrite hook: `commit --amend` and `rebase` move HEAD without
+# firing post-commit.
+exec node "$(git rev-parse --show-toplevel)/scripts/hooks/graph-sync.mjs" post-rewrite

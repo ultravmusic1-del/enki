@@ -1,0 +1,4 @@
+#!/bin/sh
+# Versioned post-merge hook: a `git pull` is how the graph fell 66 commits
+# behind in the first place, and post-commit does not fire for it.
+exec node "$(git rev-parse --show-toplevel)/scripts/hooks/graph-sync.mjs" post-merge
