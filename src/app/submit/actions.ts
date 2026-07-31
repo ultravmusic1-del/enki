@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { createAnonClient } from "@/lib/supabase/anon";
 import { submissionFormSchema, type SubmissionValues } from "@/lib/schemas";
 import { allowWrite } from "@/lib/rate-limit";
@@ -17,10 +18,12 @@ export async function submitTool(values: SubmissionValues) {
 
   // Without a ceiling a script can flood the moderation queue faster than a
   // human can clear it. The honeypot above only stops naive form-fillers.
-  if (!(await allowWrite("submit"))) {
+  // Headers are passed explicitly: the limiter reads an ambient request context
+  // otherwise, and throws when it is absent.
+  if (!(await allowWrite("submit", { headers: await headers() }))) {
     return {
       ok: false as const,
-      error: "Too many submissions from here. Try again later.",
+      error: "Too many submissions. Try again later.",
     };
   }
 

@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, after, type NextRequest } from "next/server";
 import { getToolBySlug } from "@/lib/content";
 import { resolveOutboundTarget } from "@/lib/outbound";
 import { isHttpUrl } from "@/lib/safe-url";
@@ -43,19 +43,31 @@ export async function GET(
     }
   }
 
-  // The limit gates the LOGGING only, never the redirect. This route is a real
-  // visitor on their way to a tool, so a rate-limited click still travels; it
-  // just stops inflating the affiliate click count. Rejecting the navigation
-  // would punish the reader for a script's behaviour.
-  try {
-    if (await allowWrite("outbound")) {
-      await createAnonClient()
-        .from("outbound_clicks")
-        .insert({ tool_slug: slug, path });
+  // Logging runs AFTER the response is sent, so neither the rate-limit probe
+  // nor the Supabase insert sits on the affiliate critical path. Both are
+  // network round-trips with no AbortSignal and this project sets no
+  // maxDuration, so awaiting them inline meant a wedged call could turn a
+  // redirect into a 504 and lose the click. `after()` makes "the redirect is
+  // always reached" structural rather than something a future edit must
+  // preserve by hand.
+  //
+  // The limit gates the LOGGING only, never the redirect: a rate-limited click
+  // still travels, it just stops inflating the affiliate click count. Headers
+  // are snapshotted here because `request` is not guaranteed readable once the
+  // response has been flushed.
+  const requestHeaders = Object.fromEntries(request.headers.entries());
+
+  after(async () => {
+    try {
+      if (await allowWrite("outbound", { headers: requestHeaders })) {
+        await createAnonClient()
+          .from("outbound_clicks")
+          .insert({ tool_slug: slug, path });
+      }
+    } catch {
+      // Never let logging failure surface; the visitor has already been sent on.
     }
-  } catch {
-    // Never let logging failure block the user's navigation.
-  }
+  });
 
   return NextResponse.redirect(url);
 }

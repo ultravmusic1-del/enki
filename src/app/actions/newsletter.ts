@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { createAnonClient } from "@/lib/supabase/anon";
 import { newsletterSchema } from "@/lib/schemas";
 import { allowWrite } from "@/lib/rate-limit";
@@ -15,7 +16,9 @@ export async function subscribe(email: string, hp?: string) {
 
   // The honeypot stops naive form-fillers and nothing stops a script, so
   // without this a loop could subscribe arbitrary third-party addresses.
-  if (!(await allowWrite("newsletter"))) {
+  // Headers are passed explicitly: the limiter reads an ambient request context
+  // otherwise, and throws when it is absent.
+  if (!(await allowWrite("newsletter", { headers: await headers() }))) {
     return { ok: false as const, error: "Too many attempts. Try again later." };
   }
 
