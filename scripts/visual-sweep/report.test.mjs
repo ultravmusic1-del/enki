@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   dedupeProblems,
   isIgnorableConsoleError,
+  isStyled,
   summarize,
 } from "./report.mjs";
 
@@ -74,6 +75,38 @@ describe("isIgnorableConsoleError", () => {
 
   it("tolerates missing fields", () => {
     expect(isIgnorableConsoleError({})).toBe(false);
+  });
+});
+
+describe("isStyled", () => {
+  it("accepts a real Tailwind page", () => {
+    expect(
+      isStyled({ ruleCount: 1200, fontFamily: '"Hanken Grotesk", sans-serif' }),
+    ).toBe(true);
+  });
+
+  it("rejects a page serving no stylesheets at all", () => {
+    expect(isStyled({ ruleCount: 0, fontFamily: '"Times New Roman", serif' })).toBe(
+      false,
+    );
+  });
+
+  it("rejects a browser-default serif even when some rules loaded", () => {
+    // A stale server can still serve a stub stylesheet. The default font is the
+    // stronger signal that the real bundle never arrived.
+    expect(
+      isStyled({ ruleCount: 300, fontFamily: '"Times New Roman"' }),
+    ).toBe(false);
+  });
+
+  it("rejects a page with too few rules for a Tailwind build", () => {
+    expect(isStyled({ ruleCount: 12, fontFamily: "Inter, sans-serif" })).toBe(
+      false,
+    );
+  });
+
+  it("treats a bare serif or sans-serif as a browser default", () => {
+    expect(isStyled({ ruleCount: 1200, fontFamily: "serif" })).toBe(false);
   });
 });
 

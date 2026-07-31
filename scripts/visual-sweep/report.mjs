@@ -31,6 +31,33 @@ export function dedupeProblems(problems) {
 }
 
 /**
+ * Minimum stylesheet rules a real page of this app has. Tailwind emits
+ * hundreds for any route; a stub or error page emits a handful.
+ */
+const MIN_STYLE_RULES = 200;
+
+/** Fonts a browser falls back to when no stylesheet applied. */
+const DEFAULT_FONT = /^\s*(serif|sans-serif|monospace)\s*$|times new roman/i;
+
+/**
+ * Whether the page under test is actually styled.
+ *
+ * Every check this harness makes is vacuous without CSS: CLIP_PROBE only
+ * inspects elements whose computed overflowX clips, and with no stylesheet
+ * nothing does, so it finds no containers and reports no problems. A sweep
+ * against an unstyled page prints "Sweep clean" and proves nothing.
+ *
+ * That happened: a stale process squatting on the sweep port served unstyled
+ * HTML, and the measurements taken against it looked perfectly healthy.
+ *
+ * @param {{ruleCount: number, fontFamily: string}} page
+ */
+export function isStyled({ ruleCount, fontFamily }) {
+  if (ruleCount < MIN_STYLE_RULES) return false;
+  return !DEFAULT_FONT.test(fontFamily);
+}
+
+/**
  * @param {Array<{
  *   route: string,
  *   viewport: string,

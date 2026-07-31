@@ -23,6 +23,7 @@ import { chromium } from "@playwright/test";
 import {
   dedupeProblems,
   isIgnorableConsoleError,
+  isStyled,
   summarize,
 } from "./visual-sweep/report.mjs";
 
@@ -136,6 +137,37 @@ for (const route of targets) {
 
     // Let entrance animations settle before measuring.
     await page.waitForTimeout(600);
+
+    // Every check below is vacuous without CSS: CLIP_PROBE only inspects
+    // elements whose computed overflowX clips, and with no stylesheet nothing
+    // does, so it finds no containers and reports no problems. A stale
+    // process squatting on the sweep port serving unstyled HTML would pass
+    // silently otherwise -- this is what caught that.
+    const styling = await page.evaluate(() => ({
+      ruleCount: Array.from(document.styleSheets).reduce((total, sheet) => {
+        // A cross-origin sheet throws on .cssRules; it is not ours anyway.
+        try {
+          return total + sheet.cssRules.length;
+        } catch {
+          return total;
+        }
+      }, 0),
+      fontFamily: getComputedStyle(document.body).fontFamily,
+    }));
+
+    if (!isStyled(styling)) {
+      console.error(`\nSweep target is not styled: ${url}`);
+      console.error(
+        `  ${styling.ruleCount} CSS rules, body font-family "${styling.fontFamily}"`,
+      );
+      console.error(
+        `  Every check here is vacuous without CSS, so this would have passed\n` +
+          `  while proving nothing. Usually a stale process on the port, or a\n` +
+          `  server that has not finished building. Check what is on ${base}.\n`,
+      );
+      await browser.close();
+      process.exit(1);
+    }
 
     const problems = dedupeProblems(await page.evaluate(CLIP_PROBE));
 
