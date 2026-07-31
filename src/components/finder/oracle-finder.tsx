@@ -57,17 +57,27 @@ export function OracleFinder({ tools, categoryNames }: Props) {
   // opted out of the prerender, so the static HTML was an empty shell.
   const [answers, setAnswers] = useState<FinderAnswers>({});
   const [stepIndex, setStepIndex] = useState(0);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  // Declared before the hook call below so that call reads a real function,
+  // not a `const` it would otherwise reference ahead of its declaration.
+  const focusHeading = () =>
+    requestAnimationFrame(() => headingRef.current?.focus());
 
   // A shared result link jumps to its results just after mount instead of
-  // during render.
+  // during render. Move focus to the results heading here too, exactly as
+  // choose()/back()/restart() do after their own stepIndex changes: question
+  // one is replaced by a structurally different results section, and without
+  // this a keyboard user's focus is left stranded and a screen reader gets no
+  // signal the content changed. The early return above (no answers in the
+  // URL) means this never fires for a bare /finder load.
   useSearchParamsOnMount((params) => {
     const initial = readAnswers(params);
     if (!initial.category && !initial.budget && !initial.platform) return;
     setAnswers(initial);
     setStepIndex(FINDER_STEPS.length);
+    focusHeading();
   });
-
-  const headingRef = useRef<HTMLHeadingElement>(null);
 
   const showResults = stepIndex >= FINDER_STEPS.length;
 
@@ -76,9 +86,6 @@ export function OracleFinder({ tools, categoryNames }: Props) {
       showResults ? recommendTools(tools, answers, categoryNameMap, 3) : [],
     [showResults, tools, answers, categoryNameMap],
   );
-
-  const focusHeading = () =>
-    requestAnimationFrame(() => headingRef.current?.focus());
 
   const choose = (stepId: FinderStepId, value: string) => {
     const next: FinderAnswers = { ...answers };
