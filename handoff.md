@@ -282,7 +282,7 @@ Categories/authors/seed-reviews remain seed-only.
 | Server mutations | **Next server actions** (submit, newsletter, admin moderation + tool CRUD). Reviews, saved tools, and collections write from the **browser client** under RLS, not through server actions. **Every admin action calls `assertAdmin()` itself** — server actions are public POST endpoints, and RLS alone does not stop an unauthorized caller from triggering their side effects. |
 | Toasts / Analytics | Sonner; Vercel Web Analytics + Speed Insights |
 | **Observability** | **Sentry** (`@sentry/nextjs`) — errors on node/edge/client, CSP violation collector, cron check-ins. DSN committed in `src/lib/sentry.ts` (public by design); `SENTRY_AUTH_TOKEN` in Vercel for source maps |
-| Tests | Vitest (jsdom) + Playwright (**installed; `e2e/` is empty — no specs yet**) |
+| Tests | Vitest (jsdom) + Playwright. Specs live in **`tests/e2e/`**, not `e2e/`, which does not exist. `playwright.config.ts` sets `testDir: "./tests/e2e"` and builds + serves on port 3100 |
 | Asset pipeline | `@gltf-transform/*` + `meshoptimizer` (hero model), `sharp` (brand mask, poster). Sources live in `assets/`, never served; `public/` artefacts are generated |
 | Dev tooling | code-review-graph MCP (§10) |
 | Theme / Hosting | Dark only (`class="dark"`); Vercel — live, auto-deploys on push to `main` |

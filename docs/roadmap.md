@@ -185,7 +185,7 @@ no new CSP origin.
 | 0.7a | **Enable leaked-password protection** in Supabase → Auth. One toggle. | You |
 | 0.7b | **Configure a Sentry alert rule** so the first real error reaches a human. Scope it to `environment:[production, preview]`: a preview is a production build, so it is where the rate limiter's Deployment-Protection failure fires, and a production-only rule would capture that report while notifying nobody. | You |
 | 0.7c | **Decide the newsletter** — addresses are being collected and nothing has ever been sent. Build sending (5.1) or stop collecting. See 2.3 for the cadence contradiction. | You |
-| 0.7d | **E2E smoke tests** over signup → confirm → login, `/submit`, admin moderation; wire Playwright into CI. `e2e/` is empty. | Claude |
+| 0.7d | **Wire Playwright into CI**, and cover `/submit` and the admin gate. Specs live in `tests/e2e/` (the "`e2e/` is empty" note here was wrong; that directory does not exist). The real gap is that CI runs only `pnpm verify`, so a spec stayed red for two and a half weeks unnoticed. Signed-in coverage needs a seeded Supabase user plus a Playwright `storageState`, which is a separate decision. | Claude |
 | 0.7e | **Verify a real signup end to end** on `enkitools.com` (needs a mailbox). | You |
 | 0.7f | **Add a real favicon** — `/favicon.ico` 404s, so the SERP favicon is likely blank. Delete Next's leftover `next.svg`/`vercel.svg`/`globe.svg`/`file.svg`/`window.svg`. | Claude |
 | 0.7g | **Final pre-launch sweep** — visual (`pnpm sweep`, every route, both viewports), functional (auth, submit, moderation, saved, collections, compare, finder, `/go/*`), security (`pnpm audit:rls`, `pnpm audit --prod`, Supabase advisors, headers). | Claude + You |

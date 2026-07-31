@@ -71,6 +71,7 @@ that gap widens with every signup after launch. Either wire a provider (Resend/P
 
 ### High — no end-to-end test coverage
 
+**Correction (2026-07-31): this was wrong.** Specs live in `tests/e2e/`; `e2e/` does not exist. The original text follows.
 `e2e/` exists and is **empty**; `test:e2e` is wired to Playwright but there are no specs,
 and CI runs only `pnpm verify`. The 274 unit tests cover `lib` logic and server actions.
 Nothing exercises signup → confirm → login, `/submit`, or the admin moderation flows in a
