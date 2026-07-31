@@ -468,64 +468,27 @@ stats: `code-review-graph status`. Requires a Claude Code restart to load the MC
 
 ## 12. Open items / next steps
 
-**This is the only pre-launch to-do list.** Earlier lists in
+**The single to-do list now lives in [`docs/roadmap.md`](docs/roadmap.md).**
+It merges this section's pre-launch list with a verified external review of the
+live site, and it supersedes the lists in
 `docs/launch-readiness-audit-2026-07-29.md`, `docs/stack-evaluation-2026-07-29.md`
-and the Operator Checklists inside `docs/superpowers/plans/*` are superseded and
-point here. Do not start a second one.
+and the Operator Checklists inside `docs/superpowers/plans/*`. Every one of those
+points at the roadmap. **Do not start a second one.**
 
-Resolved and removed from this list: the fabricated per-tool ratings and the six
-invented reviewer personas are **gone** — `src/data/authors.ts` is deliberately
-empty, no `rating:` fields remain in the seed, and `hasVerifiedRatings` stays
-`false`. Deploy, admin grant, and the domain migration are done.
+Orientation only, so a fresh session knows where things stand:
 
-Owner: **You** = dashboard/account access only you have. **Claude** = in-repo work.
+- **Phase 0** is the launch gate. Three items on it are defects that contradict
+  the site's own headline claim: `/alternatives/*` pads its lists with
+  unrelated tools from other categories, `/tools` and `/compare` serve crawlers
+  an empty Suspense fallback instead of the directory, and the copy credits
+  "our editors" while `src/data/authors.ts` is deliberately empty.
+- **Phase 1** is the moat: a published scoring rubric, evidence-based reviews,
+  and an `/about` page with a named reviewer and an editorial policy.
+- Phases 2-6 cover empty-feature cleanup, positioning, SEO durability, the
+  internal-tools push (admin CMS, self-hosted newsletter, analytics board), and
+  post-launch operations.
 
-### A. Blockers — must land before the first public visitor
-
-| # | Item | Owner |
-|---|---|---|
-| A1 | **Rate-limit the public write paths.** `outbound_clicks`, `subscribers` and `tool_submissions` all accept unauthenticated `INSERT` with `WITH CHECK (true)` (confirmed by Supabase advisors). Protection today is a honeypot and CHECK constraints — no rate ceiling. Anyone can inflate affiliate click counts, subscribe third-party addresses, or flood the moderation queue. Use `@vercel/firewall` `checkRateLimit()` + BotID (`withBotId` / `checkBotId`) — first-party, no CAPTCHA, no new CSP origin. | Claude |
-| A2 | **Enable leaked-password protection** in Supabase → Auth. Users can currently register with known-breached passwords. One toggle. | You |
-| A3 | **Configure a Sentry alert rule** so the first real error reaches a human instead of sitting in a dashboard. | You |
-| A4 | **Decide the newsletter.** Addresses are being collected and nothing has ever been sent — an unfulfilled promise that grows with every signup. Either build sending (see B1) or stop collecting until it exists. | You |
-| A5 | **E2E smoke tests** over signup → confirm → login, `/submit`, and admin moderation; wire Playwright into CI. `e2e/` is currently **empty** and CI runs only `pnpm verify`. These are precisely the paths a first public user walks. | Claude |
-| A6 | **Verify a real signup end to end** on `enkitools.com` (needs a mailbox). | You |
-| A7 | **Add a real favicon.** `/favicon.ico` currently **404s** — only `/icon.svg` and `/apple-icon` exist. Google's SERP favicon fetcher and several other clients request the `.ico` path specifically, so the brand is likely showing blank in search results. Also delete Next's leftover template art from `public/` (`next.svg`, `vercel.svg`, `globe.svg`, `file.svg`, `window.svg`). | Claude |
-| A8 | **Final pre-launch sweep:** visual (`pnpm sweep` across every route, both viewports), functionality (auth, submit, review moderation, saved, collections, compare, finder, outbound `/go/*`), and security (`pnpm audit:rls`, `pnpm audit --prod`, Supabase advisors re-run, headers re-checked). | Claude + You |
-
-### B. Build — the internal-tools push
-
-| # | Item | Owner |
-|---|---|---|
-| B1 | **Self-hosted newsletter, managed from the admin panel.** Own the sending, list management, campaign composition and delivery reporting rather than renting a SaaS dashboard. Depends on B2. *Reference repo to be supplied.* | Claude |
-| B2 | **Full admin panel.** Today's `/admin` is deliberately barebones — KPI tiles, review moderation, re-vet and submission queues, and a Zod-validated **JSON** tool editor. Wanted: a real field-by-field CMS (array editors for `keyFeatures`/`screenshots`/`pros`/`cons`, Supabase Storage uploads for logos and screenshots), plus the surfaces B1 and B3 hang off. | Claude |
-| B3 | **Analytics board inside the admin panel.** Own the numbers instead of reading them in Vercel's dashboard. `outbound_clicks` already records the money event. *Reference repo to be supplied.* | Claude |
-
-### C. Growth — brand search
-
-| # | Item | Owner |
-|---|---|---|
-| C1 | **Rank for "Enki tools" (two words), not only "enkitools".** The domain and wordmark are one word; the phrase people type is often two. Tactics, cheapest first: add `alternateName: ["Enki Tools", "EnkiTools"]` to the Organization JSON-LD so Google is told the alternates explicitly; use the two-word form naturally in the title tag, an `/about` page and footer copy (currently the exact phrase barely appears anywhere); strengthen the entity with more `sameAs` profiles as they exist; and use "Enki Tools" as anchor text in any directory or listing submissions. Note "Enki" alone is a Sumerian deity — high-competition, wrong intent — so target the qualified phrase, not the bare name. | Claude |
-
-### D. Soon after launch
-
-| # | Item | Owner |
-|---|---|---|
-| D1 | **Supabase Pro for daily backups**, the moment real user data exists. Free tier has none, and an accident is unrecoverable. | You |
-| D2 | **Watch for the 403 `Vercel Security Checkpoint` recurring.** Every URL returned it for ~20 minutes on 2026-07-29, then self-recovered. Attack Challenge Mode and bot protection are both confirmed **off**, so the cause is unknown. Likely automatic DDoS mitigation reacting to heavy automated traffic from one IP, but unconfirmed. If it happens to real users it becomes a blocker. | Both |
-| D3 | **Bing Webmaster Tools** — "Import from Google Search Console" carries verification and the sitemap in one step; its IndexNow tab confirms submissions. | You |
-| D4 | **Remove the transitional `enki-five.vercel.app/auth/callback`** from Supabase redirect URLs (kept during the domain migration). | You |
-| D5 | **Branded contact address.** `/privacy`, `/terms` and both error boundaries name a personal Gmail. Vercel has no mailbox product — add MX records pointing at a forwarder or provider, then swap the references. Keep **one** SPF TXT record covering every sender. | Both |
-| D6 | **Link-health cron** — ping each tool's site and flag dead links into the re-vet queue. | Claude |
-
-### E. When there is time
-
-| # | Item | Owner |
-|---|---|---|
-| E1 | **Thin-content pass** on the ~100 generated `/best`, `/alternatives` and `/vs` pages — 90% of the sitemap, and the shape Google's doorway-page guidance targets. Largest structural SEO risk. | Claude |
-| E2 | **Enforcing nonce-based CSP.** Now that violations report to Sentry, the data to write it safely will accumulate; `script-src` still carries `'unsafe-inline'`. | Claude |
-| E3 | **Shrink or split the ~909 KB three.js/R3F chunk** — the hero model no longer waits on it, but it is still the largest asset. | Claude |
-| E4 | **Optimise `public/brand/logo.png` (1.1 MB) and `inspiration.png` (500 KB)** — not on the homepage critical path, but large. | Claude |
-| E5 | **Component-level tests** — React components remain largely untested. | Claude |
-| E6 | **Real `createdAt`/`updatedAt` on tools** to power an honest RSS feed and "recently added" digest. | Claude |
-```
+Already resolved and not on the list: the fabricated per-tool ratings and the six
+invented reviewer personas are gone (`src/data/authors.ts` is deliberately empty,
+no `rating:` fields remain in the seed, `hasVerifiedRatings` stays `false`).
+Deploy, admin grant, and the domain migration are done.
