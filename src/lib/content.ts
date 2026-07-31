@@ -173,8 +173,12 @@ export async function getToolsByCategory(categorySlug: string): Promise<Tool[]> 
 }
 
 /**
- * Related tools — same category first (by editor score), topped up with the highest
- * rated tools elsewhere until we have `n`. Never includes the source tool.
+ * Related tools for the detail-page discovery rail — same category first (by
+ * editor score), topped up with the highest rated tools elsewhere until we have
+ * `n`. Never includes the source tool.
+ *
+ * The top-up crosses categories, so this must never back a page that claims its
+ * entries are alternatives. Use `getAlternatives` for that.
  */
 export async function getRelatedTools(tool: Tool, n = 3): Promise<Tool[]> {
   const all = await loadTools();
@@ -189,6 +193,22 @@ export async function getRelatedTools(tool: Tool, n = 3): Promise<Tool[]> {
     .sort((a, b) => b.editorScore - a.editorScore);
 
   return [...sameCategory, ...fillers].slice(0, n);
+}
+
+/**
+ * Genuine alternatives to a tool: same category only, best editor score first.
+ *
+ * Deliberately NOT `getRelatedTools`. That function tops its list up with
+ * high-scoring tools from other categories, which is a reasonable discovery
+ * rail on a detail page and indefensible on a page titled "the best X
+ * alternatives" — it listed an image generator as a Cursor alternative. If a
+ * category holds two real alternatives, this returns two. Never pads.
+ */
+export async function getAlternatives(tool: Tool, n = 6): Promise<Tool[]> {
+  return (await loadTools())
+    .filter((t) => t.categorySlug === tool.categorySlug && t.slug !== tool.slug)
+    .sort((a, b) => b.editorScore - a.editorScore || a.name.localeCompare(b.name))
+    .slice(0, n);
 }
 
 /* -------------------------------------------------------------- categories */
