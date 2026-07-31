@@ -92,6 +92,53 @@ export function isStyled({ ruleCount, fontFamily }) {
 }
 
 /**
+ * Selects which routes to sweep from CLI argv, distinguishing "no routes
+ * given" (fall back to the documented defaults) from "routes given that
+ * could not be understood" (fail loudly).
+ *
+ * Git Bash rewrites a bare positional argument like `/tools` into a Windows
+ * path (`C:/Program Files/Git/tools`) before Node ever sees it. That mangled
+ * string does not start with "/", so a filter that just discarded
+ * non-matching args would end up with zero routes and silently fall back to
+ * the defaults -- `pnpm sweep -- /tools/cursor` from Git Bash would quietly
+ * sweep `/` and `/tools` instead and still print "Sweep clean". That is the
+ * same shape of bug as an unstyled-page false pass: the harness reports
+ * success for work it did not do. The fix is to only default when the user
+ * gave nothing at all; if they gave something and none (or not all) of it
+ * survived, that is a malformed invocation and must fail, naming what came
+ * through so it can be diagnosed.
+ *
+ * @param {string[]} argv
+ * @returns {{ok: true, routes: string[]} | {ok: false, positionals: string[], unrecognized: string[]}}
+ */
+export function selectRoutes(argv) {
+  const baseIndex = argv.indexOf("--base");
+  // With no --base, baseIndex is -1, so a bare `index !== baseIndex + 1`
+  // would silently drop the first positional argument.
+  //
+  // A literal "--" is also not a positional: `pnpm sweep -- --base URL /x`
+  // forwards that separator through to argv verbatim rather than stripping
+  // it (verified empirically), so it would otherwise be misdiagnosed as an
+  // unrecognized route on every invocation that uses `--`.
+  const positionals = argv.filter(
+    (arg, index) =>
+      arg !== "--" &&
+      (baseIndex === -1 || (index !== baseIndex && index !== baseIndex + 1)),
+  );
+
+  if (positionals.length === 0) {
+    return { ok: true, routes: ["/", "/tools"] };
+  }
+
+  const unrecognized = positionals.filter((arg) => !arg.startsWith("/"));
+  if (unrecognized.length > 0) {
+    return { ok: false, positionals, unrecognized };
+  }
+
+  return { ok: true, routes: positionals };
+}
+
+/**
  * @param {Array<{
  *   route: string,
  *   viewport: string,

@@ -3,6 +3,7 @@ import {
   dedupeProblems,
   isIgnorableConsoleError,
   isStyled,
+  selectRoutes,
   summarize,
 } from "./report.mjs";
 
@@ -107,6 +108,61 @@ describe("isStyled", () => {
 
   it("treats a bare serif or sans-serif as a browser default", () => {
     expect(isStyled({ ruleCount: 1200, fontFamily: "serif" })).toBe(false);
+  });
+});
+
+describe("selectRoutes", () => {
+  it("defaults to / and /tools when no positional args are given", () => {
+    expect(selectRoutes([])).toEqual({ ok: true, routes: ["/", "/tools"] });
+  });
+
+  it("defaults to / and /tools when only --base is given", () => {
+    expect(
+      selectRoutes(["--base", "http://localhost:3100"]),
+    ).toEqual({ ok: true, routes: ["/", "/tools"] });
+  });
+
+  it("uses explicit routes when they are all recognized", () => {
+    expect(selectRoutes(["/tools/cursor", "/best/writing"])).toEqual({
+      ok: true,
+      routes: ["/tools/cursor", "/best/writing"],
+    });
+  });
+
+  it("does not mistake the --base URL for a route", () => {
+    expect(
+      selectRoutes(["--base", "http://localhost:3100", "/tools/cursor"]),
+    ).toEqual({ ok: true, routes: ["/tools/cursor"] });
+  });
+
+  it("ignores the literal -- that pnpm forwards through, not a route", () => {
+    // `pnpm sweep -- --base URL /route` puts a literal "--" in argv ahead of
+    // everything else; it must not be misdiagnosed as an unrecognized route.
+    expect(
+      selectRoutes(["--", "--base", "http://localhost:3100", "/tools/cursor"]),
+    ).toEqual({ ok: true, routes: ["/tools/cursor"] });
+  });
+
+  it("fails when every positional argument was mangled by Git Bash's path conversion", () => {
+    // This is what Git Bash actually turns a bare `/tools` into.
+    const result = selectRoutes([
+      "--base",
+      "http://localhost:3100",
+      "C:/Program Files/Git/tools",
+    ]);
+    expect(result.ok).toBe(false);
+    expect(result.positionals).toEqual(["C:/Program Files/Git/tools"]);
+    expect(result.unrecognized).toEqual(["C:/Program Files/Git/tools"]);
+  });
+
+  it("fails on a mix of a good route and a mangled one, naming the bad one", () => {
+    const result = selectRoutes(["/tools", "C:/Program Files/Git/tools"]);
+    expect(result.ok).toBe(false);
+    expect(result.positionals).toEqual([
+      "/tools",
+      "C:/Program Files/Git/tools",
+    ]);
+    expect(result.unrecognized).toEqual(["C:/Program Files/Git/tools"]);
   });
 });
 

@@ -18,12 +18,19 @@
  *   pnpm sweep                                  # / and /tools
  *   pnpm sweep -- /tools/cursor /best/writing   # explicit routes
  *   pnpm sweep -- --base http://localhost:3100 /
+ *
+ * On Git Bash, bare routes like `/tools` get rewritten into Windows paths
+ * (`C:/Program Files/Git/tools`) before Node ever sees them -- `--` does not
+ * stop this, it only stops option parsing. Set MSYS_NO_PATHCONV=1 to pass
+ * explicit routes from Git Bash:
+ *   MSYS_NO_PATHCONV=1 pnpm sweep -- --base http://localhost:3100 /tools/cursor
  */
 import { chromium } from "@playwright/test";
 import {
   dedupeProblems,
   isIgnorableConsoleError,
   isStyled,
+  selectRoutes,
   summarize,
 } from "./visual-sweep/report.mjs";
 
@@ -35,14 +42,29 @@ const VIEWPORTS = [
 const argv = process.argv.slice(2);
 const baseIndex = argv.indexOf("--base");
 const base = baseIndex === -1 ? "http://localhost:3000" : argv[baseIndex + 1];
-// The baseIndex exclusion has to be guarded: with no --base, baseIndex is -1,
-// so a bare `index !== baseIndex + 1` would silently drop the first route.
-const routes = argv.filter(
-  (arg, index) =>
-    arg.startsWith("/") &&
-    (baseIndex === -1 || (index !== baseIndex && index !== baseIndex + 1)),
-);
-const targets = routes.length > 0 ? routes : ["/", "/tools"];
+
+const selection = selectRoutes(argv);
+if (!selection.ok) {
+  // Falling back to the defaults here would be the same bug this file
+  // already guards against for unstyled pages: the harness would sweep the
+  // wrong routes and still print "Sweep clean," reporting success for work
+  // it did not do. Fail loudly and name what was actually received instead.
+  console.error(
+    `\nCould not parse route arguments: ${JSON.stringify(selection.positionals)}`,
+  );
+  console.error(
+    `  Not recognized as a route (must start with "/"): ${selection.unrecognized
+      .map((arg) => JSON.stringify(arg))
+      .join(", ")}`,
+  );
+  console.error(
+    `  This is almost always Git Bash rewriting a bare argument like /tools\n` +
+      `  into a Windows path before Node ever sees it. Fix by re-running with:\n` +
+      `    MSYS_NO_PATHCONV=1 pnpm sweep -- --base ${base} ...\n`,
+  );
+  process.exit(1);
+}
+const targets = selection.routes;
 
 /**
  * Find children escaping a clipping container. Runs in page context, so it is
