@@ -1473,7 +1473,7 @@ Pushing deploys to `enkitools.com`. Confirm the deployment is green and re-check
 These are Phase 0 items only you can do. The plan above is not finished until they are.
 
 - [ ] **Enable leaked-password protection** — Supabase → Auth → Policies. One toggle. Users can currently register with known-breached passwords.
-- [ ] **Configure a Sentry alert rule** so the first real error reaches a human instead of sitting in a dashboard.
+- [ ] **Configure a Sentry alert rule** so the first real error reaches a human instead of sitting in a dashboard. **Scope it to `environment:[production, preview]`, not production alone.** A preview deployment is a production build, so `NODE_ENV` is `production` there, Sentry is enabled, and the firewall SDK runs its real probe rather than short-circuiting. Preview is therefore exactly where the rate limiter's 401-behind-Deployment-Protection failure fires. A production-only alert captures that report and notifies nobody, so verifying on a preview URL shows silence and reads as success when it means the opposite.
 - [ ] **Decide the newsletter.** Addresses are being collected and nothing has ever been sent. Either commit to building sending (roadmap 5.1) or stop collecting until it exists. Also resolve the cadence contradiction: `src/components/layout/site-footer.tsx:113` promises "A monthly dispatch" while the plan has been weekly.
 - [ ] **Verify a real signup end to end** on `enkitools.com` with a real mailbox: sign up, confirm, log in, write a review, see it queued as pending.
 - [ ] **Confirm the byline** in Task 9 — display name and role.
