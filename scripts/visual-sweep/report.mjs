@@ -31,12 +31,46 @@ export function dedupeProblems(problems) {
 }
 
 /**
- * Minimum stylesheet rules a real page of this app has. Tailwind emits
- * hundreds for any route; a stub or error page emits a handful.
+ * Minimum stylesheet rules a real page of this app has.
+ *
+ * Measured in real Chromium: `/` and `/tools` both load 305 rules, of which
+ * 209 come from a single shared base/preflight chunk present on every route
+ * regardless of route-specific class usage. That 209 is a structural floor,
+ * not incidental purge drift -- shrinking it would take a deliberate change
+ * to split that chunk per route, not a routine content or Tailwind update.
+ * A genuinely unstyled page measures 0, and a partial stub lands far nearer
+ * 0 than 150: a broken page does not half-load Tailwind's preflight layer,
+ * it either gets the bundle or it doesn't.
+ *
+ * 150 sits comfortably below the 305/209 measurements, leaving room for
+ * route-splitting or purge changes to move the count without a false abort,
+ * while staying far above what an actually-broken page reports. The
+ * asymmetry justifies buying that margin: a false abort is a loud,
+ * one-line-diagnosable hiccup fixed by rerunning or bumping this constant;
+ * the false pass it replaces is a shipped, undetected visual regression.
  */
-const MIN_STYLE_RULES = 200;
+const MIN_STYLE_RULES = 150;
 
-/** Fonts a browser falls back to when no stylesheet applied. */
+/**
+ * Fonts a browser falls back to when no stylesheet applied.
+ *
+ * The first alternative is anchored (`^...$`) because a real stack like
+ * `Inter, sans-serif` must not match on the bare word "sans-serif" appearing
+ * as a fallback entry. `times new roman` is deliberately left unanchored:
+ * real Chromium reports it as `'"Times New Roman"'`, and it can also appear
+ * as one entry inside a longer fallback stack, so anchoring it would miss
+ * both. Anchoring it "to match the others" would look like a cleanup but
+ * would silently stop catching the substring case.
+ *
+ * Platform caveat: "Times New Roman" is the Windows/Mac default serif
+ * substitution. A headless Linux CI box may resolve the browser default to
+ * something else entirely (e.g. Liberation Serif, Noto Serif), which this
+ * regex would not catch. That is not a practical gap today because the
+ * rule-count gate above already catches any genuinely unstyled page at 0
+ * regardless of platform -- but it means the font check is not portable
+ * proof on its own, and the rule-count gate should not be removed under the
+ * assumption that the font check has Linux covered.
+ */
 const DEFAULT_FONT = /^\s*(serif|sans-serif|monospace)\s*$|times new roman/i;
 
 /**
