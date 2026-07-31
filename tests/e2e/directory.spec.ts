@@ -56,16 +56,43 @@ test.describe("Enki critical flow", () => {
     await expect(page).toHaveURL(/cat=coding/);
   });
 
-  test("review modal validates required fields", async ({ page }) => {
+  test("a signed-out visitor is offered sign-in as the review entry point", async ({
+    page,
+  }) => {
+    // Writing a review needs an account: `ReviewModal` returns a sign-in link
+    // instead of the modal trigger when `user` is null. Automation cannot create
+    // an account (handoff.md gotcha 4), so the modal itself is out of reach; the
+    // rating rule it enforces is pinned in src/lib/schemas.test.ts instead.
+    // What is reachable, and what actually matters, is that a signed-out visitor
+    // still finds the way in and gets carried back here afterwards.
+    //
+    // Supabase is cut off on purpose. This project runs on a free tier that
+    // auto-pauses, so the entry point has to come from server-rendered markup
+    // rather than a live session check. Without this the test would flip red in
+    // CI whenever the database happened to be asleep.
+    await page.route(/supabase\.co/, (route) => route.abort());
+
     await page.goto("/tools/elevenlabs");
-    await page
-      .getByRole("button", { name: "Write a review" })
-      .first()
-      .click();
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
-    await dialog.getByRole("button", { name: "Submit review" }).click();
-    await expect(dialog.getByText("Please choose a rating")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Reviews" })).toBeVisible();
+
+    // The modal trigger is for signed-in users only. Showing it here would open
+    // a form whose submit handler returns early, so nothing would be saved.
+    await expect(
+      page.getByRole("button", { name: "Write a review" }),
+    ).toHaveCount(0);
+
+    const signIn = page.getByRole("link", { name: "Sign in to review" }).first();
+    await expect(signIn).toBeVisible();
+    await signIn.click();
+
+    // The redirect param is what returns them to this tool after signing in.
+    // Drop it and every review attempt ends on the home page.
+    await expect(page).toHaveURL(
+      /\/login\?redirect=(%2F|\/)tools(%2F|\/)elevenlabs/,
+    );
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Save what you trust" }),
+    ).toBeVisible();
   });
 
   test("command palette opens and navigates", async ({ page }) => {
