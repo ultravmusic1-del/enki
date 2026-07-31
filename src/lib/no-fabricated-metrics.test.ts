@@ -43,8 +43,19 @@ describe("tool content carries no fabricated aggregates", () => {
 });
 
 describe("no invented editorial identities", () => {
-  it("ships no seeded authors", () => {
-    expect(authors).toEqual([]);
+  it("ships exactly the one real, named reviewer and no invented personas", () => {
+    // Guards against the six invented bylines with job titles ("Mara Okafor,
+    // Principal Reviewer" and five others) that used to live here. A single
+    // real, disclosed person is fine; this pins the exact entry so a second
+    // (invented) one cannot be added silently alongside it.
+    expect(authors).toEqual([
+      {
+        id: "vivaan-kavalani",
+        name: "Vivaan Kavalani",
+        role: "Founder and reviewer",
+        accent: "#00ADB5",
+      },
+    ]);
   });
 
   it("ships no seeded reviews", () => {

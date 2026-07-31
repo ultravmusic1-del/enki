@@ -48,7 +48,7 @@ export function SubmitForm({ categories }: { categories: CategoryOption[] }) {
           Thanks — submission received
         </h2>
         <p className="mt-2 text-pretty text-muted-foreground">
-          Our editors review every submission before it&apos;s vetted and
+          I review every submission before it&apos;s tested and
           listed. If it&apos;s a fit, you&apos;ll see it in the directory soon.
         </p>
       </div>

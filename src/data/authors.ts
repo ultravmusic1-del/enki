@@ -12,4 +12,11 @@ import type { Author } from "@/lib/schemas";
  * The schema and plumbing are kept so genuine editorial reviews can be added
  * later under a real byline. Add a person here only when they are real.
  */
-export const authors: Author[] = [];
+export const authors: Author[] = [
+  {
+    id: "vivaan-kavalani",
+    name: "Vivaan Kavalani",
+    role: "Founder and reviewer",
+    accent: "#00ADB5",
+  },
+];

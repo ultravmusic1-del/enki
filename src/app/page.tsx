@@ -23,7 +23,7 @@ const vetSteps = [
   {
     icon: "Eye",
     title: "Test",
-    body: "Every tool is used in real workflows by our editors, not judged from a landing page. We probe strengths, limits, and edge cases.",
+    body: "Every tool here is one I have used in a real workflow, not judged from a landing page. I probe strengths, limits, and edge cases.",
   },
   {
     icon: "Scale",
@@ -73,7 +73,7 @@ export default async function Home() {
               <SectionHeading
                 eyebrow="Editor's picks"
                 title="Featured tools"
-                description="The standouts our editors keep coming back to, vetted, scored, and worth your attention."
+                description="The standouts I keep coming back to, tested, scored, and worth your attention."
               />
               <Link
                 href="/tools"

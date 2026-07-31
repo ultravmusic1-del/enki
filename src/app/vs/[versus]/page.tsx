@@ -54,7 +54,7 @@ export default async function VersusPage({
   const faqs = [
     {
       question: `Is ${a.name} better than ${b.name}?`,
-      answer: `By our editors' scoring, ${winner.name} edges ahead (${winner.editorScore.toFixed(1)} vs ${loser.editorScore.toFixed(1)} out of 10), but the right choice depends on your needs — ${loser.name} leads on ${loser.pros[0]?.toLowerCase() ?? "certain workflows"}.`,
+      answer: `By my scoring, ${winner.name} edges ahead (${winner.editorScore.toFixed(1)} vs ${loser.editorScore.toFixed(1)} out of 10), but the right choice depends on your needs — ${loser.name} leads on ${loser.pros[0]?.toLowerCase() ?? "certain workflows"}.`,
     },
     {
       question: `How much do ${a.name} and ${b.name} cost?`,

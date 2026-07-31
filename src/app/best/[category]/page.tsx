@@ -41,7 +41,7 @@ export async function generateMetadata({
   const tools = await ranked(category);
   return {
     title: `The ${tools.length} best ${cat.name} AI tools (${YEAR})`,
-    description: `Our editors' ranked pick of the best ${cat.name.toLowerCase()} AI tools in ${YEAR}, vetted and scored. ${tools
+    description: `My ranked pick of the best ${cat.name.toLowerCase()} AI tools in ${YEAR}, tested and scored. ${tools
       .slice(0, 3)
       .map((t) => t.name)
       .join(", ")} and more.`,
@@ -85,7 +85,7 @@ export default async function BestCategoryPage({
     },
     {
       question: `How does Enki rank ${cat.name} tools?`,
-      answer: `Each tool is used in real workflows by our editors and scored on capability, craft, pricing, and trust — independently of any commercial arrangement.`,
+      answer: `Each tool is one I have used in a real workflow, scored on capability, craft, pricing, and trust — independently of any commercial arrangement.`,
     },
   ];
 
@@ -114,7 +114,7 @@ export default async function BestCategoryPage({
             The {tools.length} best {cat.name} AI tools
           </h1>
           <p className="text-pretty text-lg text-muted-foreground">
-            {cat.description} Ranked by our editors, vetted and scored — updated
+            {cat.description} Ranked, tested, and scored by me — updated
             for {YEAR}.
           </p>
           <div className="flex flex-wrap gap-2 font-mono text-xs">
