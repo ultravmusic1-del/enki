@@ -21,7 +21,7 @@ const exploreLinks = [
   { title: "Leaderboards", href: "/leaderboards" },
   { title: "Deals", href: "/deals" },
   { title: "Submit a tool", href: "/submit" },
-  { title: "How we vet", href: "/#how-we-vet" },
+  { title: "How I vet", href: "/#how-we-vet" },
 ];
 
 const socialLinks = [
