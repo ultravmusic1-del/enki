@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { Tool } from "@/lib/schemas";
 import {
   FINDER_STEPS,
@@ -13,6 +13,7 @@ import {
   type FinderStepId,
   type PlatformPref,
 } from "@/lib/finder";
+import { useSearchParamsOnMount } from "@/lib/use-search-params-on-mount";
 import { Container } from "@/components/shared/container";
 import { Icon } from "@/components/shared/icon";
 import { Reveal } from "@/components/shared/reveal";
@@ -45,23 +46,27 @@ function readAnswers(params: URLSearchParams): FinderAnswers {
 export function OracleFinder({ tools, categoryNames }: Props) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   const categoryNameMap = useMemo(
     () => new Map(Object.entries(categoryNames)),
     [categoryNames],
   );
 
-  // If the URL already carries answers (shared link), jump straight to results.
-  const initial = useMemo(() => readAnswers(searchParams), [searchParams]);
-  const hasInitial = Boolean(
-    initial.category || initial.budget || initial.platform,
-  );
+  // Question one renders on the server so the page is crawlable at all. The
+  // whole page used to sit inside a Suspense boundary that useSearchParams
+  // opted out of the prerender, so the static HTML was an empty shell.
+  const [answers, setAnswers] = useState<FinderAnswers>({});
+  const [stepIndex, setStepIndex] = useState(0);
 
-  const [answers, setAnswers] = useState<FinderAnswers>(initial);
-  const [stepIndex, setStepIndex] = useState(
-    hasInitial ? FINDER_STEPS.length : 0,
-  );
+  // A shared result link jumps to its results just after mount instead of
+  // during render.
+  useSearchParamsOnMount((params) => {
+    const initial = readAnswers(params);
+    if (!initial.category && !initial.budget && !initial.platform) return;
+    setAnswers(initial);
+    setStepIndex(FINDER_STEPS.length);
+  });
+
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   const showResults = stepIndex >= FINDER_STEPS.length;
