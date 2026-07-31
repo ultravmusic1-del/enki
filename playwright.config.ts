@@ -13,7 +13,13 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: process.env.CI ? "github" : "list",
+  // `github` alone annotates the PR but writes nothing to disk, so a failed
+  // run would leave the workflow's upload-artifact step with nothing to
+  // upload. `html` writes playwright-report/ on every run; `open: "never"`
+  // keeps CI from trying to launch a browser to view it.
+  reporter: process.env.CI
+    ? [["github"], ["html", { open: "never" }]]
+    : "list",
   use: {
     baseURL,
     trace: "on-first-retry",
