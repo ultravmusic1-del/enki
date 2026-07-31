@@ -24,6 +24,7 @@
     "optimize:model": "node scripts/optimize-model.mjs",
     "optimize:brand": "node scripts/optimize-brand-assets.mjs",
     "poster": "node scripts/render-poster.mjs",
+    "favicon": "node scripts/render-favicon.mjs",
     "prepare": "node scripts/install-hooks.mjs"
   },
   "dependencies": {
@@ -75,6 +76,7 @@
     "eslint-config-next": "16.2.12",
     "jsdom": "^29.1.1",
     "meshoptimizer": "^1.2.0",
+    "png-to-ico": "^3.0.2",
     "pngjs": "^7.0.0",
     "shadcn": "^4.14.1",
     "sharp": ">=0.35.0",
