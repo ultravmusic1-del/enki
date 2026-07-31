@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Container } from "@/components/shared/container";
 import { DirectoryExplorer } from "@/components/directory/directory-explorer";
@@ -34,32 +33,8 @@ export default async function ToolsPage() {
           </p>
         </header>
 
-        <Suspense fallback={<DirectorySkeleton />}>
-          <DirectoryExplorer
-            tools={tools}
-            categories={categories}
-            tags={tags}
-          />
-        </Suspense>
+        <DirectoryExplorer tools={tools} categories={categories} tags={tags} />
       </Container>
-    </div>
-  );
-}
-
-function DirectorySkeleton() {
-  return (
-    <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
-      <div className="hidden lg:block">
-        <div className="h-96 rounded-2xl border border-border bg-card/40" />
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-44 rounded-2xl border border-border bg-card/40"
-          />
-        ))}
-      </div>
     </div>
   );
 }
