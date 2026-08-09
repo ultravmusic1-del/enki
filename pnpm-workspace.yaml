@@ -14,7 +14,23 @@ overrides:
   # Scoped to the 5.x line deliberately. An unscoped `brace-expansion` override
   # also drags eslint's minimatch@3 -> brace-expansion@1.1.16 up to 5.x, which
   # is a breaking major for that consumer and makes `pnpm lint` exit 2.
-  brace-expansion@5: '>=5.0.8'
+  brace-expansion@5: '>=5.0.9 <6'
+  # GHSA-2v37-7h3g-55p8: a custom-alphabet generator can loop indefinitely.
+  # Reached through next -> postcss, so it is a production path even though
+  # nothing here passes a custom alphabet.
+  #
+  # Note both halves of this line. The `@3` selector chooses WHICH nanoid gets
+  # replaced; the range chooses WHAT it becomes, and an unbounded '>=3.3.17'
+  # resolves to the newest nanoid there is -- measured, that was 6.0.1, which is
+  # ESM-only and not what postcss's `^3.3.x` asked for. The upper bound is what
+  # keeps this a patch instead of a two-major jump.
+  nanoid@3: '>=3.3.17 <4'
+  # GHSA-cq46-h6rj-r2gg: host confusion when a URL contains a backslash.
+  # Reached only through @sentry/nextjs's build-time webpack plugin
+  # (-> schema-utils -> ajv), so it never parses a request-time URL -- but
+  # `pnpm audit --prod` cannot see that, and the CI gate is not worth weakening.
+  # Upper-bounded for the same reason as nanoid: unbounded, this landed on 4.1.2.
+  fast-uri@3: '>=3.1.5 <4'
 allowBuilds:
   sharp: true
   unrs-resolver: true
