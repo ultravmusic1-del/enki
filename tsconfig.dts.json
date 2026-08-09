@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "skipLibCheck": true,
+    "outDir": ".design-sync/.cache/types"
+  },
+  "include": ["src/design-system.ts", "src/components/ui/**/*", "src/lib/utils.ts"]
+}

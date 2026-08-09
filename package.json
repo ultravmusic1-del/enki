@@ -83,5 +83,6 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.10"
-  }
+  },
+  "types": ".design-sync/.cache/types/design-system.d.ts"
 }

@@ -12,6 +12,14 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // design-sync (see .design-sync/NOTES.md). Neither of these is project
+    // source: `.ds-sync/` is the converter staged from the skill, and
+    // `ds-bundle/` is generated output that inlines React itself — linting it
+    // reports rules-of-hooks violations against React's own compiled source.
+    // `.design-sync/previews/` is deliberately NOT ignored; those are
+    // hand-written and worth linting.
+    ".ds-sync/**",
+    "ds-bundle/**",
   ]),
 ]);
 
