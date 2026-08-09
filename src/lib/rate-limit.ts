@@ -82,6 +82,58 @@ export type WriteContext = {
 };
 
 /**
+ * How long to wait for the firewall before treating the check as unavailable.
+ *
+ * The three failure modes documented above all assume the check RETURNS. There
+ * is a fourth that does not: `checkRateLimit` issues a plain `fetch` with no
+ * `AbortSignal` and no timeout, so a firewall that accepts the connection and
+ * never answers produces a promise that never settles -- and a promise that
+ * never settles is not something `catch` can reach. Without this race the
+ * try/catch below buys fail-open for errors and fail-HANG for slowness, which
+ * is a newsletter form that spins forever and an affiliate click that never
+ * redirects: worse than the abuse the limiter exists to stop, and the exact
+ * outcome "FAILS OPEN, ALWAYS" promises will not happen. Slow loss is a more
+ * common shape of network-dependency outage than a clean rejection.
+ *
+ * The probe is a same-region self-fetch to /.well-known/vercel/rate-limit-api/
+ * answering with a bare 204, so half a second is already generous.
+ */
+export const LIMITER_TIMEOUT_MS = 500;
+
+/** Thrown only by `withTimeout`, so the report can name a hang as a hang. */
+class RateLimitTimeout extends Error {
+  constructor(ruleId: string) {
+    super(`rate-limit check for "${ruleId}" exceeded ${LIMITER_TIMEOUT_MS}ms`);
+    this.name = "RateLimitTimeout";
+  }
+}
+
+async function withTimeout<T>(work: Promise<T>, ruleId: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  // Once the timeout wins the race below, nothing is awaiting `work` any more,
+  // and a late rejection on it would surface as an unhandled rejection --
+  // crashing a serverless invocation that has already served its response.
+  // Marked handled now; the race still sees the original promise's own result.
+  work.catch(() => {});
+
+  try {
+    return await Promise.race([
+      work,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(
+          () => reject(new RateLimitTimeout(ruleId)),
+          LIMITER_TIMEOUT_MS,
+        );
+      }),
+    ]);
+  } finally {
+    // A pending timer would otherwise hold the invocation open past its response.
+    clearTimeout(timer);
+  }
+}
+
+/**
  * Sentry reports are deduped per failure kind per rule, for the lifetime of the
  * instance: enough to alert, not enough to burn the quota on a limiter that is
  * misconfigured on every single request. console.error is NOT deduped, so the
@@ -121,7 +173,10 @@ export async function allowWrite(
   const ruleId = `enki-${path}`;
 
   try {
-    const { rateLimited, error } = await checkRateLimit(ruleId, context);
+    const { rateLimited, error } = await withTimeout(
+      checkRateLimit(ruleId, context),
+      ruleId,
+    );
 
     if (error === "not-found") {
       reportOnce(
@@ -141,6 +196,19 @@ export async function allowWrite(
 
     return !rateLimited;
   } catch (cause) {
+    // A hang and a throw are different faults needing different people: one is
+    // a slow network path, the other a missing context or a 401 on the probe.
+    // Reported under distinct keys so the dedup Set cannot let the first one
+    // seen silence the other for the life of the instance.
+    if (cause instanceof RateLimitTimeout) {
+      reportOnce(
+        `timeout:${ruleId}`,
+        `[enki] the rate-limit check for "${ruleId}" did not answer within ${LIMITER_TIMEOUT_MS}ms, so this path is NOT rate limited. The SDK fetches with no AbortSignal, so without a timeout this request would have hung rather than failed. Failing open.`,
+        cause,
+      );
+      return true;
+    }
+
     reportOnce(
       `threw:${ruleId}`,
       `[enki] the rate-limit check for "${ruleId}" threw, so this path is NOT rate limited. Common causes: no request context, no client IP to key on, or a protected deployment answering 401 to the probe. Failing open.`,

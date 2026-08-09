@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import type { WritePath } from "@/lib/rate-limit";
+import { LIMITER_TIMEOUT_MS, type WritePath } from "@/lib/rate-limit";
 
 const checkRateLimit = vi.fn();
 vi.mock("@vercel/firewall", () => ({
@@ -26,6 +26,8 @@ beforeEach(async () => {
 });
 
 afterEach(() => {
+  // The timeout tests install fake timers; a leak would stall the next file.
+  vi.useRealTimers();
   vi.restoreAllMocks();
 });
 
@@ -119,6 +121,89 @@ describe("allowWrite", () => {
     // The caught error is included so the log says which failure mode it was.
     expect(spy.mock.calls[0]?.[1]).toBeInstanceOf(Error);
     expect(captureMessage).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * The fourth failure mode, and the only one a `catch` cannot reach.
+   * `checkRateLimit` fetches with no `AbortSignal`, so a firewall that accepts
+   * the connection and never answers produces a promise that never settles.
+   * Without the race in `withTimeout` this test does not fail -- it hangs, and
+   * so does every newsletter signup and every affiliate click behind it.
+   */
+  it("fails open when the limiter accepts the connection and never answers", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    checkRateLimit.mockReturnValue(new Promise(() => {}));
+
+    const pending = allowWrite("outbound");
+    await vi.advanceTimersByTimeAsync(LIMITER_TIMEOUT_MS + 100);
+
+    await expect(pending).resolves.toBe(true);
+    expect(String(spy.mock.calls[0]?.[0])).toContain("did not answer within");
+    expect(captureMessage).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * A hang and a throw are deduped under different keys. Sharing one would let
+   * whichever happened first silence the other for the life of the instance.
+   */
+  it("reports a hang and a throw separately", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    checkRateLimit.mockReturnValue(new Promise(() => {}));
+    const hung = allowWrite("submit");
+    await vi.advanceTimersByTimeAsync(LIMITER_TIMEOUT_MS + 100);
+    await hung;
+
+    checkRateLimit.mockRejectedValue(new Error("no request context"));
+    await allowWrite("submit");
+
+    expect(captureMessage).toHaveBeenCalledTimes(2);
+  });
+
+  /**
+   * Once the timeout wins, nothing awaits the original promise. A late
+   * rejection would otherwise crash an invocation that already served its
+   * response -- a failure that surfaces nowhere near the code that caused it.
+   */
+  it("leaves no unhandled rejection when the abandoned check fails later", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const unhandled: unknown[] = [];
+    const onUnhandled = (reason: unknown) => unhandled.push(reason);
+    process.on("unhandledRejection", onUnhandled);
+
+    try {
+      let failLate!: (reason: unknown) => void;
+      checkRateLimit.mockReturnValue(
+        new Promise((_, reject) => {
+          failLate = reject;
+        }),
+      );
+
+      const pending = allowWrite("outbound");
+      await vi.advanceTimersByTimeAsync(LIMITER_TIMEOUT_MS + 100);
+      await expect(pending).resolves.toBe(true);
+
+      failLate(new Error("firewall answered late, with a failure"));
+      await new Promise<void>((resolve) => setImmediate(resolve));
+      await new Promise<void>((resolve) => setImmediate(resolve));
+
+      expect(unhandled).toEqual([]);
+    } finally {
+      process.off("unhandledRejection", onUnhandled);
+    }
+  });
+
+  /** A timer left pending holds the invocation open after the response. */
+  it("clears the timer when the check answers in time", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    checkRateLimit.mockResolvedValue({ rateLimited: false });
+
+    await allowWrite("newsletter");
+
+    expect(vi.getTimerCount()).toBe(0);
   });
 
   it("fails open on a malformed limiter response", async () => {
