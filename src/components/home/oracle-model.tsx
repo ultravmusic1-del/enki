@@ -6,6 +6,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import dynamic from "next/dynamic";
@@ -54,8 +55,11 @@ function OraclePoster({ hidden }: { hidden: boolean }) {
   );
 }
 
-// If WebGL is unavailable or the scene throws at runtime, render nothing and
-// leave the poster in place — it is a faithful still of what would have drawn.
+// If the scene throws *synchronously* while rendering, drop it and leave the
+// poster in place. This cannot catch a failed WebGL context: R3F creates the
+// renderer inside an un-awaited async run() in its own layout effect, so that
+// failure surfaces as an unhandled rejection, never as a React error. See
+// `webglAvailable` below, which stops us mounting the canvas in that case.
 class WebGLBoundary extends Component<
   { children: ReactNode },
   { failed: boolean }
@@ -70,6 +74,56 @@ class WebGLBoundary extends Component<
 }
 
 /**
+ * Whether this browser can actually give us a WebGL context.
+ *
+ * three throws `Error creating WebGL context.` from the WebGLRenderer
+ * constructor when it cannot get one — on a blocklisted GPU driver, with
+ * hardware acceleration switched off, or after the GPU process has died. R3F
+ * awaits that constructor inside a promise it never catches, so the rejection
+ * escapes every boundary and lands in Sentry as an unhandled error, roughly 900
+ * times a month. Probing first and simply not mounting the canvas is the only
+ * way to avoid it: there is no error hook on <Canvas> to use instead.
+ *
+ * Cached because the answer cannot change within a page life, and each probe
+ * costs a real GL context.
+ */
+let webglSupport: boolean | null = null;
+
+function webglAvailable(): boolean {
+  if (webglSupport !== null) return webglSupport;
+  if (typeof document === "undefined") return false;
+
+  try {
+    const probe = document.createElement("canvas");
+    // The same attributes the real renderer asks for, so the probe fails in
+    // the same conditions it would. three tries webgl2 before webgl.
+    const attrs: WebGLContextAttributes = {
+      alpha: true,
+      antialias: true,
+      powerPreference: "high-performance",
+    };
+    const gl =
+      probe.getContext("webgl2", attrs) ?? probe.getContext("webgl", attrs);
+
+    // Hand the context straight back. Browsers cap how many a page may hold at
+    // once, and keeping this one would count against the renderer's own.
+    gl?.getExtension("WEBGL_lose_context")?.loseContext();
+
+    webglSupport = gl !== null;
+  } catch {
+    // getContext itself can throw in hardened browsers.
+    webglSupport = false;
+  }
+
+  return webglSupport;
+}
+
+// Support cannot change within a page life, so there is genuinely nothing to
+// subscribe to — but useSyncExternalStore is still the right tool: it is what
+// reads a client-only value without tripping hydration.
+const subscribeToNothing = () => () => {};
+
+/**
  * Hero 3D model. Pauses its render loop when scrolled out of view so it never
  * costs frames while the rest of the page is on screen.
  */
@@ -77,6 +131,16 @@ export function OracleModel() {
   const ref = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(true);
   const [ready, setReady] = useState(false);
+  // Read through useSyncExternalStore rather than probed during render: the
+  // server has no document and would resolve `false`, so deciding this in the
+  // render body would mismatch on hydration. React takes the server snapshot
+  // while hydrating and the real one immediately after, which is the same
+  // one-tick delay the ssr:false dynamic import above already has.
+  const webgl = useSyncExternalStore(
+    subscribeToNothing,
+    webglAvailable,
+    () => false,
+  );
 
   const handleReady = useCallback(() => setReady(true), []);
 
@@ -97,9 +161,11 @@ export function OracleModel() {
     // crossfade never leaves a gap with neither visible.
     <div ref={ref} className="relative h-full w-full">
       <OraclePoster hidden={ready} />
-      <WebGLBoundary>
-        <OracleModelScene active={active} onReady={handleReady} />
-      </WebGLBoundary>
+      {webgl && (
+        <WebGLBoundary>
+          <OracleModelScene active={active} onReady={handleReady} />
+        </WebGLBoundary>
+      )}
     </div>
   );
 }
