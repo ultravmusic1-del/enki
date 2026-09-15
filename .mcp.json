@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "code-review-graph": {
-      "command": "C:\\Users\\Vivaan\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "command": "py",
       "args": [
         "-m",
         "code_review_graph",
