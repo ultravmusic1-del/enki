@@ -234,6 +234,70 @@ export type Database = {
         }
         Relationships: []
       }
+      news_sources: {
+        Row: {
+          id: string
+          name: string
+          feed_url: string
+          site_url: string
+          active: boolean
+          last_fetched_at: string | null
+          last_error: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          feed_url: string
+          site_url: string
+          active?: boolean
+          last_fetched_at?: string | null
+          last_error?: string | null
+          created_at?: string
+        }
+        Update: {
+          name?: string
+          feed_url?: string
+          site_url?: string
+          active?: boolean
+        }
+        Relationships: []
+      }
+      /** Read-only over the API. Written only by the ingest and admin RPCs. */
+      stories: {
+        Row: {
+          id: string
+          slug: string | null
+          source_id: string
+          source_url: string
+          headline: string
+          summary: string | null
+          take: string | null
+          beat: string | null
+          image_url: string | null
+          status: string
+          featured: boolean
+          source_published_at: string | null
+          published_at: string | null
+          created_at: string
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      /** Publisher text. Admin-only by RLS; never rendered publicly. */
+      story_excerpts: {
+        Row: { story_id: string; excerpt: string }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      story_tools: {
+        Row: { story_id: string; tool_slug: string; position: number }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
     }
     Views: { [_ in never]: never }
     Functions: {
@@ -248,6 +312,48 @@ export type Database = {
       }
       admin_set_review_status: {
         Args: { review_id: string; new_status: string }
+        Returns: boolean
+      }
+      /** Secret-gated. Raises 42501 on a wrong secret. */
+      ingest_sources: {
+        Args: { secret: string }
+        Returns: { id: string; name: string; feed_url: string }[]
+      }
+      /** Secret-gated. False when the URL is already known. */
+      ingest_story: {
+        Args: {
+          secret: string
+          p_source_id: string
+          p_source_url: string
+          p_headline: string
+          p_excerpt: string | null
+          p_image_url: string | null
+          p_source_published_at: string | null
+          p_tool_slugs: string[]
+        }
+        Returns: boolean
+      }
+      touch_news_source: {
+        Args: { secret: string; p_source_id: string; p_error: string | null }
+        Returns: undefined
+      }
+      /** Admin-only. Returns the story's slug, or null if not admin / not found. */
+      admin_publish_story: {
+        Args: {
+          p_story_id: string
+          p_slug: string
+          p_headline: string
+          p_summary: string
+          p_take: string | null
+          p_beat: string
+          p_featured: boolean
+          p_tool_slugs: string[]
+        }
+        Returns: string | null
+      }
+      /** Admin-only. 'rejected' from pending, or 'pending' to unpublish. */
+      admin_set_story_status: {
+        Args: { p_story_id: string; p_status: string }
         Returns: boolean
       }
     }
