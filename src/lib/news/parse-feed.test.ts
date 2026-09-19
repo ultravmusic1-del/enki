@@ -153,4 +153,95 @@ describe("cleanText", () => {
   it("decodes numeric and named entities and collapses whitespace", () => {
     expect(cleanText("A&#8217;s &mdash;\n\n  B&#x2019;s")).toBe("A’s — B’s");
   });
+
+  it("drops a numeric entity in the surrogate range", () => {
+    expect(cleanText("A&#xD800;B")).toBe("AB");
+  });
+});
+
+describe("parseFeed: image URLs with entities", () => {
+  it("decodes HTML entities in an inline image src", () => {
+    const xml = `<?xml version="1.0"?>
+<rss version="2.0"><channel>
+  <item>
+    <title>Entity image</title>
+    <link>https://example.com/entity-image</link>
+    <content:encoded><![CDATA[<img src="https://cdn.example.com/a.jpg?w=1&#038;h=2&amp;q=3">]]></content:encoded>
+  </item>
+</channel></rss>`;
+    const [item] = parseFeed(xml);
+    expect(item.imageUrl).toBe("https://cdn.example.com/a.jpg?w=1&h=2&q=3");
+  });
+});
+
+describe("parseFeed: literal-looking values", () => {
+  it("keeps a numeric-looking title as text", () => {
+    const xml = `<?xml version="1.0"?>
+<rss version="2.0"><channel>
+  <item>
+    <title>007</title>
+    <link>https://example.com/007</link>
+  </item>
+</channel></rss>`;
+    const [item] = parseFeed(xml);
+    expect(item.title).toBe("007");
+  });
+});
+
+describe("parseFeed: Atom link rel filtering", () => {
+  it("skips an entry whose only links are enclosure or related", () => {
+    const xml = `<?xml version="1.0"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Lab blog</title>
+  <entry>
+    <title>No alternate link</title>
+    <link rel="enclosure" href="https://lab.example.com/file.mp3"/>
+    <link rel="related" href="https://lab.example.com/related"/>
+  </entry>
+</feed>`;
+    expect(parseFeed(xml)).toEqual([]);
+  });
+});
+
+describe("parseFeed: media:content without medium or type", () => {
+  it("does not treat an untyped .mp4 as an image", () => {
+    const xml = `<?xml version="1.0"?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/"><channel>
+  <item>
+    <title>Video attachment</title>
+    <link>https://example.com/video</link>
+    <media:content url="https://cdn.example.com/clip.mp4"/>
+  </item>
+</channel></rss>`;
+    const [item] = parseFeed(xml);
+    expect(item.imageUrl).toBeNull();
+  });
+
+  it("treats an untyped .jpg as an image", () => {
+    const xml = `<?xml version="1.0"?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/"><channel>
+  <item>
+    <title>Photo attachment</title>
+    <link>https://example.com/photo</link>
+    <media:content url="https://cdn.example.com/pic.jpg"/>
+  </item>
+</channel></rss>`;
+    const [item] = parseFeed(xml);
+    expect(item.imageUrl).toBe("https://cdn.example.com/pic.jpg");
+  });
+});
+
+describe("parseFeed: excerpt truncation and surrogate pairs", () => {
+  it("does not split a surrogate pair when truncating a long excerpt", () => {
+    // The cleaned excerpt reads "The editor maker " (17 code points) before
+    // the body kicks in, so 981 filler characters puts the emoji's high
+    // surrogate exactly at the old length-based cutoff (index 998) and its
+    // low surrogate one past it - the split a naive UTF-16 slice would make.
+    const emoji = "\u{1F642}";
+    const body = `${"a".repeat(981)}${emoji}${"b".repeat(50)}`;
+    const long = rss.replace("grew fast.", body);
+    const excerpt = parseFeed(long)[0].excerpt ?? "";
+    expect(Array.from(excerpt).length).toBeLessThanOrEqual(1000);
+    expect(() => encodeURIComponent(excerpt)).not.toThrow();
+  });
 });
