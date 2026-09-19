@@ -165,4 +165,66 @@ describe("ingestAll", () => {
     });
     expect(summary.failed).toEqual(["Alpha"]);
   });
+
+  it("still resolves with the correct summary when report itself always throws", async () => {
+    const { store, inserted, touched } = fakeStore([a, b]);
+    store.insertStory = vi.fn(async () => {
+      throw new Error("check constraint");
+    });
+    const report = vi.fn(() => {
+      throw new Error("reporter is broken");
+    });
+    const summary = await ingestAll({
+      store,
+      tools,
+      now: NOW,
+      report,
+      fetchFeed: async (url) => {
+        if (url.includes("alpha")) throw new Error("Feed responded 500");
+        return rssWith([{ title: "Beta story", link: "https://beta.test/1" }]);
+      },
+    });
+
+    expect(summary).toEqual({ sources: 2, fetched: 1, inserted: 0, failed: ["Alpha", "Beta"] });
+    expect(inserted).toEqual([]);
+    expect(touched).toContainEqual({ id: "a", error: "Feed responded 500" });
+    expect(touched).toContainEqual({ id: "b", error: "check constraint" });
+  });
+
+  it("fails a source when every insertStory call throws", async () => {
+    const { store, touched } = fakeStore([a]);
+    store.insertStory = vi.fn(async () => {
+      throw new Error("ingest_story failed: boom");
+    });
+    const summary = await ingestAll({
+      store,
+      tools,
+      now: NOW,
+      fetchFeed: async () =>
+        rssWith([
+          { title: "One", link: "https://alpha.test/1" },
+          { title: "Two", link: "https://alpha.test/2" },
+          { title: "Three", link: "https://alpha.test/3" },
+        ]),
+    });
+
+    expect(summary).toMatchObject({ failed: ["Alpha"] });
+    expect(touched).toContainEqual({ id: "a", error: "ingest_story failed: boom" });
+  });
+
+  it("truncates a 300-codepoint headline without splitting a surrogate pair", async () => {
+    const { store, inserted } = fakeStore([a]);
+    const longTitle = "x".repeat(299) + "\u{1F600}x";
+    const summary = await ingestAll({
+      store,
+      tools,
+      now: NOW,
+      fetchFeed: async () => rssWith([{ title: longTitle, link: "https://alpha.test/1" }]),
+    });
+
+    expect(summary.inserted).toBe(1);
+    const headline = inserted[0]!.headline;
+    expect(headline.isWellFormed()).toBe(true);
+    expect(Array.from(headline)).toHaveLength(300);
+  });
 });

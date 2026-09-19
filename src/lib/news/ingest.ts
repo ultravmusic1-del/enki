@@ -70,7 +70,9 @@ function toStory(item: FeedItem, sourceId: string, tools: readonly MatchableTool
   return {
     sourceId,
     sourceUrl: item.url,
-    headline: item.title.slice(0, 300),
+    // Array.from splits on code points, not UTF-16 code units, so this never
+    // cuts a surrogate pair in half.
+    headline: Array.from(item.title).slice(0, 300).join(""),
     excerpt: item.excerpt,
     imageUrl: item.imageUrl,
     sourcePublishedAt: item.publishedAt?.toISOString() ?? null,
@@ -80,6 +82,19 @@ function toStory(item: FeedItem, sourceId: string, tools: readonly MatchableTool
 
 function message(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+/** A reporter is diagnostic, not load-bearing: its own failure must never hide the original error. */
+function safeReport(
+  report: (error: unknown, source: IngestSource) => void,
+  error: unknown,
+  source: IngestSource,
+): void {
+  try {
+    report(error, source);
+  } catch {
+    // swallowed on purpose
+  }
 }
 
 /**
@@ -104,18 +119,33 @@ export async function ingestAll({
       try {
         const items = selectRecent(parseFeed(await fetchFeed(source.feedUrl)), now);
         summary.fetched += items.length;
+        let insertErrors = 0;
+        let firstInsertError: string | null = null;
         for (const item of items) {
           try {
             if (await store.insertStory(toStory(item, source.id, tools))) summary.inserted += 1;
           } catch (error) {
-            report(error, source);
+            insertErrors += 1;
+            firstInsertError ??= message(error);
+            safeReport(report, error, source);
           }
         }
-        await store.touchSource(source.id, null);
+        // Every attempt threw: nothing about this source's fetch actually
+        // reached the store, so it is a failure, not a healthy empty run.
+        if (items.length > 0 && insertErrors === items.length) {
+          summary.failed.push(source.name);
+          await store
+            .touchSource(source.id, firstInsertError)
+            .catch((touchError) => safeReport(report, touchError, source));
+        } else {
+          await store.touchSource(source.id, null);
+        }
       } catch (error) {
         summary.failed.push(source.name);
-        report(error, source);
-        await store.touchSource(source.id, message(error)).catch((touchError) => report(touchError, source));
+        safeReport(report, error, source);
+        await store
+          .touchSource(source.id, message(error))
+          .catch((touchError) => safeReport(report, touchError, source));
       }
     }),
   );
