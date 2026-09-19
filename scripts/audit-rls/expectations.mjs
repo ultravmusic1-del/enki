@@ -12,9 +12,11 @@
 export const ANON_INVISIBLE_TABLES = [
   "admins",
   "collections",
+  "news_sources",
   "outbound_clicks",
   "profiles",
   "reviews",
+  "story_excerpts",
   "subscribers",
   "tool_submissions",
 ];
@@ -36,4 +38,73 @@ export function judge(table, response) {
     ok: false,
     detail: `LEAKED ${response.rows.length} row(s) to anon`,
   };
+}
+
+/**
+ * Filtered reads that must come back empty. `stories` and `story_tools` are
+ * anon-readable for *published* rows, so the table probe cannot cover them;
+ * these ask specifically for what must stay hidden.
+ */
+export const ANON_INVISIBLE_QUERIES = [
+  {
+    label: "stories (unpublished)",
+    path: "stories?select=id&status=neq.published&limit=5",
+  },
+  {
+    label: "story_tools (unpublished)",
+    path: "story_tools?select=story_id,stories!inner(status)&stories.status=neq.published&limit=5",
+  },
+];
+
+const WRONG_SECRET = "audit-probe-wrong-secret-000000000000000";
+const NIL_UUID = "00000000-0000-0000-0000-000000000000";
+
+/** Functions an anonymous caller must not be able to use. */
+export const ANON_REFUSED_RPCS = [
+  { fn: "ingest_sources", body: { secret: WRONG_SECRET } },
+  {
+    fn: "ingest_story",
+    body: {
+      secret: WRONG_SECRET,
+      p_source_id: NIL_UUID,
+      p_source_url: "https://audit.invalid/probe",
+      p_headline: "audit probe",
+      p_excerpt: null,
+      p_image_url: null,
+      p_source_published_at: null,
+      p_tool_slugs: [],
+    },
+  },
+  { fn: "touch_news_source", body: { secret: WRONG_SECRET, p_source_id: NIL_UUID, p_error: null } },
+  {
+    fn: "admin_publish_story",
+    body: {
+      p_story_id: NIL_UUID,
+      p_slug: "audit-probe",
+      p_headline: "audit probe",
+      p_summary: "x".repeat(40),
+      p_take: null,
+      p_beat: "research",
+      p_featured: false,
+      p_tool_slugs: [],
+    },
+  },
+  { fn: "admin_set_story_status", body: { p_story_id: NIL_UUID, p_status: "rejected" } },
+];
+
+/** @param {string} label @param {{status: number, rows: unknown[] | null}} response */
+export function judgeQuery(label, response) {
+  if (response.status !== 200 || response.rows === null) {
+    return { table: label, ok: false, detail: `probe errored (${response.status}); fix the probe` };
+  }
+  if (response.rows.length === 0) return { table: label, ok: true, detail: "no rows" };
+  return { table: label, ok: false, detail: `LEAKED ${response.rows.length} row(s) to anon` };
+}
+
+/** @param {string} fn @param {{status: number, body: unknown}} response */
+export function judgeRpc(fn, response) {
+  if (response.status >= 400) {
+    return { table: `rpc ${fn}`, ok: true, detail: `refused (${response.status})` };
+  }
+  return { table: `rpc ${fn}`, ok: false, detail: `ACCEPTED an anonymous call (${response.status})` };
 }

@@ -13,7 +13,14 @@
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
-import { ANON_INVISIBLE_TABLES, judge } from "./audit-rls/expectations.mjs";
+import {
+  ANON_INVISIBLE_QUERIES,
+  ANON_INVISIBLE_TABLES,
+  ANON_REFUSED_RPCS,
+  judge,
+  judgeQuery,
+  judgeRpc,
+} from "./audit-rls/expectations.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -59,16 +66,45 @@ for (const table of ANON_INVISIBLE_TABLES) {
   verdicts.push(judge(table, response));
 }
 
+for (const query of ANON_INVISIBLE_QUERIES) {
+  let response = { status: 0, rows: null };
+  try {
+    const res = await fetch(`${url}/rest/v1/${query.path}`, { headers: { apikey: key } });
+    const rows = res.ok ? await res.json() : null;
+    response = { status: res.status, rows: Array.isArray(rows) ? rows : null };
+  } catch (error) {
+    console.error(`  could not reach ${query.label}: ${error.message}`);
+    process.exit(1);
+  }
+  verdicts.push(judgeQuery(query.label, response));
+}
+
+for (const rpc of ANON_REFUSED_RPCS) {
+  let response = { status: 0, body: null };
+  try {
+    const res = await fetch(`${url}/rest/v1/rpc/${rpc.fn}`, {
+      method: "POST",
+      headers: { apikey: key, "content-type": "application/json" },
+      body: JSON.stringify(rpc.body),
+    });
+    response = { status: res.status, body: await res.json().catch(() => null) };
+  } catch (error) {
+    console.error(`  could not reach rpc ${rpc.fn}: ${error.message}`);
+    process.exit(1);
+  }
+  verdicts.push(judgeRpc(rpc.fn, response));
+}
+
 console.log("\nRLS smoke test (anonymous, publishable key)\n");
 for (const v of verdicts) {
-  console.log(`  ${v.ok ? "PASS" : "FAIL"}  ${v.table.padEnd(18)} ${v.detail}`);
+  console.log(`  ${v.ok ? "PASS" : "FAIL"}  ${v.table.padEnd(28)} ${v.detail}`);
 }
 
 const failed = verdicts.filter((v) => !v.ok);
 console.log(
   failed.length === 0
     ? "\nRLS holds.\n"
-    : `\n${failed.length} table(s) are readable by anonymous callers.\n`,
+    : `\n${failed.length} check(s) failed.\n`,
 );
 
 process.exit(failed.length === 0 ? 0 : 1);
