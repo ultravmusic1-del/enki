@@ -103,9 +103,8 @@ key. Ingestion therefore writes through one RPC:
 excerpt text, image_url text, source_published_at timestamptz, tool_slugs
 text[])`**. It is `SECURITY DEFINER`. It:
 
-1. Compares `secret` against a value held in a Supabase Vault secret (or a
-   locked single-row config table readable by no role), and returns `false` on
-   mismatch.
+1. Compares `secret` against the Supabase Vault secret `news_ingest_secret`,
+   and returns `false` on mismatch.
 2. Inserts the story as `pending` only. It cannot set `status`, `summary`,
    `take`, `featured` or `published_at`.
 3. Treats a `source_url` conflict as a no-op and returns `false`.
@@ -282,7 +281,8 @@ off the story grid for legibility, with at most a spotlight behind the lead.
 
 ### 7.1 Header
 
-- `siteConfig.nav` becomes **News · Tools · Finder · Deals**.
+- `siteConfig.nav` becomes **News · Tools · Finder · Deals**. News links to
+  `/` and is active on `/` and every `/news/*` route.
 - Categories, Compare and Leaderboards are reached from `/tools`.
 - A beat row sits under the header on the homepage and all `/news` routes:
   Latest, the five beats, and **Directory →** at the end.
@@ -438,8 +438,10 @@ saved tools, collections, reviews and the tool CMS.
 **Visual sweep:**
 
 ```
-pnpm sweep -- / /tools /news /news/beat/models-labs /news/<a-seeded-slug> /admin/news
+pnpm sweep -- / /tools /news /news/beat/models-labs /news/<slug> /admin/news
 ```
+
+`<slug>` is any published story's slug at sweep time.
 
 Every route must PASS at 390px and 1440px, with screenshots of `/` at both
 widths.
