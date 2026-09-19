@@ -212,6 +212,31 @@ describe("ingestAll", () => {
     expect(touched).toContainEqual({ id: "a", error: "ingest_story failed: boom" });
   });
 
+  it("is not marked failed when only some inserts fail among a throw, a duplicate, and a success", async () => {
+    const { store, touched } = fakeStore([a], ["https://alpha.test/2"]);
+    let calls = 0;
+    store.insertStory = vi.fn(async (story: IngestStory) => {
+      calls += 1;
+      if (calls === 1) throw new Error("check constraint");
+      if (story.sourceUrl === "https://alpha.test/2") return false;
+      return true;
+    });
+    const summary = await ingestAll({
+      store,
+      tools,
+      now: NOW,
+      fetchFeed: async () =>
+        rssWith([
+          { title: "One", link: "https://alpha.test/1" },
+          { title: "Two", link: "https://alpha.test/2" },
+          { title: "Three", link: "https://alpha.test/3" },
+        ]),
+    });
+
+    expect(summary).toMatchObject({ fetched: 3, inserted: 1, failed: [] });
+    expect(touched).toContainEqual({ id: "a", error: null });
+  });
+
   it("truncates a 300-codepoint headline without splitting a surrogate pair", async () => {
     const { store, inserted } = fakeStore([a]);
     const longTitle = "x".repeat(299) + "\u{1F600}x";

@@ -39,7 +39,7 @@ export type IngestSummary = {
   sources: number;
   fetched: number;
   inserted: number;
-  /** Names of sources that could not be fetched or parsed. */
+  /** Names of sources that could not be fetched or parsed, or whose every insert failed. */
   failed: string[];
 };
 
