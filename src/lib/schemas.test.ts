@@ -3,7 +3,9 @@ import {
   newsletterSchema,
   reviewFormSchema,
   submissionFormSchema,
+  toolSchema,
 } from "@/lib/schemas";
+import { tools as seedTools } from "@/data/tools";
 
 describe("schemas: newsletter", () => {
   it("accepts a valid email with the honeypot left empty", () => {
@@ -100,5 +102,34 @@ describe("schemas: review form", () => {
     expect(
       reviewFormSchema.safeParse({ ...valid, body: "x".repeat(1001) }).success,
     ).toBe(false);
+  });
+});
+
+describe("toolSchema aliases", () => {
+  it("keeps aliases instead of stripping them", () => {
+    const parsed = toolSchema.parse({ ...seedTools[0], aliases: ["Alt name"] });
+    expect(parsed.aliases).toEqual(["Alt name"]);
+  });
+
+  it("rejects an empty alias", () => {
+    expect(toolSchema.safeParse({ ...seedTools[0], aliases: [""] }).success).toBe(false);
+  });
+
+  it("leaves aliases optional", () => {
+    const withoutAliases = seedTools.find((t) => t.aliases === undefined);
+    expect(withoutAliases).toBeDefined();
+    expect(toolSchema.safeParse(withoutAliases).success).toBe(true);
+  });
+
+  it("never gives two seed tools the same name or alias", () => {
+    // A shared term would attach both tools to every story that mentions it.
+    const seen = new Map<string, string>();
+    for (const tool of seedTools) {
+      for (const term of [tool.name, ...(tool.aliases ?? [])]) {
+        const key = term.toLowerCase();
+        expect(seen.get(key) ?? tool.slug, `"${term}"`).toBe(tool.slug);
+        seen.set(key, tool.slug);
+      }
+    }
   });
 });

@@ -95,6 +95,11 @@ export const toolSchema = z.object({
   /** Path to the brand logo under /public (optional; falls back to a monogram). */
   logo: z.string().optional(),
   name: z.string().min(1),
+  /**
+   * Other names news coverage uses for this tool ("Codeium" for Windsurf).
+   * Read by the news tool matcher only; never displayed.
+   */
+  aliases: z.array(z.string().min(1)).optional(),
   tagline: z.string().min(1),
   description: z.string().min(1),
   longDescription: z.string().min(1),

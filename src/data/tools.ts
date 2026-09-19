@@ -311,6 +311,7 @@ export const tools: Tool[] = [
     slug: "dall-e-3",
     logo: "/logos/dall-e-3.png",
     name: "DALL·E 3",
+    aliases: ["DALL-E", "DALL·E", "DALL-E 3"],
     tagline: "Prompt-faithful images inside ChatGPT",
     description:
       "OpenAI's image model, tuned for prompt adherence and legible text, available directly in ChatGPT.",
@@ -369,6 +370,7 @@ export const tools: Tool[] = [
     slug: "stable-diffusion",
     logo: "/logos/stable-diffusion.png",
     name: "Stable Diffusion",
+    aliases: ["Stability AI"],
     tagline: "Open-source image generation you control",
     description:
       "An open family of image models you can run locally, fine-tune, and extend with a vast ecosystem.",
@@ -427,6 +429,7 @@ export const tools: Tool[] = [
     slug: "adobe-firefly",
     logo: "/logos/adobe-firefly.png",
     name: "Adobe Firefly",
+    aliases: ["Firefly"],
     tagline: "Commercially safe generation, built into Creative Cloud",
     description:
       "Adobe's image model, trained on licensed content and woven into Photoshop and the Creative Cloud suite.",
@@ -602,6 +605,7 @@ export const tools: Tool[] = [
     slug: "windsurf",
     logo: "/logos/windsurf.png",
     name: "Windsurf",
+    aliases: ["Codeium"],
     tagline: "Agentic IDE with flow-state focus",
     description:
       "An AI-native editor whose Cascade agent keeps context across your codebase and terminal.",
@@ -659,6 +663,7 @@ export const tools: Tool[] = [
     slug: "replit-agent",
     logo: "/logos/replit-agent.png",
     name: "Replit Agent",
+    aliases: ["Replit"],
     tagline: "Describe an app; it builds and deploys it",
     description:
       "A cloud IDE whose agent scaffolds, codes, and ships full applications from a prompt.",
@@ -719,6 +724,7 @@ export const tools: Tool[] = [
     slug: "notion-ai",
     logo: "/logos/notion-ai.png",
     name: "Notion AI",
+    aliases: ["Notion"],
     tagline: "Your workspace, now with a brain",
     description:
       "AI woven into Notion that drafts, summarizes, and answers questions across your connected workspace.",
@@ -1070,6 +1076,7 @@ export const tools: Tool[] = [
     slug: "elevenlabs",
     logo: "/logos/elevenlabs.png",
     name: "ElevenLabs",
+    aliases: ["Eleven Labs"],
     tagline: "The most lifelike AI voices",
     description:
       "Text-to-speech and voice cloning with uncanny realism, expressive control, and broad language support.",
