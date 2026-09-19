@@ -9,7 +9,7 @@ export function makeStorySlug(headline: string, id: string): string {
   const suffix = id.replace(/[^a-z0-9]/gi, "").toLowerCase().slice(0, 6);
   const base = headline
     .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");

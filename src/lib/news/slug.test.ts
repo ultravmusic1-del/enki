@@ -22,9 +22,7 @@ describe("makeStorySlug", () => {
       "Anthropic and Google announce a sweeping partnership on compute capacity across three continents",
       ID,
     );
-    expect(slug.length).toBeLessThanOrEqual(67);
-    expect(slug.endsWith("-3f2a9c")).toBe(true);
-    expect(slug).not.toMatch(/--/);
+    expect(slug).toBe("anthropic-and-google-announce-a-sweeping-partnership-on-3f2a9c");
   });
 
   it("always satisfies the database slug constraint", () => {
