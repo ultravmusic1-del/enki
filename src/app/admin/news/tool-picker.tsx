@@ -19,7 +19,9 @@ export function ToolPicker({
   const full = value.length >= MAX_STORY_TOOLS;
   const q = query.trim().toLowerCase();
   const matches = q
-    ? tools.filter((t) => !value.includes(t.slug) && t.name.toLowerCase().includes(q)).slice(0, 6)
+    ? tools
+        .filter((t) => !value.includes(t.slug) && (t.name.toLowerCase().includes(q) || t.slug.toLowerCase().includes(q)))
+        .slice(0, 6)
     : [];
 
   const add = (slug: string) => {
@@ -37,7 +39,7 @@ export function ToolPicker({
               type="button"
               aria-label={`Remove ${nameOf.get(slug) ?? slug}`}
               onClick={() => onChange(value.filter((s) => s !== slug))}
-              className="grid size-5 place-items-center rounded-full hover:bg-teal/20"
+              className="grid size-6 place-items-center rounded-full hover:bg-teal/20"
             >
               <Icon name="X" className="size-3" />
             </button>

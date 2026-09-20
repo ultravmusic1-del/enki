@@ -44,11 +44,11 @@ export default async function NewsSourcesPage() {
           {(sources ?? []).map((source) => (
             <li key={source.id} className="flex flex-col gap-2 p-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 flex-col gap-1">
-                <a href={safeExternalHref(source.site_url)} target="_blank" rel="noopener noreferrer" className="font-medium hover:text-teal">
+                <a href={safeExternalHref(source.site_url)} target="_blank" rel="noopener noreferrer" className="break-words font-medium hover:text-teal">
                   {source.name}
                 </a>
                 <span className="truncate font-mono text-xs text-muted-foreground">{source.feed_url}</span>
-                <span className="text-xs text-muted-foreground">
+                <span className="break-words text-xs text-muted-foreground">
                   Last fetched {formatAge(source.last_fetched_at, now)}
                   {source.last_error ? (
                     <span className="text-destructive"> · {source.last_error}</span>

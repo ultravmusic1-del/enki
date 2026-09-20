@@ -19,7 +19,7 @@ export function SourceToggle({ id, active }: { id: string; active: boolean }) {
         })
       }
       className={cn(
-        "rounded-full border px-3 py-1 font-mono text-[0.65rem] tracking-wide uppercase transition-colors disabled:opacity-40",
+        "rounded-full border px-3 py-1.5 font-mono text-[0.65rem] tracking-wide uppercase transition-colors disabled:opacity-40",
         active
           ? "border-teal/40 bg-teal/10 text-teal"
           : "border-border text-muted-foreground hover:border-teal/40 hover:text-foreground",

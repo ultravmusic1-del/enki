@@ -52,7 +52,8 @@ export function NewsQueue({
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
-      if (event.metaKey || event.ctrlKey || event.altKey || isTyping(event.target)) return;
+      if (event.repeat) return;
+      if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || isTyping(event.target)) return;
       const key = event.key.toLowerCase();
       if (key === "j") {
         event.preventDefault();
@@ -99,9 +100,9 @@ export function NewsQueue({
               type="button"
               aria-expanded={open}
               onClick={() => setActiveId(story.id)}
-              className="flex w-full flex-col gap-1 p-5 text-left"
+              className="flex w-full min-w-0 flex-col gap-1 p-5 text-left"
             >
-              <span className="font-medium text-pretty">{story.headline}</span>
+              <span className="font-medium text-pretty break-words">{story.headline}</span>
               <span className="font-mono text-xs text-muted-foreground">
                 {story.sourceName} · {story.age}
                 {story.toolSlugs.length > 0 ? ` · ${story.toolSlugs.length} tool(s)` : ""}

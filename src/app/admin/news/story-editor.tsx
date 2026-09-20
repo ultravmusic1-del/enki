@@ -124,7 +124,7 @@ export function StoryEditor({
           disabled={pending}
           className="inline-flex h-10 items-center rounded-full bg-teal px-5 text-sm font-semibold text-[#04171a] hover:bg-teal-bright disabled:opacity-60"
         >
-          {view === "pending" ? "Publish" : "Save"} <kbd className="ml-2 font-mono text-[0.65rem] opacity-70">P</kbd>
+          {view === "pending" ? "Publish" : "Save"} <kbd aria-hidden="true" className="ml-2 font-mono text-[0.65rem] opacity-70">P</kbd>
         </button>
         <button
           type="button"
@@ -134,7 +134,7 @@ export function StoryEditor({
         >
           {view === "pending" ? (
             <>
-              Reject <kbd className="ml-2 font-mono text-[0.65rem] opacity-70">R</kbd>
+              Reject <kbd aria-hidden="true" className="ml-2 font-mono text-[0.65rem] opacity-70">R</kbd>
             </>
           ) : (
             "Unpublish"
