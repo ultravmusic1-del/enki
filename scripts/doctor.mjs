@@ -91,9 +91,19 @@ if (nodeMajor !== null && runningNodeMajor !== nodeMajor) {
 }
 
 // --- dependencies ----------------------------------------------------------
+const readLockfile = (relative) => {
+  try {
+    return readFileSync(join(ROOT, relative), "utf8");
+  } catch {
+    return null;
+  }
+};
+
 const depsStale = isDepsStale({
   lockMtimeMs: mtimeMs("pnpm-lock.yaml") ?? 0,
   modulesMtimeMs: mtimeMs("node_modules/.modules.yaml"),
+  repoLock: readLockfile("pnpm-lock.yaml"),
+  installedLock: readLockfile("node_modules/.pnpm/lock.yaml"),
 });
 
 if (depsStale && FIX) {
@@ -111,7 +121,7 @@ if (depsStale && FIX) {
     "deps",
     depsStale ? "fail" : "pass",
     depsStale
-      ? "node_modules is older than pnpm-lock.yaml — run `pnpm install`"
+      ? "node_modules is out of sync with pnpm-lock.yaml — run `pnpm install`"
       : "in sync with pnpm-lock.yaml",
   );
 }
