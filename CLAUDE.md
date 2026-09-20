@@ -102,14 +102,14 @@ break layout until the browser proves otherwise.
 
 | Command | Use |
 |---|---|
-| `pnpm doctor` | Converge this machine and report what is in flight. Run first, every session |
-| `pnpm doctor --fix` | Repair hooks and dependencies; create a missing `.env.local` |
+| `pnpm run doctor` | Converge this machine and report what is in flight. Run first, every session |
+| `pnpm run doctor --fix` | Repair hooks and dependencies; create a missing `.env.local` |
 | `pnpm verify` | The gate: typecheck + lint + test. The pre-commit hook runs this |
 | `pnpm audit:rls` | Prove RLS still blocks anonymous reads of private tables |
 | `pnpm sweep` | The Visual Sweep, as a command. Required after visual changes |
 | `pnpm build` | Authoritative production build |
 
 Enki is developed on two machines that sync through GitHub, so anything
-gitignored or unversioned drifts between them. `pnpm doctor` is how you find out.
+gitignored or unversioned drifts between them. `pnpm run doctor` is how you find out.
 
 Skills: `enki-session-start`, `enki-visual-sweep`, `enki-supabase-change`.

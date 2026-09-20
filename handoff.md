@@ -129,7 +129,7 @@ repositioning) have no plans yet.
   It must be at least 32 characters. **Claude must never see or handle the
   value.** The owner generates it with
   `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
-  Until then, `pnpm doctor` fails the env check on purpose, because
+  Until then, `pnpm run doctor` fails the env check on purpose, because
   `.env.example` marks the key as required.
 - **The admin UI can't be swept automatically.** `pnpm sweep` is
   unauthenticated, so it cannot reach `/admin/*`, and Claude cannot type the
@@ -157,7 +157,7 @@ repositioning) have no plans yet.
 
 ### How to run and verify (current state)
 ```bash
-git pull && pnpm install && pnpm doctor   # env check fails until NEWS_INGEST_SECRET is set (expected)
+git pull && pnpm install && pnpm run doctor   # env check fails until NEWS_INGEST_SECRET is set (expected)
 pnpm verify                               # expect 437 tests passing
 pnpm audit:rls                            # expect all PASS, "RLS holds."
 pnpm build                                # expect ƒ /api/ingest-news in the route list
@@ -272,7 +272,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://qknsqurdawglctwqfwxe.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_iRpRQepBf8ozIoeBYH-sqQ_mjhupS5a
 ```
 In **`.env.local`** (gitignored, so it never travels between machines);
-`.env.example` documents them and `pnpm doctor` reports exactly which keys a
+`.env.example` documents them and `pnpm run doctor` reports exactly which keys a
 machine is missing.
 Both are the **publishable/anon** kind — safe client-side; RLS enforces access.
 The `service_role` key is never used or stored. The (unbuilt) email digest would
@@ -342,7 +342,7 @@ email" off in Supabase → Auth → Providers → Email (dashboard only).
 
 ```bash
 pnpm install        # also wires core.hooksPath -> .githooks via `prepare`
-pnpm doctor         # env, deps, hooks, toolchain, Supabase, and what's in flight
+pnpm run doctor     # env, deps, hooks, toolchain, Supabase, and what's in flight
 pnpm dev            # http://localhost:3000 (Next 16 + Turbopack). Reads .env.local.
 pnpm verify         # the gate: typecheck + lint + test
 pnpm sweep          # the Visual Sweep as a command (needs a server running)
@@ -363,10 +363,14 @@ this document:
 ```bash
 git pull
 pnpm install
-pnpm doctor
+pnpm run doctor
 ```
 
-`pnpm doctor --fix` repairs hooks and dependencies and creates a missing
+pnpm 11.26 added its own built-in `doctor` subcommand, which shadows this
+project's `doctor` script, so `pnpm run doctor` (not `pnpm doctor`) is what
+runs `scripts/doctor.mjs`.
+
+`pnpm run doctor --fix` repairs hooks and dependencies and creates a missing
 `.env.local` from `.env.example`. It cannot know the secret values; fill them
 from §2a. `--json` gives the same result machine-readably, and the exit code is
 1 on any FAIL so it is safe to branch on.
@@ -621,7 +625,7 @@ This exists because a pricing-badge clip once shipped on HTML-only inspection.
    pushed, so a hook installed by hand on one machine does not exist on the
    other — this is why an earlier pre-commit hook silently vanished. The
    versioned hook is wired by `core.hooksPath`, which the `prepare` script sets
-   on every `pnpm install`. `pnpm doctor` reports it if it is unset.
+   on every `pnpm install`. `pnpm run doctor` reports it if it is unset.
    `.gitattributes` pins `.githooks/*` to LF: a CRLF on the shebang line makes
    `sh` fail with `bad interpreter` on macOS/Linux while working fine on Windows.
 8. **`reviews.status` is not writable over PostgREST.** Table-level INSERT/UPDATE
