@@ -16,7 +16,20 @@ to unlock the admin.
 
 ---
 
-## 0. In flight — AI news pivot (updated 2026-09-19)
+## 0. In flight — AI news pivot (updated 2026-09-20)
+
+### Start here tomorrow
+1. `git pull` is not needed — nothing is pushed. **10 commits are waiting on
+   `main`** (`git log origin/main..HEAD`), including the fix that unblocks
+   Vercel. **The live deploy stays broken until they are pushed.**
+2. `pnpm install && pnpm run doctor` (note: `pnpm run`, see below), then
+   `pnpm verify`.
+3. **The only work left in merge 1 is the admin UI walkthrough**, which needs
+   the owner signed in: start `preview_start` `enki-dev`, have the owner sign in
+   at `/login`, then check `/admin/news`, `/admin/news/sources` and `/admin` at
+   390px and 1440px, publish one story end to end, and read the console.
+   **41 real pending stories are already in the queue**, so nothing needs
+   fetching first.
 
 ### Status
 The pivot is specified in four merges. **Merge 1 (news ingestion + admin queue)
@@ -31,13 +44,18 @@ committed locally. What exists, with typecheck, lint and 439 tests green:
 - the RLS audit extension (16/16 PASS live on 2026-09-20)
 - the admin UI: `/admin/news`, `/admin/news/sources`, and the dashboard KPI
 
-The database migration is **live in production** and 7 feeds are seeded. What is
-missing is only **Task 16**, which needs the owner:
-- the ingest secret does not exist in Supabase Vault, Vercel or any `.env.local`
-- so ingestion has **never run for real**: every call returns 401 or `not
-  authorized`, and the `stories` table is empty
+The database migration is **live in production**, 7 feeds are seeded, and
+**ingestion has now run for real** (2026-09-20): 41 pending stories from 5 of
+the 7 sources, each with its excerpt, 19 with images, no source errors, and a
+second run inserted 0, proving dedup. The live `pnpm audit:rls` passes 16/16
+against a database that now genuinely has hidden rows.
+
+What is missing from **Task 16**:
+- `NEWS_INGEST_SECRET` is set in `.env.local` and in Supabase Vault, but **not
+  yet in Vercel**, so the deployed cron will fail with `not authorized` until it
+  is added (with `CRON_SECRET`) for Production and Preview.
 - the admin UI has **never been rendered in a browser**. No visual sweep has run
-  against it, because `/admin/*` needs a signed-in owner
+  against it, because `/admin/*` needs a signed-in owner.
 
 No public page has changed. Merges 2–4 (story pages, new homepage,
 repositioning) have no plans yet.
@@ -117,7 +135,29 @@ repositioning) have no plans yet.
   --audit-level high` fails on 11 advisories in `next`, `sharp`, `@sentry/nextjs`,
   `@react-three/drei` and `browserslist`. It was already failing on 2026-09-15.
 
+### Open question for the owner (raised 2026-09-20, not decided)
+**The directory does not contain the tools the news is about, so almost no story
+earns an affiliate link.** Of the first 41 ingested stories, 8 mention ChatGPT or
+OpenAI, 7 mention Claude or Anthropic and 2 mention Gemini — none of which are
+listed — while Cursor, Perplexity, Midjourney and ElevenLabs appear zero times.
+Tool links came out at **0 of 41**, and the matcher is behaving correctly. The
+likely fix is to add the lab products (ChatGPT, Claude, Gemini, Copilot, Grok) to
+the directory. Decide before merge 3 builds a homepage around the revenue.
+
 ### Traps
+- **A parameter must never share a name with a column it is compared against**
+  (cost an hour on 2026-09-20). `news_ingest_authorized(secret text)` compared
+  `vault.decrypted_secrets.decrypted_secret = secret`, and because that view has
+  its own `secret` column, Postgres resolved the name to the column — so the
+  check rejected *every* call, correct secret included, and the RLS audit's
+  "refused" results proved nothing. Fixed by renaming the parameter `p_secret`
+  (migration `fix_news_ingest_authorized_param_shadowing`); the three public RPCs
+  keep `secret` as their argument name, so the app was unchanged.
+- **`pnpm doctor` now runs pnpm's own built-in command.** pnpm 11.26 added a
+  `doctor` subcommand that shadows the project script: use **`pnpm run doctor`**.
+- **pnpm 11.12.0 is a broken release** (npm marks it deprecated) and Vercel
+  refuses to install it, which failed the deploy of `b112de4`. The pin is now
+  `pnpm@11.26.0`; keep it on 11.x so the lockfile format does not change.
 - **The ingest secret must be identical in three places:**
   - `.env.local` as `NEWS_INGEST_SECRET`
   - Vercel env vars (with `CRON_SECRET`)
