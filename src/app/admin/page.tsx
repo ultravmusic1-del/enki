@@ -9,6 +9,7 @@ import { Icon } from "@/components/shared/icon";
 import { ModerationActions } from "@/app/admin/moderation-actions";
 import { SubmissionActions } from "@/app/admin/submission-actions";
 import { safeExternalHref } from "@/lib/safe-url";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -30,6 +31,7 @@ export default async function AdminPage() {
     { data: reviews },
     { data: submissions },
     { count: subscriberCount },
+    { count: pendingStoryCount },
   ] = await Promise.all([
     supabase.rpc("admin_click_stats", { days: 30 }),
     supabase.from("reviews").select("id", { count: "exact", head: true }),
@@ -48,6 +50,10 @@ export default async function AdminPage() {
       .order("created_at", { ascending: false })
       .limit(25),
     supabase.from("subscribers").select("id", { count: "exact", head: true }),
+    supabase
+      .from("stories")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending"),
   ]);
 
   const pendingSubmissions = (submissions ?? []).filter(
@@ -70,23 +76,37 @@ export default async function AdminPage() {
               Outbound demand, community moderation, and tool content.
             </p>
           </div>
-          <Link
-            href="/admin/tools"
-            className="inline-flex h-10 items-center gap-1.5 rounded-full bg-teal px-5 text-sm font-semibold text-[#04171a] hover:bg-teal-bright"
-          >
-            <Icon name="SlidersHorizontal" className="size-4" />
-            Manage tools
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/admin/news"
+              className="inline-flex h-10 items-center gap-1.5 rounded-full border border-border px-5 text-sm text-muted-foreground hover:border-teal/40 hover:text-foreground"
+            >
+              <Icon name="FileText" className="size-4" />
+              News queue
+            </Link>
+            <Link
+              href="/admin/tools"
+              className="inline-flex h-10 items-center gap-1.5 rounded-full bg-teal px-5 text-sm font-semibold text-[#04171a] hover:bg-teal-bright"
+            >
+              <Icon name="SlidersHorizontal" className="size-4" />
+              Manage tools
+            </Link>
+          </div>
         </header>
 
         {/* KPIs */}
-        <section className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border ring-hairline md:grid-cols-6">
+        <section className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border ring-hairline md:grid-cols-7">
           <Kpi label="Tools" value={String(nameBySlug.size)} />
           <Kpi label="Reviews" value={String(reviewCount ?? 0)} />
           <Kpi label="Pending reviews" value={String(pendingReviewCount ?? 0)} />
           <Kpi label="Outbound clicks (30d)" value={String(totalClicks)} />
           <Kpi label="Pending submissions" value={String(pendingSubmissions)} />
           <Kpi label="Subscribers" value={String(subscriberCount ?? 0)} />
+          <Kpi
+            label="Pending stories"
+            value={String(pendingStoryCount ?? 0)}
+            className="col-span-2 md:col-span-1"
+          />
         </section>
 
         {/* Click leaderboard */}
@@ -259,9 +279,22 @@ export default async function AdminPage() {
   );
 }
 
-function Kpi({ label, value }: { label: string; value: string }) {
+function Kpi({
+  label,
+  value,
+  className,
+}: {
+  label: string;
+  value: string;
+  className?: string;
+}) {
   return (
-    <div className="flex flex-col items-center gap-1 bg-card px-4 py-6 text-center">
+    <div
+      className={cn(
+        "flex flex-col items-center gap-1 bg-card px-4 py-6 text-center",
+        className,
+      )}
+    >
       <span className="font-display text-3xl font-semibold tabular-nums">
         {value}
       </span>
