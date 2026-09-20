@@ -20,31 +20,36 @@ to unlock the admin.
 
 ### Status
 The pivot is specified in four merges. **Merge 1 (news ingestion + admin queue)
-is 12 of 16 tasks done, and those 12 are pushed.** What exists and is tested:
+is code-complete: 15 of 16 tasks done.** Tasks 1–12 are pushed; 13–15 are
+committed locally. What exists, with typecheck, lint and 439 tests green:
 - the RSS/Atom parser
 - the tool matcher
 - the ingest loop
 - the Supabase ingest store
 - the daily cron route
 - the admin server actions
-- the RLS audit extension
+- the RLS audit extension (16/16 PASS live on 2026-09-20)
+- the admin UI: `/admin/news`, `/admin/news/sources`, and the dashboard KPI
 
-The database migration is **live in production** and 7 feeds are seeded. What
-does **not** exist yet:
-- any admin UI (no `/admin/news` page)
-- the ingest secret in Supabase Vault, Vercel or any `.env.local`
+The database migration is **live in production** and 7 feeds are seeded. What is
+missing is only **Task 16**, which needs the owner:
+- the ingest secret does not exist in Supabase Vault, Vercel or any `.env.local`
+- so ingestion has **never run for real**: every call returns 401 or `not
+  authorized`, and the `stories` table is empty
+- the admin UI has **never been rendered in a browser**. No visual sweep has run
+  against it, because `/admin/*` needs a signed-in owner
 
-So ingestion has **never run for real**; every call returns 401 or `not
-authorized`. No public page has changed. Merges 2–4 (story pages, new homepage,
+No public page has changed. Merges 2–4 (story pages, new homepage,
 repositioning) have no plans yet.
 
 ### Where to read
 - **Spec (approved):** `docs/superpowers/specs/2026-09-19-ai-news-pivot-design.md`.
   All four merges and every product decision are in it.
 - **Plan for merge 1:** `docs/superpowers/plans/2026-09-19-news-ingestion-and-admin.md`.
-  Tasks 1–12 are done; continue at **Task 13**. The top of the plan lists six
+  Tasks 1–15 are done; continue at **Task 16**. The top of the plan lists six
   deliberate deviations from the spec.
-- **Git:** branch `main`, HEAD `b112de4`, in sync with `origin/main`, clean tree.
+- **Git:** branch `main`, clean tree, with the Task 13–15 commits and this
+  handoff ahead of `origin/main` (`git log origin/main..HEAD`).
 
 ### What changed (merge 1, commits `3037c50..b112de4`)
 - `src/lib/news/` holds the whole ingestion pipeline:
@@ -97,14 +102,6 @@ repositioning) have no plans yet.
   batch, followed by a spec review and then a code-quality review.
 
 ### Not done (in order)
-- [ ] **Review Tasks 11–12.** The independent review was interrupted before it
-  ran. Diff `82d8bc8..b112de4`: `scripts/audit-rls*`, `src/app/admin/news/actions.ts`.
-- [ ] **Task 13:** `src/app/admin/news/sources/` (page, `source-form.tsx`,
-  `source-toggle.tsx`).
-- [ ] **Task 14:** `src/app/admin/news/page.tsx` plus `news-queue.tsx`,
-  `story-editor.tsx`, `tool-picker.tsx`, `fetch-now-button.tsx` and `types.ts`.
-- [ ] **Task 15:** `src/app/admin/page.tsx`, adding the "Pending stories" KPI and
-  the "News queue" link.
 - [ ] **Task 16 (owner first).** Only the owner creates the secret (see Traps).
   Then run `pnpm verify`, `pnpm audit:rls`, a local cron call, and an admin UI
   walkthrough with the owner signed in. Update §2a and §4 if anything changed.
