@@ -91,4 +91,14 @@ describe("rpc probes", () => {
     expect(judgeRpc("f", { status: 200, body: true }).ok).toBe(false);
     expect(judgeRpc("f", { status: 200, body: [] }).ok).toBe(false);
   });
+
+  it("fail when the function is missing or its signature changed (PGRST202), so a renamed function cannot pass silently", () => {
+    const verdict = judgeRpc("f", { status: 404, body: { code: "PGRST202" } });
+    expect(verdict.ok).toBe(false);
+    expect(verdict.detail).toContain("fix the probe");
+  });
+
+  it("fail on a server error, so an RPC that stopped being callable cannot pass silently", () => {
+    expect(judgeRpc("f", { status: 500, body: null }).ok).toBe(false);
+  });
 });

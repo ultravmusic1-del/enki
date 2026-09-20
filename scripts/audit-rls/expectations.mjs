@@ -44,6 +44,11 @@ export function judge(table, response) {
  * Filtered reads that must come back empty. `stories` and `story_tools` are
  * anon-readable for *published* rows, so the table probe cannot cover them;
  * these ask specifically for what must stay hidden.
+ *
+ * The `story_tools` probe filters through `stories!inner(status)`, so it is
+ * only exercising the parent `stories` RLS policy via the inner embed — a
+ * `story_tools` row that leaked because of a relaxed `story_tools` policy of
+ * its own would not necessarily be caught by this probe alone.
  */
 export const ANON_INVISIBLE_QUERIES = [
   {
@@ -103,6 +108,30 @@ export function judgeQuery(label, response) {
 
 /** @param {string} fn @param {{status: number, body: unknown}} response */
 export function judgeRpc(fn, response) {
+  // A 5xx means the request never reached the RLS/permission check that this
+  // probe exists to exercise; treat it as a broken probe, not a pass.
+  if (response.status >= 500) {
+    return {
+      table: `rpc ${fn}`,
+      ok: false,
+      detail: `probe errored (${response.status}); fix the probe`,
+    };
+  }
+  const code =
+    response.body && typeof response.body === "object" && "code" in response.body
+      ? response.body.code
+      : undefined;
+  // PostgREST returns 404 with this code when the function name or signature
+  // no longer matches anything in the schema. That is not a refusal — the
+  // probe is calling nothing, so it would pass forever without testing
+  // anything.
+  if (code === "PGRST202") {
+    return {
+      table: `rpc ${fn}`,
+      ok: false,
+      detail: "function is missing or its signature changed; fix the probe",
+    };
+  }
   if (response.status >= 400) {
     return { table: `rpc ${fn}`, ok: true, detail: `refused (${response.status})` };
   }
