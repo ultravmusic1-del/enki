@@ -5,8 +5,174 @@
 > oracle/clay-tablet gravitas with a sleek dark AI-product UI.
 > Tagline: **"Wisdom for the age of AI."**
 
-Single source of truth for continuing work in a fresh session. **Read §1 and §2
-first** — current state, the live backend, and how to unlock the admin.
+Single source of truth for continuing work in a fresh session. **Read §0 first**
+(the work in flight), then §1 and §2: current state, the live backend, and how
+to unlock the admin.
+
+> **Direction change (2026-09-19):** Enki is pivoting from a tool directory to an
+> **AI news front page** (Yahoo Finance-style) with affiliate links on each
+> story; the directory becomes secondary. §1–§12 still describe the directory
+> accurately. §0 describes the pivot.
+
+---
+
+## 0. In flight — AI news pivot (updated 2026-09-19)
+
+### Status
+The pivot is specified in four merges. **Merge 1 (news ingestion + admin queue)
+is 12 of 16 tasks done, and those 12 are pushed.** What exists and is tested:
+- the RSS/Atom parser
+- the tool matcher
+- the ingest loop
+- the Supabase ingest store
+- the daily cron route
+- the admin server actions
+- the RLS audit extension
+
+The database migration is **live in production** and 7 feeds are seeded. What
+does **not** exist yet:
+- any admin UI (no `/admin/news` page)
+- the ingest secret in Supabase Vault, Vercel or any `.env.local`
+
+So ingestion has **never run for real**; every call returns 401 or `not
+authorized`. No public page has changed. Merges 2–4 (story pages, new homepage,
+repositioning) have no plans yet.
+
+### Where to read
+- **Spec (approved):** `docs/superpowers/specs/2026-09-19-ai-news-pivot-design.md`.
+  All four merges and every product decision are in it.
+- **Plan for merge 1:** `docs/superpowers/plans/2026-09-19-news-ingestion-and-admin.md`.
+  Tasks 1–12 are done; continue at **Task 13**. The top of the plan lists six
+  deliberate deviations from the spec.
+- **Git:** branch `main`, HEAD `b112de4`, in sync with `origin/main`, clean tree.
+
+### What changed (merge 1, commits `3037c50..b112de4`)
+- `src/lib/news/` holds the whole ingestion pipeline:
+  - `parse-feed.ts` (RSS 2.0/1.0/Atom)
+  - `match-tools.ts` (name/alias matching, case-sensitive for common-word names)
+  - `ingest.ts` (`ingestAll` over an `IngestStore` interface)
+  - `ingest-store.ts` (store over the ingest RPCs)
+  - `run-ingest.ts` (wires env + anon client + Sentry)
+  - `schemas.ts`, `slug.ts`, `format-age.ts`
+  - every module has a sibling test
+- `src/data/beats.ts` defines the 5 news beats; its slugs must match the
+  `stories.beat` check constraint.
+- `src/lib/schemas.ts` gains optional `aliases` on tools, and `src/data/tools.ts`
+  seeds aliases on 7 tools.
+- `src/app/api/ingest-news/route.ts` is the daily cron (`vercel.json`, `0 5 * * *`)
+  with the Sentry monitor `ingest-news`. It **fails closed without
+  `CRON_SECRET`**.
+- `src/app/admin/news/actions.ts` holds the actions `publishStory`,
+  `setStoryStatus`, `fetchNewsNow`, `addNewsSource` and `setNewsSourceActive`.
+- `src/lib/supabase/database.types.ts` gains hand-written types for the new
+  tables and RPCs. Do not regenerate the file.
+- `scripts/audit-rls*` adds probes for unpublished stories, excerpts, sources and
+  the five RPCs. The live `pnpm audit:rls` was all PASS on 2026-09-19.
+- `package.json` adds `fast-xml-parser@5.11.1`.
+
+### Decisions (settled with the owner — do not re-litigate)
+- **Sourcing:** stories are **aggregated from RSS feeds and curated by the
+  owner**. Nothing publishes without approval, and the owner **writes every
+  summary by hand**. **No LLM** anywhere in the pipeline.
+- **Excerpt:** the publisher's text is **never rendered publicly**. It lives in
+  the admin-only table `story_excerpts`.
+- **Tool links:** they are auto-suggested at ingest and confirmed by the owner.
+- **Story pages:** a headline click opens an Enki story page (`/news/[slug]`)
+  that links to the source. The page is `noindex` unless the owner's "take" is at
+  least 300 characters.
+- **Ticker:** it shows "Tools in the news" (mention counts). **No stock or
+  market data.** It is hidden until 3 or more tools have mentions.
+- **Sections:** 5 fixed news beats, not directory categories.
+- **Oracle hero:** the 3D hero **moves to `/tools`**; the homepage opens on news.
+- **Keep:** the domain `enkitools.com` and the tagline.
+- **Ingest trigger:** a daily cron plus an admin "Fetch now" button.
+- **Database writes:**
+  - **No `service_role` key.** The cron writes through secret-gated `SECURITY
+    DEFINER` RPCs, and the secret can only create *pending* stories.
+  - `stories` has **no table-level write grant** for any API role. Admin writes
+    go only through `admin_publish_story` and `admin_set_story_status`.
+- **Git workflow:** the owner's rule is to work on `main`, with **no branches,
+  worktrees or PRs unless asked**, and to push only when explicitly asked.
+- **Execution method:** subagent-driven. There is one implementer per task or
+  batch, followed by a spec review and then a code-quality review.
+
+### Not done (in order)
+- [ ] **Review Tasks 11–12.** The independent review was interrupted before it
+  ran. Diff `82d8bc8..b112de4`: `scripts/audit-rls*`, `src/app/admin/news/actions.ts`.
+- [ ] **Task 13:** `src/app/admin/news/sources/` (page, `source-form.tsx`,
+  `source-toggle.tsx`).
+- [ ] **Task 14:** `src/app/admin/news/page.tsx` plus `news-queue.tsx`,
+  `story-editor.tsx`, `tool-picker.tsx`, `fetch-now-button.tsx` and `types.ts`.
+- [ ] **Task 15:** `src/app/admin/page.tsx`, adding the "Pending stories" KPI and
+  the "News queue" link.
+- [ ] **Task 16 (owner first).** Only the owner creates the secret (see Traps).
+  Then run `pnpm verify`, `pnpm audit:rls`, a local cron call, and an admin UI
+  walkthrough with the owner signed in. Update §2a and §4 if anything changed.
+- [ ] **Merges 2–4** each need their own plan, written with
+  `superpowers:writing-plans` from spec §11:
+  - **2:** story, `/news`, beat and about pages, plus `story_views`
+  - **3:** the homepage
+  - **4:** `/tools` repositioning and metadata
+
+  Merge 2 must decide how to show source names publicly, since `news_sources` is
+  admin-only.
+- [ ] **CI is red on `main`, and not from this work.** `pnpm audit --prod
+  --audit-level high` fails on 11 advisories in `next`, `sharp`, `@sentry/nextjs`,
+  `@react-three/drei` and `browserslist`. It was already failing on 2026-09-15.
+
+### Traps
+- **The ingest secret must be identical in three places:**
+  - `.env.local` as `NEWS_INGEST_SECRET`
+  - Vercel env vars (with `CRON_SECRET`)
+  - Supabase Vault:
+    ```sql
+    select vault.create_secret('<value>', 'news_ingest_secret', '...');
+    ```
+
+  It must be at least 32 characters. **Claude must never see or handle the
+  value.** The owner generates it with
+  `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
+  Until then, `pnpm doctor` fails the env check on purpose, because
+  `.env.example` marks the key as required.
+- **The admin UI can't be swept automatically.** `pnpm sweep` is
+  unauthenticated, so it cannot reach `/admin/*`, and Claude cannot type the
+  admin password. The owner signs in inside the browser pane, then Claude checks
+  390px and 1440px by hand.
+- **Literal `\uXXXX` escapes get decoded into real characters** by the
+  file-editing tools on this setup. Write them through a Node script using
+  `String.fromCharCode(92)`, then check the bytes on disk.
+- **Supabase grants new tables and functions to `anon` and `authenticated` by
+  default.** Every new object needs `revoke all ... from public, anon,
+  authenticated` before its own grants. See the `enki-supabase-change` skill.
+- **Feed quirks:**
+  - VentureBeat returns 429 to bots and was left out of the seed.
+  - The OpenAI feed carries about 1,210 items; the 72h window plus the 30-per-source
+    cap handles it.
+  - Anthropic and Meta have no official RSS.
+- **Compute `formatAge` on the server** and pass the string down. Doing it in a
+  client component causes a hydration mismatch.
+- **Route tests** need `// @vitest-environment node` as their **first line**.
+- **Cron timing:** Vercel Hobby crons can fire any time within the hour, so this
+  route's monitor uses `checkinMargin: 60`. `keep-warm` uses `10` and may
+  false-alarm. Not verified.
+- **`story_tools.tool_slug` has no foreign key to the directory.** A slug is
+  trusted if it matches the slug regex.
+
+### How to run and verify (current state)
+```bash
+git pull && pnpm install && pnpm doctor   # env check fails until NEWS_INGEST_SECRET is set (expected)
+pnpm verify                               # expect 437 tests passing
+pnpm audit:rls                            # expect all PASS, "RLS holds."
+pnpm build                                # expect ƒ /api/ingest-news in the route list
+```
+Once the secret is set, start the dev server (`preview_start` `enki-dev`) and
+run:
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" localhost:3000/api/ingest-news
+```
+The first run should return `inserted > 0`, and an immediate second run
+`inserted: 0` (dedup). `/admin/news` and `/admin/news/sources` return 404 until
+Tasks 13–14 are built.
 
 ---
 
@@ -112,8 +278,16 @@ In **`.env.local`** (gitignored, so it never travels between machines);
 `.env.example` documents them and `pnpm doctor` reports exactly which keys a
 machine is missing.
 Both are the **publishable/anon** kind — safe client-side; RLS enforces access.
-The `service_role` key is never used or stored. **No new env vars are required**
-for the current features; the (unbuilt) email digest would add `RESEND_API_KEY`.
+The `service_role` key is never used or stored. The (unbuilt) email digest would
+add `RESEND_API_KEY`.
+
+**News ingestion (2026-09-19)** adds two more (see §0 Traps):
+- **`NEWS_INGEST_SECRET`** is required. It must be identical in `.env.local`,
+  Vercel and the Supabase Vault secret `news_ingest_secret`.
+- **`CRON_SECRET`** is set in Vercel; locally it's only needed to call
+  `/api/ingest-news` by hand.
+
+Neither is set anywhere yet.
 
 ### 2b. Deployed ✅
 Live at **https://enkitools.com**; `git push` to `main` auto-deploys.
@@ -225,6 +399,10 @@ Managed via the Supabase MCP connector.
 | `collection_items` | `(collection_id, tool_slug, note?, created_at)` | readable if parent readable; owner writes |
 | `subscribers` | `(id, email unique, status, created_at)` | anon **insert**; admins read |
 | `tools` | `(slug pk, **data jsonb**, published, created_at, updated_at)` — CMS content | public-read published; **admins write** |
+| `news_sources` | `(id, name, feed_url unique, site_url, active, last_fetched_at, last_error, created_at)` | **admins only** (read/insert/update) |
+| `stories` | `(id, slug?, source_id, source_url unique, headline, summary?, take?, beat?, image_url?, status pending/published/rejected, featured, source_published_at?, published_at?, created_at)` | public-read **published**; **no API write grants**: written only by the RPCs below |
+| `story_excerpts` | `(story_id pk, excerpt)` — publisher text | **admins read only**; never rendered publicly |
+| `story_tools` | `(story_id, tool_slug, position)` | readable exactly when the parent story is |
 
 ### RPCs (SECURITY DEFINER)
 - **`is_admin()`** → boolean; used by RLS + the app gate without exposing `admins`.
@@ -234,6 +412,15 @@ Managed via the Supabase MCP connector.
 - **`admin_set_review_status(review_id uuid, new_status text)`** → boolean; the
   only path that may write `reviews.status`. Self-guards with `is_admin()` and
   returns false (not an error) for everyone else. `anon` cannot execute it.
+- **`ingest_sources(secret)`**, **`ingest_story(secret, …)`** and
+  **`touch_news_source(secret, …)`** are secret-gated. The internal
+  `news_ingest_authorized()` compares the argument against the Vault secret
+  `news_ingest_secret`, and a wrong secret raises `42501`. `ingest_story` can
+  only create **pending** rows. These three are executable by anon and
+  authenticated; `news_ingest_authorized` is not executable by any API role.
+- **`admin_publish_story(…)`** returns the slug and **`admin_set_story_status(…)`**
+  returns a boolean. Both are guarded by `is_admin()` and executable by
+  authenticated only.
 
 ### Migrations applied (via MCP)
 `init_auth_backend`, `lock_down_handle_new_user`, `create_outbound_clicks`,
@@ -242,7 +429,8 @@ Managed via the Supabase MCP connector.
 `create_tools_table`, **`harden_review_moderation`**, **`harden_public_input`**,
 **`revoke_admin_rpc_from_public`**, **`tighten_submission_url_scheme`**,
 **`narrow_profiles_read`**, **`revoke_unnecessary_anon_grants`**, **`add_data_rights_rpcs`**,
-**`revoke_delete_account_from_anon`**.
+**`revoke_delete_account_from_anon`**, **`create_news_tables`** (2026-09-19; SQL
+in the merge-1 plan's Task 8, plus an index on `stories.source_id`).
 
 ### Content layer — DB-preferred + seed fallback (IMPORTANT, new)
 `src/lib/content.ts` is now **async**. Tools load from the `tools` table
@@ -488,6 +676,10 @@ live site, and it supersedes the lists in
 `docs/launch-readiness-audit-2026-07-29.md`, `docs/stack-evaluation-2026-07-29.md`
 and the Operator Checklists inside `docs/superpowers/plans/*`. Every one of those
 points at the roadmap. **Do not start a second one.**
+
+**Exception while it is in flight:** the AI news pivot is tracked in §0 and its
+spec and plan, not yet in the roadmap. Merge 4 of the spec adds it as a roadmap
+phase.
 
 Orientation only, so a fresh session knows where things stand:
 
