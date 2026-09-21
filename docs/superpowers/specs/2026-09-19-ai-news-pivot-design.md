@@ -25,10 +25,15 @@ with the deviations listed at the top of its plan
    makes a page indexable, and Claude may write takes freely. The owner accepted
    the SEO risk of AI-written indexable pages at scale.
 4. **Public source names** (fills a gap in §3.1 for merge 2). Story pages show
-   the source's name and link to its site, but `news_sources` is admin-only. Merge
-   2 grants anonymous `select` on `news_sources (id, name, site_url)` only,
-   through column privileges plus a read policy. `feed_url`, `active`,
-   `last_fetched_at` and `last_error` stay admin-only.
+   the source's name and link to its site, but `news_sources` is admin-only.
+   Merge 2 adds `stories.source_name` and `stories.source_site_url`, copied from
+   `news_sources` by `ingest_story` at insert and backfilled once. Stories are
+   already public, so no grant on `news_sources` changes.
+
+   Column privileges were considered and rejected. Postgres column grants apply
+   per role, not per person, so narrowing `authenticated` to three columns would
+   also hide `feed_url` and `last_error` from the admin sources page. The cost of
+   copying: renaming a source does not update its old stories.
 5. **Excerpts** live in the admin-only table `story_excerpts`, not in a
    column-revoked `stories.excerpt` (merge 1 plan deviation 1). Everything in
    this spec about excerpts never being public still holds.
