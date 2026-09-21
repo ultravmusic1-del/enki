@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { queryStub, type StubResult } from "@/test/supabase-stub";
 
 const from = vi.fn();
-vi.mock("@/lib/supabase/anon", () => ({ createAnonClient: () => ({ from }) }));
+const rpc = vi.fn();
+vi.mock("@/lib/supabase/anon", () => ({ createAnonClient: () => ({ from, rpc }) }));
 
 const knownTools: Record<string, { slug: string; name: string }> = {
   gemini: { slug: "gemini", name: "Gemini" },
@@ -18,6 +19,9 @@ const {
   getStoryTools,
   listPublishedStories,
   listIndexableStories,
+  listRecentStories,
+  getToolSlugsForStories,
+  getPopularStoryViews,
 } = await import("@/lib/news/stories");
 
 const row = {
@@ -45,6 +49,7 @@ const builder = (i = 0) => from.mock.results[i]?.value as ReturnType<typeof quer
 
 beforeEach(() => {
   from.mockReset();
+  rpc.mockReset();
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
 afterEach(() => {
@@ -153,5 +158,50 @@ describe("listIndexableStories", () => {
     expect(await listIndexableStories()).toEqual([
       { slug: "a-story", publishedAt: "2026-09-21T10:00:00Z" },
     ]);
+  });
+});
+
+describe("listRecentStories", () => {
+  it("asks for the newest published stories", async () => {
+    respond({ data: [row], error: null });
+    const stories = await listRecentStories();
+    expect(stories).toHaveLength(1);
+    expect(builder().eq).toHaveBeenCalledWith("status", "published");
+    expect(builder().limit).toHaveBeenCalledWith(200);
+  });
+});
+
+describe("getToolSlugsForStories", () => {
+  it("does not query for an empty list", async () => {
+    expect(await getToolSlugsForStories([])).toEqual(new Map());
+    expect(from).not.toHaveBeenCalled();
+  });
+
+  it("groups tool slugs by story, in position order", async () => {
+    respond({
+      data: [
+        { story_id: "a", tool_slug: "gemini", position: 0 },
+        { story_id: "b", tool_slug: "claude", position: 0 },
+        { story_id: "a", tool_slug: "cursor", position: 1 },
+      ],
+      error: null,
+    });
+    const map = await getToolSlugsForStories(["a", "b"]);
+    expect(map.get("a")).toEqual(["gemini", "cursor"]);
+    expect(map.get("b")).toEqual(["claude"]);
+    expect(builder().in).toHaveBeenCalledWith("story_id", ["a", "b"]);
+  });
+});
+
+describe("getPopularStoryViews", () => {
+  it("maps the RPC's rows", async () => {
+    rpc.mockResolvedValue({ data: [{ story_id: "a", views: 12 }], error: null });
+    expect(await getPopularStoryViews()).toEqual([{ storyId: "a", views: 12 }]);
+    expect(rpc).toHaveBeenCalledWith("popular_stories", { p_hours: 48, p_limit: 5 });
+  });
+
+  it("degrades to no popular stories on error", async () => {
+    rpc.mockResolvedValue({ data: null, error: { message: "paused" } });
+    expect(await getPopularStoryViews()).toEqual([]);
   });
 });

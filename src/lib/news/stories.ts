@@ -197,3 +197,52 @@ export async function listIndexableStories(): Promise<{ slug: string; publishedA
       : [],
   );
 }
+
+/** Enough stories for the homepage's windows at current volume (5-15 a day). */
+export const HOME_STORY_LIMIT = 200;
+
+export async function listRecentStories(limit: number = HOME_STORY_LIMIT): Promise<PublicStory[]> {
+  const result = await withTimeout(
+    createAnonClient()
+      .from("stories")
+      .select(PUBLIC_STORY_COLUMNS)
+      .eq("status", "published")
+      .order("published_at", { ascending: false })
+      .limit(limit),
+    "listRecentStories",
+  );
+  return toPublicStories(result?.data);
+}
+
+/** Tool slugs per story, in position order, for many stories in one query. */
+export async function getToolSlugsForStories(storyIds: string[]): Promise<Map<string, string[]>> {
+  const map = new Map<string, string[]>();
+  if (storyIds.length === 0) return map;
+  const result = await withTimeout(
+    createAnonClient()
+      .from("story_tools")
+      .select("story_id, tool_slug, position")
+      .in("story_id", storyIds)
+      .order("position"),
+    "getToolSlugsForStories",
+  );
+  for (const row of (result?.data ?? []) as { story_id: string; tool_slug: string }[]) {
+    map.set(row.story_id, [...(map.get(row.story_id) ?? []), row.tool_slug]);
+  }
+  return map;
+}
+
+/** Most-viewed published stories in the window (aggregate counts only). */
+export async function getPopularStoryViews(
+  hours = 48,
+  limit = 5,
+): Promise<{ storyId: string; views: number }[]> {
+  const result = await withTimeout(
+    createAnonClient().rpc("popular_stories", { p_hours: hours, p_limit: limit }),
+    "getPopularStoryViews",
+  );
+  return ((result?.data ?? []) as { story_id: string; views: number }[]).map((r) => ({
+    storyId: r.story_id,
+    views: Number(r.views),
+  }));
+}
