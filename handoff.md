@@ -19,10 +19,29 @@ to unlock the admin.
 ## 0. In flight — AI news pivot (updated 2026-09-21)
 
 ### Start here next session
-**Merge 1 is complete (2026-09-21).** Next is merge 2, which has no plan yet:
-write it with `superpowers:writing-plans` from spec §11 item 2 (story page,
-`/news`, beat pages, `/news/about`, `story_views`). Settle the open question
-below (directory coverage) and the byline question first.
+**Merges 1 and 2 are complete (2026-09-21).** Merge 2 (public news pages) is
+committed locally; check `git log origin/main..HEAD` before assuming it is
+deployed. Next is merge 3, the new homepage (spec §7). It has no plan yet: write
+one with `superpowers:writing-plans` from spec §11 item 3.
+
+**Merge 2 shipped** (plan `docs/superpowers/plans/2026-09-21-news-public-pages.md`):
+- Pages: `/news/[slug]` (story page), `/news`, `/news/page/[n]`, the five beat
+  pages at `/news/beat/[beat]`, and `/news/about`.
+- `/api/story-view` records anonymous views, and the sitemap lists the news
+  routes plus stories with an indexable take.
+- Publish and unpublish refresh the cached pages.
+- Migration `news_public_pages`: `stories.source_name` and `source_site_url`
+  (copied from the source at ingest), and the `story_views` table.
+- Verified:
+  - 498 tests pass
+  - `pnpm audit:rls` passes 17/17
+  - the visual sweep passes 16/16 at 390px and 1440px
+  - on a production build, unpublishing the Gemini story turned its cached page
+    into a 404 and dropped it from `/news`; republishing restored the same slug
+    and publish time
+- **Owner step still open:** create the Vercel Firewall rate-limit rule
+  `enki-story-view` (30 per minute per IP). Until it exists, view counting is
+  not rate limited: it fails open and reports once to Sentry.
 
 Merge 1 walkthrough results (owner signed in, 2026-09-21):
 - `/admin/news`, `/admin/news/sources` and `/admin` at 390px and 1440px: no
@@ -131,14 +150,18 @@ repositioning) have no plans yet.
   batch, followed by a spec review and then a code-quality review.
 
 ### Not done (in order)
-- [ ] **Merges 2–4** each need their own plan, written with
+- [x] **Merge 2:** public news pages (done 2026-09-21).
+- [ ] **Merges 3–4** each need their own plan, written with
   `superpowers:writing-plans` from spec §11:
-  - **2:** story, `/news`, beat and about pages, plus `story_views`
-  - **3:** the homepage
-  - **4:** `/tools` repositioning and metadata
-
-  Merge 2 must decide how to show source names publicly, since `news_sources` is
-  admin-only.
+  - **3:** the homepage (spec §7), which also adds story images (spec §7.5)
+  - **4:** `/tools` repositioning, metadata, and the site footer's "The oracle
+    for AI tools" copy
+- [ ] **Owner:** create the Vercel Firewall rule `enki-story-view`.
+- [ ] **Pre-existing em dashes the owner may want removed.** Not changed,
+  because the no-dash rule covers new copy only:
+  - `src/components/shared/affiliate-disclosure.tsx`, which merge 2 now shows on
+    story pages
+  - `src/app/privacy/page.tsx` ("rankings — those are decided")
 - [ ] **CI is red on `main`, and not from this work.** `pnpm audit --prod
   --audit-level high` fails on 11 advisories in `next`, `sharp`, `@sentry/nextjs`,
   `@react-three/drei` and `browserslist`. It was already failing on 2026-09-15.
@@ -468,6 +491,11 @@ Managed via the Supabase MCP connector.
 | `stories` | `(id, slug?, source_id, source_url unique, headline, summary?, take?, beat?, image_url?, status pending/published/rejected, featured, source_published_at?, published_at?, created_at)` | public-read **published**; **no API write grants**: written only by the RPCs below |
 | `story_excerpts` | `(story_id pk, excerpt)` — publisher text | **admins read only**; never rendered publicly |
 | `story_tools` | `(story_id, tool_slug, position)` | readable exactly when the parent story is |
+| `story_views` | `(id identity, story_id, created_at)` — anonymous view log, no visitor data | anon/authenticated may `insert (story_id)` **only for published stories**; admins read |
+
+`stories` also carries `source_name` and `source_site_url` (merge 2), copied
+from `news_sources` by `ingest_story`, so public pages never read the admin-only
+sources table.
 
 ### RPCs (SECURITY DEFINER)
 - **`is_admin()`** → boolean; used by RLS + the app gate without exposing `admins`.
@@ -495,7 +523,9 @@ Managed via the Supabase MCP connector.
 **`revoke_admin_rpc_from_public`**, **`tighten_submission_url_scheme`**,
 **`narrow_profiles_read`**, **`revoke_unnecessary_anon_grants`**, **`add_data_rights_rpcs`**,
 **`revoke_delete_account_from_anon`**, **`create_news_tables`** (2026-09-19; SQL
-in the merge-1 plan's Task 8, plus an index on `stories.source_id`).
+in the merge-1 plan's Task 8, plus an index on `stories.source_id`),
+**`fix_news_ingest_authorized_param_shadowing`** (2026-09-20),
+**`news_public_pages`** (2026-09-21; SQL in the merge-2 plan's Task 1).
 
 ### Content layer — DB-preferred + seed fallback (IMPORTANT, new)
 `src/lib/content.ts` is now **async**. Tools load from the `tools` table
