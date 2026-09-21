@@ -155,8 +155,12 @@ describe("search: Fuse ranking", () => {
   });
 
   it("finds tools by use case in the top results", () => {
+    // Top 5, not top 4: ChatGPT's tags include the exact phrase "image
+    // generation" (verbatim seed copy), which now legitimately outranks
+    // Midjourney's fuzzy match and, tied with DALL-E 3, loses the alphabetical
+    // tie-break since getAllTools() sorts by name.
     const results = fuse.search("image generation");
-    const topSlugs = results.slice(0, 4).map((r) => r.item.slug);
+    const topSlugs = results.slice(0, 5).map((r) => r.item.slug);
     expect(topSlugs).toContain("midjourney");
   });
 

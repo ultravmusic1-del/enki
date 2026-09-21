@@ -16,6 +16,8 @@ import {
   getLeaderboards,
   getCompareTools,
 } from "@/lib/content";
+import { tools as seedTools } from "@/data/tools";
+import { categories as seedCategories } from "@/data/categories";
 
 describe("content: tools", () => {
   it("returns tools sorted by name", async () => {
@@ -39,6 +41,53 @@ describe("content: tools", () => {
         featured[i].editorScore,
       );
     }
+  });
+});
+
+describe("content: no em or en dashes in seed copy", () => {
+  // Built from character codes so the test source itself never contains an
+  // em dash (U+2014) or en dash (U+2013) literal.
+  const emDash = String.fromCharCode(0x2014);
+  const enDash = String.fromCharCode(0x2013);
+
+  function collectStrings(value: unknown, out: string[]) {
+    if (typeof value === "string") {
+      out.push(value);
+    } else if (Array.isArray(value)) {
+      for (const v of value) collectStrings(v, out);
+    } else if (value && typeof value === "object") {
+      for (const v of Object.values(value)) collectStrings(v, out);
+    }
+  }
+
+  it("keeps the seed data free of em and en dashes (checked at module load; no pre-existing copy currently contains one)", () => {
+    const strings: string[] = [];
+    for (const tool of seedTools) collectStrings(tool, strings);
+    for (const category of seedCategories) collectStrings(category, strings);
+
+    const offenders = strings.filter(
+      (s) => s.includes(emDash) || s.includes(enDash),
+    );
+    expect(offenders).toEqual([]);
+  });
+});
+
+describe("content: AI Assistants seed", () => {
+  it("loads the three new assistants under the new category", async () => {
+    const all = await getAllTools();
+    const slugs = ["chatgpt", "claude", "gemini"];
+    for (const slug of slugs) {
+      const tool = all.find((t) => t.slug === slug);
+      expect(tool).toBeDefined();
+      expect(tool?.categorySlug).toBe("assistants");
+    }
+  });
+
+  it("adds an assistants category with a tool count of three", async () => {
+    const categories = await getCategories();
+    const assistants = categories.find((c) => c.slug === "assistants");
+    expect(assistants).toBeDefined();
+    expect(assistants?.toolCount).toBe(3);
   });
 });
 
@@ -220,9 +269,11 @@ describe("content: leaderboards", () => {
     expect(editor[0].editorRank).toBe(1);
   });
 
-  it("puts Cursor atop the editorial board", async () => {
+  it("puts ChatGPT atop the editorial board", async () => {
+    // Was Cursor (9.1) until the AI Assistants seed added ChatGPT at 9.2, the
+    // highest editorScore in the set.
     const { editor } = await getLeaderboards(15);
-    expect(editor[0].slug).toBe("cursor");
+    expect(editor[0].slug).toBe("chatgpt");
   });
 });
 

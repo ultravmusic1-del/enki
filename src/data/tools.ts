@@ -10,6 +10,169 @@ import type { Tool } from "@/lib/schemas";
  * displayed aggregates.
  */
 export const tools: Tool[] = [
+  /* ========================================================= ASSISTANTS */
+  {
+    slug: "chatgpt",
+    name: "ChatGPT",
+    aliases: ["OpenAI"],
+    tagline: "OpenAI's all-purpose AI assistant",
+    description:
+      "A general assistant for writing, research, coding, and analysis, with voice, image generation, and agent mode built in.",
+    longDescription:
+      "ChatGPT is the assistant most people meet first. Beyond conversation it runs deep research reports, an agent mode that carries out multi-step tasks in a browser, image and video generation, and voice conversations. Memory lets it carry context between chats, and connectors pull in files from Google Drive, OneDrive, GitHub, and Slack. It is available on the web, Windows, macOS, iOS, and Android, with a free tier and paid plans from $8 a month.",
+    website: "https://chatgpt.com",
+    categorySlug: "assistants",
+    tags: ["assistant", "chat", "deep research", "agents", "image generation", "voice"],
+    pricing: {
+      model: "freemium",
+      startingPrice: "$8/mo",
+      note: "Free tier; paid plans are Go ($8), Plus ($20), and two Pro tiers ($100 and $200).",
+    },
+    pros: [
+      "The widest feature set of any consumer assistant",
+      "Apps on every major platform except Linux",
+      "Lowest-priced paid entry point at $8 a month",
+    ],
+    cons: [
+      "Two different plans share the Pro name, which makes pricing confusing",
+      "Heavier features such as agent mode and video are rationed by plan",
+    ],
+    keyFeatures: [
+      {
+        title: "Deep research",
+        description: "Multi-step web research that returns a cited report.",
+        icon: "Telescope",
+      },
+      {
+        title: "Agent mode",
+        description: "Carries out multi-step tasks in its own browser.",
+        icon: "Bot",
+      },
+      {
+        title: "Image and video",
+        description: "Generates images and Sora video from a prompt.",
+        icon: "Images",
+      },
+    ],
+    integrations: ["Google Drive", "Microsoft OneDrive", "GitHub", "Slack"],
+    platforms: ["Web", "Windows", "macOS", "iOS", "Android"],
+    accent: "#10A37F",
+    featured: false,
+    foundedYear: 2022,
+    company: "OpenAI",
+    screenshots: [{ title: "ChatGPT", caption: "OpenAI's general assistant", hue: 160 }],
+    verdict:
+      "The default AI assistant for good reason: the broadest set of capabilities, on the most platforms, from the lowest paid price.",
+    editorScore: 9.2,
+  },
+  {
+    slug: "claude",
+    name: "Claude",
+    aliases: ["Anthropic"],
+    tagline: "Anthropic's assistant for writing, analysis, and code",
+    description:
+      "A general assistant known for long-form writing and coding, with Claude Code, research, and MCP connectors to your tools.",
+    longDescription:
+      "Claude is Anthropic's assistant. It handles long documents and nuanced writing well, and its coding agent, Claude Code, runs in the terminal and in VS Code and JetBrains. Research mode and extended thinking tackle multi-step questions, and connectors built on the open Model Context Protocol link it to Google Workspace, Slack, GitHub, and more. Desktop apps cover macOS, Windows, and Linux (beta), alongside web, iOS, and Android. There is a free tier; paid plans start at $20 a month.",
+    website: "https://claude.ai",
+    categorySlug: "assistants",
+    tags: ["assistant", "writing", "coding", "research", "mcp"],
+    pricing: {
+      model: "freemium",
+      startingPrice: "$20/mo",
+      note: "Free tier; paid plans are Pro ($20, or $17/mo billed annually) and Max ($100 or $200).",
+    },
+    pros: [
+      "Strong at long documents and careful writing",
+      "Claude Code is a full coding agent in the terminal and IDE",
+      "The only one of the big three with a Linux desktop app (in beta)",
+    ],
+    cons: [
+      "No image or video generation",
+      "No paid plan under $20 a month",
+    ],
+    keyFeatures: [
+      {
+        title: "Claude Code",
+        description: "A coding agent for the terminal, VS Code, and JetBrains.",
+        icon: "TerminalSquare",
+      },
+      {
+        title: "Research",
+        description: "Multi-step research with extended thinking and citations.",
+        icon: "Telescope",
+      },
+      {
+        title: "Connectors",
+        description: "Links to your tools through the open Model Context Protocol.",
+        icon: "Network",
+      },
+    ],
+    integrations: ["Google Workspace", "Slack", "GitHub", "MCP servers"],
+    platforms: ["Web", "Windows", "macOS", "Linux", "iOS", "Android"],
+    accent: "#D97757",
+    featured: false,
+    foundedYear: 2023,
+    company: "Anthropic",
+    screenshots: [{ title: "Claude", caption: "Anthropic's general assistant", hue: 18 }],
+    verdict:
+      "The pick for heavy writing and coding work, trading ChatGPT's multimedia breadth for depth where text and code matter.",
+    editorScore: 9.0,
+  },
+  {
+    slug: "gemini",
+    name: "Gemini",
+    aliases: ["Google Gemini"],
+    tagline: "Google's assistant, built into Workspace and Android",
+    description:
+      "A general assistant woven into Gmail, Docs, Drive, Chrome, and Android, with deep research and the cheapest paid tier of the big three.",
+    longDescription:
+      "Gemini is Google's assistant and the successor to Bard. Its strength is reach: it works inside Gmail, Docs, Sheets, and Drive, runs as the assistant on Android, and is built into Chrome. Deep Research produces cited reports, Gemini Live handles voice conversations, and Canvas and Gems cover drafting and custom assistants. It is available on the web, Android, iOS, and macOS; on Windows it runs in the browser. There is a free tier, and paid plans start at $4.99 a month.",
+    website: "https://gemini.google.com",
+    categorySlug: "assistants",
+    tags: ["assistant", "google workspace", "deep research", "voice", "android"],
+    pricing: {
+      model: "freemium",
+      startingPrice: "$4.99/mo",
+      note: "Free tier; paid plans are Google AI Plus ($4.99), AI Pro ($19.99), and two Ultra tiers ($99.99 and $199.99).",
+    },
+    pros: [
+      "Deepest integration with Gmail, Docs, Drive, and Android",
+      "Cheapest paid tier of the big three at $4.99 a month",
+      "Paid plans bundle Google One storage",
+    ],
+    cons: [
+      "No native Windows app",
+      "Plans and prices have changed repeatedly in 2026",
+    ],
+    keyFeatures: [
+      {
+        title: "Workspace integration",
+        description: "Works inside Gmail, Docs, Sheets, and Drive.",
+        icon: "Layers",
+      },
+      {
+        title: "Deep Research",
+        description: "Multi-step research that returns a cited report.",
+        icon: "Telescope",
+      },
+      {
+        title: "Gemini Live",
+        description: "Real-time voice conversations on your phone.",
+        icon: "Mic",
+      },
+    ],
+    integrations: ["Gmail", "Google Docs", "Google Drive", "Chrome"],
+    platforms: ["Web", "Android", "iOS", "macOS"],
+    accent: "#4285F4",
+    featured: false,
+    foundedYear: 2024,
+    company: "Google",
+    screenshots: [{ title: "Gemini", caption: "Google's general assistant", hue: 215 }],
+    verdict:
+      "The natural choice if you live in Google's apps: the widest reach into Workspace and Android, at the lowest paid price.",
+    editorScore: 8.9,
+  },
   /* ============================================================ WRITING */
   {
     slug: "jasper",

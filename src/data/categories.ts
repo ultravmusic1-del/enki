@@ -6,6 +6,15 @@ import type { Category } from "@/lib/schemas";
  */
 export const categories: Category[] = [
   {
+    slug: "assistants",
+    name: "AI Assistants",
+    tagline: "One model for most of your day",
+    description:
+      "General-purpose assistants from the frontier labs that write, research, code, and reason across tasks. For most people, the first AI tool they reach for.",
+    icon: "MessagesSquare",
+    accent: "#B79CED",
+  },
+  {
     slug: "writing",
     name: "Writing & Content",
     tagline: "Draft, edit, and refine at the speed of thought",
