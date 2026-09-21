@@ -67,6 +67,7 @@ describe("publishStory", () => {
     expect(stub.from).not.toHaveBeenCalled();
     expect(revalidatePath).toHaveBeenCalledWith("/admin/news");
     expect(revalidatePath).toHaveBeenCalledWith("/news", "layout");
+    expect(revalidatePath).toHaveBeenCalledWith("/");
   });
 
   it("reports a story that left the queue", async () => {
@@ -125,6 +126,7 @@ describe("setStoryStatus", () => {
     );
     await setStoryStatus(ID, "pending");
     expect(revalidatePath).toHaveBeenCalledWith("/news", "layout");
+    expect(revalidatePath).toHaveBeenCalledWith("/");
   });
 });
 

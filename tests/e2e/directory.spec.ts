@@ -107,6 +107,15 @@ test.describe("Enki critical flow", () => {
     ).toBeVisible();
   });
 
+  test("the homepage is the news front page", async ({ page }) => {
+    await page.goto("/");
+    // CI has no database, so this holds for the empty state and a full feed alike.
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(/AI news/);
+    await expect(page.getByRole("navigation", { name: "News beats" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /AI tools, vetted and scored/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: "News", exact: true }).first()).toHaveAttribute("href", "/");
+  });
+
   test("command palette opens and navigates", async ({ page }) => {
     await gotoHydrated(page, "/");
     await page.keyboard.press("ControlOrMeta+k");

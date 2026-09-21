@@ -52,6 +52,7 @@ export async function publishStory(
   revalidatePath("/admin/news");
   // Public story, archive and beat pages are cached; refresh them all.
   revalidatePath("/news", "layout");
+  revalidatePath("/");
   return { ok: true, slug: data };
 }
 
@@ -81,6 +82,7 @@ export async function setStoryStatus(
   revalidatePath("/admin/news");
   // Public story, archive and beat pages are cached; refresh them all.
   revalidatePath("/news", "layout");
+  revalidatePath("/");
   return { ok: true };
 }
 

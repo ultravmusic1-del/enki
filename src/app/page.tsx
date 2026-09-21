@@ -1,258 +1,96 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { OracleHero } from "@/components/home/oracle-hero";
 import { Container } from "@/components/shared/container";
-import { SectionHeading } from "@/components/shared/section-heading";
-import { FeaturedToolCard } from "@/components/home/featured-tool-card";
-import { CategoryTile } from "@/components/home/category-tile";
-import { FinderCta } from "@/components/home/finder-cta";
-import { Reveal } from "@/components/shared/reveal";
-import { Icon } from "@/components/shared/icon";
-import { getFeaturedTools, getCategories, getStats } from "@/lib/content";
+import { BeatRow } from "@/components/news/beat-row";
+import { TickerStrip } from "@/components/front-page/ticker-strip";
+import { LeadStory } from "@/components/front-page/lead-story";
+import { StoryRail } from "@/components/front-page/story-rail";
+import { HomeSidebar } from "@/components/front-page/home-sidebar";
+import { BeatSection } from "@/components/front-page/beat-section";
+import { CompactStoryList } from "@/components/front-page/compact-story-list";
+import { DirectoryBand } from "@/components/front-page/directory-band";
+import { getHomeFeed } from "@/lib/news/home";
+import { getAllTools, getFeaturedTools, getStats } from "@/lib/content";
+import type { Tool } from "@/lib/schemas";
+
+// Rendered on demand and cached; publishing a story revalidates "/".
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-const vetSteps = [
-  {
-    icon: "Telescope",
-    title: "Discover",
-    body: "I scan the fast-moving AI landscape continuously, tracking launches, updates, and the tools people actually reach for.",
-  },
-  {
-    icon: "Eye",
-    title: "Test",
-    body: "Every tool here is one I have used in a real workflow, not judged from a landing page. I probe strengths, limits, and edge cases.",
-  },
-  {
-    icon: "Scale",
-    title: "Score",
-    body: "I weigh capability, craft, pricing, and trust into a clear editor score, then pair it with real, human review context.",
-  },
-  {
-    icon: "BadgeCheck",
-    title: "Vet",
-    body: "Only tools that earn it are published with my mark. When something slips, I revisit and revise. The oracle stays current.",
-  },
-] as const;
-
 export default async function Home() {
-  const featured = (await getFeaturedTools()).slice(0, 6);
-  const categories = await getCategories();
-  const stats = await getStats();
-  const categoryName = new Map(categories.map((c) => [c.slug, c.name]));
+  const now = new Date();
+  const [feed, allTools, featuredAll, stats] = await Promise.all([
+    getHomeFeed(now),
+    getAllTools(),
+    getFeaturedTools(),
+    getStats(),
+  ]);
+
+  const bySlug = new Map(allTools.map((tool) => [tool.slug, tool]));
+  const resolve = (slugs: string[]) =>
+    slugs.map((slug) => bySlug.get(slug)).filter((tool): tool is Tool => tool !== undefined);
+  const ticker = feed.ticker.flatMap(({ slug, count }) => {
+    const tool = bySlug.get(slug);
+    return tool ? [{ tool, count }] : [];
+  });
+  const topTools = [...allTools].sort((a, b) => b.editorScore - a.editorScore).slice(0, 5);
+  const hasRail = feed.rail.stories.length > 0;
 
   return (
-    <>
-      {/* The 3D scene chunk is what imports the model, so without this the .glb
-          cannot even begin downloading until ~900KB of three.js has arrived and
-          executed — measured at 9.7s to 14.8s on a throttled cold load. This
-          overlaps the two instead of chaining them.
+    <Container className="flex flex-col gap-8 pt-28 pb-20">
+      <h1 className="sr-only">AI news, curated by Enki</h1>
+      <BeatRow />
 
-          `crossOrigin` is required, not optional. A preload only satisfies a
-          later request when their modes match: `as="fetch"` without the
-          attribute is a no-CORS preload, while three's FileLoader fetches in
-          cors mode. Omitting it was measured downloading the model twice.
-          React 19 hoists this into <head>. */}
-      <link
-        rel="preload"
-        href="/models/enki-model.glb"
-        as="fetch"
-        type="model/gltf-binary"
-        crossOrigin="anonymous"
+      {feed.lead ? (
+        <>
+          <TickerStrip items={ticker} />
+
+          <div
+            className={
+              hasRail
+                ? "grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]"
+                : "grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
+            }
+          >
+            <LeadStory story={feed.lead} tools={resolve(feed.leadToolSlugs)} now={now} />
+            <StoryRail title={feed.rail.title} stories={feed.rail.stories} now={now} />
+            {/* Desktop position; on phones the sidebar comes after the beats (spec §7.7). */}
+            <HomeSidebar topTools={topTools} className="hidden lg:flex" />
+          </div>
+
+          {feed.beats.length > 0 || feed.latest.length > 0 ? (
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+              {feed.beats.map((beat) => (
+                <BeatSection key={beat.slug} slug={beat.slug} name={beat.name} stories={beat.stories} now={now} />
+              ))}
+              {feed.latest.length > 0 ? (
+                <section className="flex flex-col gap-3">
+                  <h2 className="font-display text-xl font-semibold">Latest</h2>
+                  <CompactStoryList stories={feed.latest} now={now} />
+                  <Link href="/news" className="text-sm text-teal hover:text-teal-bright">
+                    All news
+                  </Link>
+                </section>
+              ) : null}
+            </div>
+          ) : null}
+
+          <HomeSidebar topTools={topTools} className="lg:hidden" />
+        </>
+      ) : (
+        <p className="rounded-2xl border border-border bg-card/60 p-6 text-sm text-muted-foreground ring-hairline">
+          The first stories are coming soon. Meanwhile, the directory is below.
+        </p>
+      )}
+
+      <DirectoryBand
+        toolCount={stats.toolCount}
+        categoryCount={stats.categoryCount}
+        featured={featuredAll.slice(0, 3)}
       />
-
-      <OracleHero toolCount={stats.toolCount} />
-
-      {/* Featured tools */}
-      <section className="py-16 sm:py-20">
-        <Container>
-          <Reveal>
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <SectionHeading
-                eyebrow="Editor's picks"
-                title="Featured tools"
-                description="The standouts I keep coming back to, tested, scored, and worth your attention."
-              />
-              <Link
-                href="/tools"
-                className="group inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-teal/40 hover:text-foreground"
-              >
-                View all tools
-                <Icon
-                  name="ArrowRight"
-                  className="size-3.5 transition-transform group-hover:translate-x-0.5"
-                />
-              </Link>
-            </div>
-          </Reveal>
-
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map((tool, i) => (
-              <Reveal key={tool.slug} index={i} className="h-full">
-                <FeaturedToolCard
-                  tool={tool}
-                  categoryName={categoryName.get(tool.categorySlug)}
-                />
-              </Reveal>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      {/* Guided finder CTA */}
-      <FinderCta />
-
-      {/* Categories */}
-      <section className="py-16 sm:py-20">
-        <Container>
-          <Reveal>
-            <SectionHeading
-              align="center"
-              eyebrow="Browse by need"
-              title="Explore every category"
-              description="From writing to research to autonomous agents. Find the right class of tool, then the right tool within it."
-              className="mx-auto max-w-2xl"
-            />
-          </Reveal>
-
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {categories.map((category, i) => (
-              <Reveal key={category.slug} index={i} className="h-full">
-                <CategoryTile category={category} />
-              </Reveal>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      {/* How we vet — with trust stats */}
-      <section
-        id="how-we-vet"
-        className="relative scroll-mt-24 overflow-hidden py-16 sm:py-20"
-      >
-        {/* Centered bloom that fades to transparent well before the top/bottom
-            edges, so the section blends seamlessly into its neighbors. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10"
-          style={{
-            background:
-              "radial-gradient(62% 55% at 50% 50%, rgb(var(--glow) / 0.09), transparent 72%)",
-          }}
-        />
-        <Container>
-          <Reveal>
-            <SectionHeading
-              align="center"
-              eyebrow="Verify to trust"
-              title="How I vet"
-              description="Enki exists to make AI adoption trustworthy. Every listing passes through the same deliberate process."
-              className="mx-auto max-w-2xl"
-            />
-          </Reveal>
-
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {vetSteps.map((step, i) => (
-              <Reveal key={step.title} index={i}>
-                <div className="group relative flex h-full flex-col gap-4 rounded-2xl border border-border bg-card/60 p-6 ring-hairline transition-colors hover:border-teal/40">
-                  <div className="flex items-center gap-3">
-                    <span className="grid size-10 place-items-center rounded-xl bg-teal/10 text-teal ring-1 ring-teal/20">
-                      <Icon name={step.icon} className="size-5" />
-                    </span>
-                    <span className="font-mono text-xs text-muted-foreground tabular-nums">
-                      0{i + 1}
-                    </span>
-                  </div>
-                  <h3 className="font-display text-xl font-semibold">
-                    {step.title}
-                  </h3>
-                  <p className="text-sm text-pretty text-muted-foreground">
-                    {step.body}
-                  </p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-
-          {/* Trust stats reinforce the vetting story */}
-          <Reveal>
-            {/*
-              Every cell here must be checkable. "Community reviews" and
-              "Average rating" used to sit alongside these, summed from
-              editorial sample figures while no user had written a review.
-              "Tools listed" replaces "Tools vetted" because no tool currently
-              carries a lastVetted date. Paid placements reads from the data,
-              so it stays true the day that changes.
-            */}
-            <div className="mt-8 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-border bg-border ring-hairline sm:grid-cols-3">
-              <StatCell value={`${stats.toolCount}`} label="Tools listed" />
-              <StatCell value={`${stats.categoryCount}`} label="Categories" />
-              <StatCell
-                value={stats.sponsoredCount === 0 ? "None" : `${stats.sponsoredCount}`}
-                label="Paid placements"
-              />
-            </div>
-          </Reveal>
-        </Container>
-      </section>
-
-      {/* CTA */}
-      <section className="py-16 sm:py-20">
-        <Container>
-          <Reveal>
-            <div className="relative overflow-hidden rounded-3xl border border-border bg-card px-6 py-16 text-center ring-hairline sm:px-16">
-              <div className="spotlight pointer-events-none absolute inset-0 opacity-90" />
-              <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center">
-                <span
-                  className="emblem mb-6 size-14"
-                  style={{
-                    color: "var(--brand-teal)",
-                    filter: "drop-shadow(0 0 24px rgb(var(--glow) / 0.5))",
-                  }}
-                  aria-hidden
-                />
-                <h2 className="text-balance text-3xl font-semibold sm:text-4xl">
-                  Find the AI tools worth trusting
-                </h2>
-                <p className="mt-4 text-pretty text-muted-foreground">
-                  Skip the hype cycle. Enki does the vetting so you can adopt
-                  with confidence.
-                </p>
-                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                  <Link
-                    href="/tools"
-                    className="inline-flex items-center justify-center gap-1.5 rounded-full bg-mist px-6 py-2.5 text-sm font-medium text-[#16191d] transition-transform hover:-translate-y-px hover:shadow-glow"
-                  >
-                    Explore the directory
-                    <Icon name="ArrowRight" className="size-4" />
-                  </Link>
-                  <Link
-                    href="/categories"
-                    className="inline-flex items-center justify-center gap-1.5 rounded-full border border-border px-6 py-2.5 text-sm text-muted-foreground transition-colors hover:border-teal/40 hover:text-foreground"
-                  >
-                    Browse categories
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        </Container>
-      </section>
-    </>
-  );
-}
-
-function StatCell({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="flex flex-col items-center gap-1 bg-card px-4 py-7 text-center">
-      <span className="font-display text-3xl font-semibold text-foreground tabular-nums sm:text-4xl">
-        {value}
-      </span>
-      <span className="font-mono text-[0.7rem] tracking-wide text-muted-foreground uppercase">
-        {label}
-      </span>
-    </div>
+    </Container>
   );
 }
