@@ -19,10 +19,45 @@ to unlock the admin.
 ## 0. In flight — AI news pivot (updated 2026-09-21)
 
 ### Start here next session
-**Merges 1 and 2 are complete (2026-09-21).** Merge 2 (public news pages) is
-committed locally; check `git log origin/main..HEAD` before assuming it is
-deployed. Next is merge 3, the new homepage (spec §7). It has no plan yet: write
-one with `superpowers:writing-plans` from spec §11 item 3.
+**Merges 1, 2 and 3 are complete (2026-09-21).** Merges 1 and 2 are live on
+enkitools.com. Merge 3 (the news homepage) is committed locally; check
+`git log origin/main..HEAD` before assuming it is deployed. **Before pushing
+merge 3, publish more stories:** with one published story the homepage is a
+single lead card. What remains is merge 4 (spec §8.2–8.3: metadata, copy, the
+footer's "oracle for AI tools" line, and the roadmap phase), which has no plan
+yet.
+
+**Merge 3 shipped** (plan `docs/superpowers/plans/2026-09-21-news-homepage.md`):
+- **`/` is the AI news front page:**
+  - a "Tools in the news" strip, shown only once 3 or more directory tools have mentions
+  - the lead story
+  - a Popular rail that becomes Latest until the rail's own top story has 10+
+    views in 48h
+  - a sidebar with "Find a tool", the top 5 tools by editor score and the Finder
+  - beat sections, a Latest column, and the directory band
+- **Rules:** every section rule lives in the pure, tested
+  `src/lib/news/home-feed.ts`.
+- **Navigation:** the header is now News · Tools · Finder · Deals, and a beat
+  row runs on `/` and every `/news` page.
+- **`/tools`** now opens on the oracle hero, followed by the directory, featured
+  tools, the Finder, categories and How I vet (`#how-we-vet`). This was pulled
+  forward from merge 4.
+- **Database:** `popular_stories(p_hours, p_limit)` returns aggregate view
+  counts for published stories only, and anon can call it.
+- **Two fixes found during verification:**
+  - **Build-time story reads were timing out.** The 2.5 s guard fired while
+    `next build` saturated the event loop (the DB answers in about 250 ms), so
+    `/`, `/news` and the beat pages were baked empty. `dbTimeoutMs()` in
+    `stories.ts` now allows 20 s during the build only.
+  - **The lead image was lazy-loaded.** It now loads eagerly at high priority.
+- **Verified:**
+  - 539 unit tests and all 13 end-to-end tests pass
+  - `pnpm audit:rls` passes 17/17
+  - the sweep passes on `/`, `/tools`, `/tools/cursor`, `/news`, a beat page,
+    the story page and `/categories` at 390px and 1440px
+- **Known:** the first request to a cold dev server can still time out a story
+  read while the page compiles. In production that would at worst cache one
+  empty 5-minute window during a background refresh.
 
 **Merge 2 shipped** (plan `docs/superpowers/plans/2026-09-21-news-public-pages.md`):
 - Pages: `/news/[slug]` (story page), `/news`, `/news/page/[n]`, the five beat
@@ -80,8 +115,8 @@ fetched, 8 new and 0 failed. That proves the Vercel secrets match Vault and
 `.env.local` (the call used the local `CRON_SECRET`). The daily cron runs at
 05:00 UTC. The admin UI walkthrough results are under "Start here" above.
 
-No public page has changed. Merges 2–4 (story pages, new homepage,
-repositioning) have no plans yet.
+Merges 2 and 3 added the public pages and the homepage (see "Start here"
+above). Merge 4 (metadata and copy) has no plan yet.
 
 ### Where to read
 - **Spec (approved):** `docs/superpowers/specs/2026-09-19-ai-news-pivot-design.md`.
@@ -89,8 +124,10 @@ repositioning) have no plans yet.
 - **Plan for merge 1:** `docs/superpowers/plans/2026-09-19-news-ingestion-and-admin.md`.
   All 16 tasks are done. The top of the plan lists six deliberate deviations
   from the spec.
-- **Git:** branch `main`. Code is pushed and deployed as of `d8be113`; only
-  handoff-doc commits sit ahead of `origin/main` (`git log origin/main..HEAD`).
+- **Plans for merges 2 and 3:** `docs/superpowers/plans/2026-09-21-news-public-pages.md`
+  and `docs/superpowers/plans/2026-09-21-news-homepage.md`.
+- **Git:** branch `main`. Merge 2 is deployed (`5287bf9`). Merge 3 is local
+  until pushed; run `git log origin/main..HEAD`.
 
 ### What changed (merge 1, commits `3037c50..b112de4`)
 - `src/lib/news/` holds the whole ingestion pipeline:
@@ -151,11 +188,18 @@ repositioning) have no plans yet.
 
 ### Not done (in order)
 - [x] **Merge 2:** public news pages (done 2026-09-21).
-- [ ] **Merges 3–4** each need their own plan, written with
-  `superpowers:writing-plans` from spec §11:
-  - **3:** the homepage (spec §7), which also adds story images (spec §7.5)
-  - **4:** `/tools` repositioning, metadata, and the site footer's "The oracle
-    for AI tools" copy
+- [x] **Merge 3:** the news homepage (done 2026-09-21).
+- [ ] **Publish more stories before pushing merge 3**, so the homepage has more
+  than one lead card.
+- [ ] **Merge 4** needs its own plan, written with `superpowers:writing-plans`
+  from spec §8.2–8.3 and §11 item 4. It covers:
+  - the site description, root metadata, homepage OG image, `manifest.ts` and
+    `llms.txt`
+  - the site footer's "The oracle for AI tools" line
+  - the affiliate disclosure copy
+  - a new roadmap phase
+
+  The `/tools` repositioning already shipped in merge 3.
 - [ ] **Owner:** create the Vercel Firewall rule `enki-story-view`.
 - [ ] **Pre-existing em dashes the owner may want removed.** Not changed,
   because the no-dash rule covers new copy only:
@@ -511,6 +555,9 @@ sources table.
   `news_ingest_secret`, and a wrong secret raises `42501`. `ingest_story` can
   only create **pending** rows. These three are executable by anon and
   authenticated; `news_ingest_authorized` is not executable by any API role.
+- **`popular_stories(p_hours, p_limit)`** returns `(story_id, views)` aggregate
+  counts, for published stories only. anon and authenticated can execute it
+  (merge 3). It feeds the homepage's Popular rail.
 - **`admin_publish_story(…)`** returns the slug and **`admin_set_story_status(…)`**
   returns a boolean. Both are guarded by `is_admin()` and executable by
   authenticated only.
@@ -525,7 +572,8 @@ sources table.
 **`revoke_delete_account_from_anon`**, **`create_news_tables`** (2026-09-19; SQL
 in the merge-1 plan's Task 8, plus an index on `stories.source_id`),
 **`fix_news_ingest_authorized_param_shadowing`** (2026-09-20),
-**`news_public_pages`** (2026-09-21; SQL in the merge-2 plan's Task 1).
+**`news_public_pages`** (2026-09-21; SQL in the merge-2 plan's Task 1),
+**`popular_stories`** (2026-09-21; SQL in the merge-3 plan's Task 1).
 
 ### Content layer — DB-preferred + seed fallback (IMPORTANT, new)
 `src/lib/content.ts` is now **async**. Tools load from the `tools` table
