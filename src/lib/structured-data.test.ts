@@ -5,6 +5,7 @@ import {
   breadcrumbJsonLd,
   faqJsonLd,
   itemListJsonLd,
+  newsArticleJsonLd,
 } from "@/lib/structured-data";
 import { getToolBySlug } from "@/lib/content";
 import type { Tool } from "@/lib/schemas";
@@ -97,5 +98,41 @@ describe("structured-data: reusable page builders", () => {
     expect(ld["@type"]).toBe("BreadcrumbList");
     expect(ld.itemListElement[1]).toMatchObject({ position: 2, name: "Best" });
     expect(ld.itemListElement[1].item).toMatch(/\/best\/writing$/);
+  });
+});
+
+describe("newsArticleJsonLd", () => {
+  const story = {
+    id: "id-1",
+    slug: "gemini-hacked-31fc2b",
+    headline: "H".repeat(140),
+    summary: "A summary.",
+    take: "t".repeat(300),
+    beat: "policy-safety" as const,
+    beatName: "Policy & Safety",
+    imageUrl: null,
+    sourceName: "The Verge",
+    sourceSiteUrl: "https://www.theverge.com",
+    sourceUrl: "https://www.theverge.com/story",
+    sourcePublishedAt: "2026-09-19T15:25:00Z",
+    publishedAt: "2026-09-21T10:01:35Z",
+    featured: false,
+  };
+
+  it("describes the story as a NewsArticle at its absolute URL", () => {
+    const ld = newsArticleJsonLd(story) as Record<string, unknown>;
+    expect(ld["@type"]).toBe("NewsArticle");
+    expect(String(ld.url)).toMatch(/^https?:\/\/.+\/news\/gemini-hacked-31fc2b$/);
+    expect(ld.isBasedOn).toBe(story.sourceUrl);
+    expect(ld.datePublished).toBe(story.publishedAt);
+  });
+
+  it("truncates the headline to the 110 characters search engines accept", () => {
+    const ld = newsArticleJsonLd(story) as { headline: string };
+    expect(ld.headline.length).toBeLessThanOrEqual(110);
+  });
+
+  it("omits the image when the story has none", () => {
+    expect(newsArticleJsonLd(story)).not.toHaveProperty("image");
   });
 });

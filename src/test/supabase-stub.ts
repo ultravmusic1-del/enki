@@ -19,6 +19,8 @@ export function queryStub(result: StubResult) {
     "in",
     "order",
     "limit",
+    "range",
+    "neq",
     "single",
     "maybeSingle",
   ];

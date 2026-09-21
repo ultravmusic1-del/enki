@@ -1,5 +1,6 @@
 import { siteConfig } from "@/lib/site";
 import type { Tool } from "@/lib/schemas";
+import type { PublicStory } from "@/lib/news/stories";
 
 /* =========================================================================
    Schema.org JSON-LD builders. Kept out of the components so the shapes are
@@ -153,5 +154,25 @@ export function breadcrumbJsonLd(crumbs: { name: string; path: string }[]) {
       name: c.name,
       item: abs(c.path),
     })),
+  };
+}
+
+/** NewsArticle, emitted only on story pages that are indexable (spec §6.1). */
+export function newsArticleJsonLd(story: PublicStory) {
+  const url = abs(`/news/${story.slug}`);
+  const org = { "@type": "Organization", name: siteConfig.name, url: BASE };
+  return {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: story.headline.slice(0, 110),
+    description: story.summary,
+    datePublished: story.publishedAt,
+    dateModified: story.publishedAt,
+    url,
+    mainEntityOfPage: url,
+    ...(story.imageUrl ? { image: [story.imageUrl] } : {}),
+    author: org,
+    publisher: org,
+    isBasedOn: story.sourceUrl,
   };
 }
