@@ -126,7 +126,7 @@ export function OracleHero({ toolCount }: { toolCount: number }) {
           </button>
 
           <Link
-            href="/tools"
+            href="#directory"
             className="inline-flex items-center gap-1.5 rounded-full bg-mist px-6 py-2.5 text-sm font-medium text-[#16191d] transition-transform hover:-translate-y-px hover:shadow-glow"
           >
             Browse the directory

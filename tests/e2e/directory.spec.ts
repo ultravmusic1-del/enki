@@ -17,14 +17,10 @@ async function gotoHydrated(page: Page, path: string) {
 }
 
 test.describe("Enki critical flow", () => {
-  test("landing page loads with hero and featured tools", async ({ page }) => {
-    await page.goto("/");
-    await expect(
-      page.getByRole("heading", { level: 1 }),
-    ).toContainText("AI tools");
-    await expect(
-      page.getByRole("heading", { name: "Featured tools" }),
-    ).toBeVisible();
+  test("the directory page opens with the hero and featured tools", async ({ page }) => {
+    await page.goto("/tools");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("AI tools");
+    await expect(page.getByRole("heading", { name: "Featured tools" })).toBeVisible();
   });
 
   test("search → filter → open a tool detail page", async ({ page }) => {
