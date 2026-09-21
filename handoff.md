@@ -143,7 +143,23 @@ repositioning) have no plans yet.
   --audit-level high` fails on 11 advisories in `next`, `sharp`, `@sentry/nextjs`,
   `@react-three/drei` and `browserslist`. It was already failing on 2026-09-15.
 
-### Open question for the owner (raised 2026-09-20, not decided)
+### Directory coverage: partly resolved 2026-09-21
+ChatGPT, Claude and Gemini were added (commit `96d1fe4`) under a new **AI
+Assistants** category. Scores were drafted by Claude and approved by the owner:
+ChatGPT 9.2, Claude 9.0, Gemini 8.9. `lastVetted` is left unset on purpose, and
+there are no logos or screenshots yet (monogram and gradient fallbacks). The 14
+existing pending stories were backfilled with tool suggestions by SQL, and the
+published Gemini story now links Gemini.
+
+**None of the three has an affiliate programme.** OpenAI and Anthropic run
+enterprise partner networks only. Google's referral and affiliate programmes
+cover Workspace, not Gemini's consumer plans. Their tool cards drive tracked
+`/go` clicks (demand data) but no commission, so revenue still depends on the
+smaller tools that do have programmes. The "OpenAI" and "Anthropic" aliases also
+suggest tools on incidental mentions (the Gemini story's excerpt mentions
+OpenAI), so check suggestions at publish.
+
+### Original question (raised 2026-09-20)
 **The directory does not contain the tools the news is about, so almost no story
 earns an affiliate link.** Of the first 41 ingested stories, 8 mention ChatGPT or
 OpenAI, 7 mention Claude or Anthropic and 2 mention Gemini — none of which are
