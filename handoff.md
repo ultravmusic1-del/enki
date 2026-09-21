@@ -51,9 +51,11 @@ second run inserted 0, proving dedup. The live `pnpm audit:rls` passes 16/16
 against a database that now genuinely has hidden rows.
 
 What is missing from **Task 16**:
-- `NEWS_INGEST_SECRET` is set in `.env.local` and in Supabase Vault, but **not
-  yet in Vercel**, so the deployed cron will fail with `not authorized` until it
-  is added (with `CRON_SECRET`) for Production and Preview.
+- The secrets are all in place: `.env.local`, Supabase Vault, and (owner
+  confirmed 2026-09-21) Vercel, with `CRON_SECRET`. **Not yet verified:** that
+  the Vercel `NEWS_INGEST_SECRET` matches Vault. The first production cron run
+  proves it — a `not authorized` error in Sentry monitor `ingest-news` means the
+  two differ.
 - the admin UI has **never been rendered in a browser**. No visual sweep has run
   against it, because `/admin/*` needs a signed-in owner.
 
