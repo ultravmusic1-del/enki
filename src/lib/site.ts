@@ -74,11 +74,10 @@ export const siteConfig = {
    */
   hasVerifiedRatings: false,
   nav: [
-    { title: "Directory", href: "/tools" },
+    { title: "News", href: "/" },
+    { title: "Tools", href: "/tools" },
     { title: "Finder", href: "/finder" },
-    { title: "Categories", href: "/categories" },
-    { title: "Compare", href: "/compare" },
-    { title: "Leaderboards", href: "/leaderboards" },
+    { title: "Deals", href: "/deals" },
   ],
   /**
    * Real, owned accounts only. These render as clickable links in the footer and

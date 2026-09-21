@@ -11,6 +11,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/lib/site";
+import { isNavActive } from "@/lib/nav";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -39,10 +40,7 @@ export function SiteHeader() {
   const [pill, setPill] = useState({ x: 0, w: 0, show: false, instant: true });
 
   const isActive = useCallback(
-    (href: string) =>
-      href === "/"
-        ? pathname === "/"
-        : pathname === href || pathname.startsWith(`${href}/`),
+    (href: string) => isNavActive(href, pathname),
     [pathname],
   );
 

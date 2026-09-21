@@ -1,10 +1,9 @@
-import Link from "next/link";
 import { Container } from "@/components/shared/container";
 import { StoryList } from "@/components/news/story-list";
 import { NewsPagination } from "@/components/news/news-pagination";
-import { beats, type BeatSlug } from "@/data/beats";
+import { BeatRow } from "@/components/news/beat-row";
+import type { BeatSlug } from "@/data/beats";
 import type { PublicStory } from "@/lib/news/stories";
-import { cn } from "@/lib/utils";
 
 /** Shared layout for /news, its later pages, and the beat pages. */
 export function NewsArchive({
@@ -32,35 +31,7 @@ export function NewsArchive({
           <p className="font-mono text-xs tracking-[0.3em] text-teal uppercase">Enki news</p>
           <h1 className="font-display text-4xl font-semibold text-balance">{title}</h1>
           <p className="text-pretty text-muted-foreground">{description}</p>
-          <nav aria-label="Beats" className="flex flex-wrap gap-2 pt-2">
-            <Link
-              href="/news"
-              aria-current={activeBeat ? undefined : "page"}
-              className={cn(
-                "rounded-full border px-3 py-1 text-xs transition-colors",
-                activeBeat
-                  ? "border-border text-muted-foreground hover:border-teal/40 hover:text-foreground"
-                  : "border-teal/40 bg-teal/10 text-teal",
-              )}
-            >
-              Latest
-            </Link>
-            {beats.map((beat) => (
-              <Link
-                key={beat.slug}
-                href={`/news/beat/${beat.slug}`}
-                aria-current={activeBeat === beat.slug ? "page" : undefined}
-                className={cn(
-                  "rounded-full border px-3 py-1 text-xs transition-colors",
-                  activeBeat === beat.slug
-                    ? "border-teal/40 bg-teal/10 text-teal"
-                    : "border-border text-muted-foreground hover:border-teal/40 hover:text-foreground",
-                )}
-              >
-                {beat.name}
-              </Link>
-            ))}
-          </nav>
+          <BeatRow className="pt-2" />
         </header>
 
         {stories.length > 0 ? (
