@@ -8,12 +8,39 @@ away, as the secondary product.
 
 ---
 
+## 0. Amendments (2026-09-21, owner-approved)
+
+These override the sections they name. Merge 1 shipped on the original text,
+with the deviations listed at the top of its plan
+(`docs/superpowers/plans/2026-09-19-news-ingestion-and-admin.md`).
+
+1. **Who writes summaries and takes** (overrides §1, §2, §6.1, §6.3). Claude may
+   write both summaries and takes and publish stories itself, provided each is
+   written after reading the source article and contains no em dashes. The
+   owner still may. There is still no automated LLM step in the ingest pipeline.
+2. **Byline** (overrides §6.1 item 3). Story pages say **"Summary by Enki"**.
+   There is no AI disclosure anywhere: the owner chose this over the recommended
+   disclosure. No copy may claim that a specific person wrote a summary.
+3. **Takes and indexing** (clarifies §1, §6.1). A take of 300+ characters still
+   makes a page indexable, and Claude may write takes freely. The owner accepted
+   the SEO risk of AI-written indexable pages at scale.
+4. **Public source names** (fills a gap in §3.1 for merge 2). Story pages show
+   the source's name and link to its site, but `news_sources` is admin-only. Merge
+   2 grants anonymous `select` on `news_sources (id, name, site_url)` only,
+   through column privileges plus a read policy. `feed_url`, `active`,
+   `last_fetched_at` and `last_error` stay admin-only.
+5. **Excerpts** live in the admin-only table `story_excerpts`, not in a
+   column-revoked `stories.excerpt` (merge 1 plan deviation 1). Everything in
+   this spec about excerpts never being public still holds.
+
+---
+
 ## 1. Decisions taken
 
 | Question | Decision |
 |---|---|
 | Where stories come from | **Aggregated from RSS/Atom feeds, curated by the owner.** Nothing publishes without approval. |
-| Who writes the summary | **The owner, by hand**, 40–320 characters. No LLM in the pipeline. |
+| Who writes the summary | ~~The owner, by hand~~ **The owner or Claude**, after reading the source, 40–320 characters, no em dashes (amendment 1). No automated LLM step in the pipeline. |
 | How tools attach to stories | **Auto-suggested by name/alias matching at ingest; confirmed by the owner** in the same approval step. |
 | Where a headline click lands | **An Enki story page** (`/news/[slug]`) with a prominent link to the source. |
 | Indexing of story pages | **`noindex, follow` by default.** Indexable only when the owner adds a take of 300+ characters. |
@@ -222,8 +249,8 @@ Top to bottom:
 
 1. Beat breadcrumb.
 2. Headline.
-3. Meta line: source name, the source's publish time, and "Summarised by
-   Vivaan Kavalani" from `src/data/authors.ts`.
+3. Meta line: source name (linked to the source's `site_url`), the source's
+   publish time, and **"Summary by Enki"** (amendment 2).
 4. The summary.
 5. The take, if present.
 6. **"Read the full story at {Source}"**: a plain external link with
@@ -264,7 +291,8 @@ Filters are **path segments, not query strings**. Roadmap item 0.2 found that
 A short, plain page covering:
 
 - headlines and reporting belong to the linked publishers
-- the owner reads the source and writes every summary
+- every summary and take is written from the linked source (amendments 1–2: say
+  nothing about who writes them)
 - tool links may earn a commission, and never influence which stories run or
   how they are summarised
 
