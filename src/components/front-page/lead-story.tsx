@@ -8,7 +8,7 @@ export function LeadStory({ story, tools, now }: { story: PublicStory; tools: To
   const reportedAt = story.sourcePublishedAt ?? story.publishedAt;
   return (
     <article className="grid gap-5 rounded-2xl border border-border bg-card/60 p-5 ring-hairline sm:p-6 md:grid-cols-2">
-      {story.imageUrl ? <StoryImage src={story.imageUrl} className="aspect-video w-full md:aspect-auto md:min-h-56" /> : null}
+      {story.imageUrl ? <StoryImage src={story.imageUrl} priority className="aspect-video w-full md:aspect-auto md:min-h-56" /> : null}
       <div className={story.imageUrl ? "flex flex-col gap-3" : "flex flex-col gap-3 md:col-span-2"}>
         <p className="font-mono text-xs tracking-wide text-teal uppercase">{story.beatName}</p>
         <h2 className="font-display text-2xl leading-tight font-semibold break-words text-balance sm:text-3xl">
