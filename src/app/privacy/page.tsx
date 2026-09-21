@@ -31,7 +31,9 @@ export default function PrivacyPage() {
             If you create an account we store the email address and optional
             display name you provide, and the tools you save or review.
             Anonymous, cookieless usage analytics are collected via Vercel
-            Analytics to help us improve the site.
+            Analytics to help us improve the site. When you read a news story
+            we record an anonymous view, meaning the story and the time and
+            nothing about you, to show which stories are popular.
           </p>
 
           <h2 className="mt-4 font-display text-xl font-semibold text-foreground">

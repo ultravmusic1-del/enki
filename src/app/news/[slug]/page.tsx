@@ -7,6 +7,7 @@ import { AffiliateDisclosure } from "@/components/shared/affiliate-disclosure";
 import { JsonLd } from "@/components/seo/json-ld";
 import { StoryToolCard } from "@/components/news/story-tool-card";
 import { StoryList } from "@/components/news/story-list";
+import { StoryViewPing } from "@/components/news/story-view-ping";
 import { breadcrumbJsonLd, newsArticleJsonLd } from "@/lib/structured-data";
 import { formatAge } from "@/lib/news/format-age";
 import { storyRobots } from "@/lib/news/story-meta";
@@ -65,6 +66,7 @@ export default async function StoryPage({ params }: Props) {
       {indexable ? <JsonLd data={newsArticleJsonLd(story)} /> : null}
 
       <article className="mx-auto flex max-w-3xl flex-col gap-8">
+        <StoryViewPing storyId={story.id} />
         <header className="flex flex-col gap-4">
           <nav
             aria-label="Breadcrumb"

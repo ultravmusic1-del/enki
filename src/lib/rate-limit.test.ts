@@ -34,6 +34,7 @@ const PATHS: WritePath[] = [
   "newsletter",
   "submit",
   "unsubscribe",
+  "story-view",
 ];
 
 describe("allowWrite", () => {

@@ -23,6 +23,7 @@ import { checkRateLimit } from "@vercel/firewall";
  *   enki-newsletter     5 / hour
  *   enki-submit         5 / hour
  *   enki-unsubscribe    5 / hour
+ *   enki-story-view    30 / minute
  *
  * FAILS OPEN, ALWAYS. A limiter that takes the newsletter down during its own
  * outage is worse than the abuse it prevents, and every path here is still
@@ -65,7 +66,8 @@ export type WritePath =
   | "outbound"
   | "newsletter"
   | "submit"
-  | "unsubscribe";
+  | "unsubscribe"
+  | "story-view";
 
 /**
  * Explicit request context. The SDK otherwise reads an ambient

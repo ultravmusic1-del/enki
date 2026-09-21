@@ -13,6 +13,7 @@ const ANON_WRITE_PATHS = [
   "src/app/actions/newsletter.ts",
   "src/app/submit/actions.ts",
   "src/app/go/[slug]/route.ts",
+  "src/app/api/story-view/route.ts",
 ];
 
 describe("anonymous write paths", () => {
