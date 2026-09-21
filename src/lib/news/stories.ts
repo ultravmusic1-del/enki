@@ -17,8 +17,18 @@ import { createAnonClient } from "@/lib/supabase/anon";
  * an empty archive and a 404 story, never a crashed render.
  */
 
-const DB_TIMEOUT_MS = 2500;
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/**
+ * The read timeout. 2.5 s at request time so a paused database degrades
+ * quickly; much longer during `next build`, where parallel page generation
+ * saturates the event loop and a short timer fires before healthy responses
+ * are processed (seen: every build-time story read timed out, baking empty
+ * pages).
+ */
+export function dbTimeoutMs(phase: string | undefined = process.env.NEXT_PHASE): number {
+  return phase === "phase-production-build" ? 20_000 : 2_500;
+}
 
 const PUBLIC_STORY_COLUMNS =
   "id, slug, headline, summary, take, beat, image_url, source_name, source_site_url, source_url, source_published_at, published_at, featured";
@@ -90,7 +100,7 @@ async function withTimeout<R extends { error: unknown }>(
 ): Promise<R | null> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<null>((resolve) => {
-    timer = setTimeout(() => resolve(null), DB_TIMEOUT_MS);
+    timer = setTimeout(() => resolve(null), dbTimeoutMs());
   });
   try {
     const result = await Promise.race([query, timeout]);

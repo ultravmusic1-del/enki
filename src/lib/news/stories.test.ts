@@ -22,6 +22,7 @@ const {
   listRecentStories,
   getToolSlugsForStories,
   getPopularStoryViews,
+  dbTimeoutMs,
 } = await import("@/lib/news/stories");
 
 const row = {
@@ -190,6 +191,16 @@ describe("getToolSlugsForStories", () => {
     expect(map.get("a")).toEqual(["gemini", "cursor"]);
     expect(map.get("b")).toEqual(["claude"]);
     expect(builder().in).toHaveBeenCalledWith("story_id", ["a", "b"]);
+  });
+});
+
+describe("dbTimeoutMs", () => {
+  it("is short at request time", () => {
+    expect(dbTimeoutMs(undefined)).toBe(2_500);
+    expect(dbTimeoutMs("phase-production-server")).toBe(2_500);
+  });
+  it("is long during the production build", () => {
+    expect(dbTimeoutMs("phase-production-build")).toBe(20_000);
   });
 });
 
