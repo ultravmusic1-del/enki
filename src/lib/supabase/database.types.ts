@@ -365,6 +365,11 @@ export type Database = {
         Args: { p_story_id: string; p_status: string }
         Returns: boolean
       }
+      /** Aggregate view counts for published stories only. Anon-callable. */
+      popular_stories: {
+        Args: { p_hours?: number; p_limit?: number }
+        Returns: { story_id: string; views: number }[]
+      }
     }
     Enums: { [_ in never]: never }
     CompositeTypes: { [_ in never]: never }
