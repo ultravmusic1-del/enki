@@ -19,22 +19,20 @@ to unlock the admin.
 ## 0. In flight — AI news pivot (updated 2026-09-20)
 
 ### Start here tomorrow
-1. `git pull` is not needed — nothing is pushed. **10 commits are waiting on
-   `main`** (`git log origin/main..HEAD`), including the fix that unblocks
-   Vercel. **The live deploy stays broken until they are pushed.**
+1. Everything is pushed and deployed; production ingest verified 2026-09-21.
 2. `pnpm install && pnpm run doctor` (note: `pnpm run`, see below), then
    `pnpm verify`.
 3. **The only work left in merge 1 is the admin UI walkthrough**, which needs
    the owner signed in: start `preview_start` `enki-dev`, have the owner sign in
    at `/login`, then check `/admin/news`, `/admin/news/sources` and `/admin` at
    390px and 1440px, publish one story end to end, and read the console.
-   **41 real pending stories are already in the queue**, so nothing needs
+   **49 real pending stories are already in the queue**, so nothing needs
    fetching first.
 
 ### Status
 The pivot is specified in four merges. **Merge 1 (news ingestion + admin queue)
-is code-complete: 15 of 16 tasks done.** Tasks 1–12 are pushed; 13–15 are
-committed locally. What exists, with typecheck, lint and 439 tests green:
+is code-complete, pushed and deployed: 15 of 16 tasks done.** What exists, with
+typecheck, lint and 448 tests green:
 - the RSS/Atom parser
 - the tool matcher
 - the ingest loop
@@ -51,11 +49,11 @@ second run inserted 0, proving dedup. The live `pnpm audit:rls` passes 16/16
 against a database that now genuinely has hidden rows.
 
 What is missing from **Task 16**:
-- The secrets are all in place: `.env.local`, Supabase Vault, and (owner
-  confirmed 2026-09-21) Vercel, with `CRON_SECRET`. **Not yet verified:** that
-  the Vercel `NEWS_INGEST_SECRET` matches Vault. The first production cron run
-  proves it — a `not authorized` error in Sentry monitor `ingest-news` means the
-  two differ.
+- **Production ingest verified 2026-09-21:** after the pnpm fix deployed,
+  `https://enkitools.com/api/ingest-news` returned 200 with 7 sources, 36 items
+  fetched, 8 new and 0 failed. That proves the Vercel secrets match Vault and
+  `.env.local` (the call used the local `CRON_SECRET`). The queue now holds 49
+  pending stories; the daily cron runs at 05:00 UTC.
 - the admin UI has **never been rendered in a browser**. No visual sweep has run
   against it, because `/admin/*` needs a signed-in owner.
 
@@ -68,8 +66,7 @@ repositioning) have no plans yet.
 - **Plan for merge 1:** `docs/superpowers/plans/2026-09-19-news-ingestion-and-admin.md`.
   Tasks 1–15 are done; continue at **Task 16**. The top of the plan lists six
   deliberate deviations from the spec.
-- **Git:** branch `main`, clean tree, with the Task 13–15 commits and this
-  handoff ahead of `origin/main` (`git log origin/main..HEAD`).
+- **Git:** branch `main`, in sync with `origin/main` as of `d8be113`.
 
 ### What changed (merge 1, commits `3037c50..b112de4`)
 - `src/lib/news/` holds the whole ingestion pipeline:
@@ -122,9 +119,8 @@ repositioning) have no plans yet.
   batch, followed by a spec review and then a code-quality review.
 
 ### Not done (in order)
-- [ ] **Task 16 (owner first).** Only the owner creates the secret (see Traps).
-  Then run `pnpm verify`, `pnpm audit:rls`, a local cron call, and an admin UI
-  walkthrough with the owner signed in. Update §2a and §4 if anything changed.
+- [ ] **Task 16, last step:** the admin UI walkthrough with the owner signed in
+  (secrets, local and production ingest are all done and verified).
 - [ ] **Merges 2–4** each need their own plan, written with
   `superpowers:writing-plans` from spec §11:
   - **2:** story, `/news`, beat and about pages, plus `story_views`
