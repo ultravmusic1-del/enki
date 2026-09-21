@@ -99,7 +99,13 @@ async function withTimeout<R extends { error: unknown }>(
       return null;
     }
     if (result.error) {
-      console.error(`[enki] ${label} failed`, result.error);
+      // PGRST103: PostgREST's answer to a range past the end of the result
+      // set (e.g. an archive page number beyond the last page). That is an
+      // empty result, not a failure, so it is not logged as one.
+      const code = (result.error as { code?: string } | null)?.code;
+      if (code !== "PGRST103") {
+        console.error(`[enki] ${label} failed`, result.error);
+      }
       return null;
     }
     return result;

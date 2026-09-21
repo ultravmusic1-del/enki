@@ -130,6 +130,14 @@ describe("listPublishedStories", () => {
     respond({ data: null, error: { message: "paused" } });
     expect(await listPublishedStories()).toEqual({ stories: [], total: 0 });
   });
+  it("treats an out-of-range page (PGRST103) as an empty archive, silently", async () => {
+    respond({
+      data: null,
+      error: { code: "PGRST103", message: "Requested range not satisfiable" },
+    });
+    expect(await listPublishedStories({ page: 99999 })).toEqual({ stories: [], total: 0 });
+    expect(console.error).not.toHaveBeenCalled();
+  });
 });
 
 describe("listIndexableStories", () => {
