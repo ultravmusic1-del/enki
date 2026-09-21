@@ -5,8 +5,6 @@ import { beats, getBeat } from "@/data/beats";
 import { listPublishedStories } from "@/lib/news/stories";
 
 export const revalidate = 300;
-// Only the five beats exist; anything else 404s at the router.
-export const dynamicParams = false;
 export function generateStaticParams() {
   return beats.map((beat) => ({ beat: beat.slug }));
 }
