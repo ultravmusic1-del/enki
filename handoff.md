@@ -68,9 +68,10 @@ repositioning) have no plans yet.
 - **Spec (approved):** `docs/superpowers/specs/2026-09-19-ai-news-pivot-design.md`.
   All four merges and every product decision are in it.
 - **Plan for merge 1:** `docs/superpowers/plans/2026-09-19-news-ingestion-and-admin.md`.
-  Tasks 1–15 are done; continue at **Task 16**. The top of the plan lists six
-  deliberate deviations from the spec.
-- **Git:** branch `main`, in sync with `origin/main` as of `d8be113`.
+  All 16 tasks are done. The top of the plan lists six deliberate deviations
+  from the spec.
+- **Git:** branch `main`. Code is pushed and deployed as of `d8be113`; only
+  handoff-doc commits sit ahead of `origin/main` (`git log origin/main..HEAD`).
 
 ### What changed (merge 1, commits `3037c50..b112de4`)
 - `src/lib/news/` holds the whole ingestion pipeline:
