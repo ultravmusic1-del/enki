@@ -113,6 +113,29 @@ describe("buildHomeFeed: rail", () => {
     expect(feed.latest.some((s) => s.id === feed.lead?.id)).toBe(false);
     expect(feed.latest).toHaveLength(LATEST_COUNT);
   });
+
+  it("falls back to Latest when only the lead is popular", () => {
+    const feed = build({
+      stories: many,
+      popular: [
+        { storyId: "s0", views: 50 },
+        { storyId: "s2", views: 2 },
+        { storyId: "s4", views: 1 },
+      ],
+    });
+    expect(feed.rail.title).toBe("Latest");
+  });
+
+  it("ignores a popular id that is not among the loaded stories", () => {
+    const feed = build({
+      stories: many,
+      popular: [
+        { storyId: "ghost", views: 99 },
+        { storyId: "s2", views: 3 },
+      ],
+    });
+    expect(feed.rail.title).toBe("Latest");
+  });
 });
 
 describe("buildHomeFeed: beats", () => {

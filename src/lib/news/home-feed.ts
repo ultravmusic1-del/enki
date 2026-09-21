@@ -56,12 +56,14 @@ export function buildHomeFeed({
   const rest = sorted.filter((s) => s.id !== lead?.id);
 
   const byId = new Map(sorted.map((s) => [s.id, s]));
+  const viewsByStoryId = new Map(popular.map((p) => [p.storyId, p.views]));
   const popularStories = popular
     .map((p) => byId.get(p.storyId))
     .filter((s): s is PublicStory => s !== undefined && s.id !== lead?.id)
     .slice(0, POPULAR_COUNT);
+  const topRailViews = popularStories.length > 0 ? (viewsByStoryId.get(popularStories[0].id) ?? 0) : 0;
   const rail: HomeFeed["rail"] =
-    (popular[0]?.views ?? 0) >= POPULAR_MIN_TOP_VIEWS && popularStories.length > 0
+    popularStories.length > 0 && topRailViews >= POPULAR_MIN_TOP_VIEWS
       ? { title: "Popular", stories: popularStories }
       : { title: "Latest", stories: rest.slice(0, POPULAR_COUNT) };
 
