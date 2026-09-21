@@ -50,6 +50,8 @@ export async function publishStory(
   if (!data) return { ok: false, error: "That story is no longer in the queue." };
 
   revalidatePath("/admin/news");
+  // Public story, archive and beat pages are cached; refresh them all.
+  revalidatePath("/news", "layout");
   return { ok: true, slug: data };
 }
 
@@ -77,6 +79,8 @@ export async function setStoryStatus(
   if (!data) return { ok: false, error: "That story has already moved on." };
 
   revalidatePath("/admin/news");
+  // Public story, archive and beat pages are cached; refresh them all.
+  revalidatePath("/news", "layout");
   return { ok: true };
 }
 

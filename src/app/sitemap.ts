@@ -2,6 +2,11 @@ import type { MetadataRoute } from "next";
 import { siteConfig } from "@/lib/site";
 import { getAllTools, getCategories } from "@/lib/content";
 import { versusPairs, versusSlug } from "@/lib/seo";
+import { beats } from "@/data/beats";
+import { listIndexableStories } from "@/lib/news/stories";
+
+// Hourly: stories are published daily, and only indexable ones are listed.
+export const revalidate = 3600;
 
 /** Generated at build time; regenerates when tool/category content changes. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -63,6 +68,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   );
 
+  const news: MetadataRoute.Sitemap = [
+    { url: `${base}/news`, lastModified: now, changeFrequency: "hourly", priority: 0.9 },
+    { url: `${base}/news/about`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
+    ...beats.map((beat) => ({
+      url: `${base}/news/beat/${beat.slug}`,
+      lastModified: now,
+      changeFrequency: "daily" as const,
+      priority: 0.6,
+    })),
+  ];
+
+  // Only stories with an indexable take (spec §6.1). Archive pages 2+ are
+  // noindex, so they are not listed.
+  const stories: MetadataRoute.Sitemap = (await listIndexableStories()).map((story) => ({
+    url: `${base}/news/${story.slug}`,
+    lastModified: new Date(story.publishedAt),
+    changeFrequency: "weekly",
+    priority: 0.6,
+  }));
+
   return [
     ...staticRoutes,
     ...tools,
@@ -70,5 +95,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...best,
     ...alternatives,
     ...versus,
+    ...news,
+    ...stories,
   ];
 }

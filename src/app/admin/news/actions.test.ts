@@ -66,6 +66,7 @@ describe("publishStory", () => {
     });
     expect(stub.from).not.toHaveBeenCalled();
     expect(revalidatePath).toHaveBeenCalledWith("/admin/news");
+    expect(revalidatePath).toHaveBeenCalledWith("/news", "layout");
   });
 
   it("reports a story that left the queue", async () => {
@@ -116,6 +117,14 @@ describe("setStoryStatus", () => {
       supabaseStub({ isAdmin: true, rpc: { admin_set_story_status: { data: false, error: null } } }),
     );
     expect((await setStoryStatus(ID, "rejected")).ok).toBe(false);
+  });
+
+  it("refreshes public news pages when a story is unpublished", async () => {
+    createClient.mockReturnValue(
+      supabaseStub({ isAdmin: true, rpc: { admin_set_story_status: { data: true, error: null } } }),
+    );
+    await setStoryStatus(ID, "pending");
+    expect(revalidatePath).toHaveBeenCalledWith("/news", "layout");
   });
 });
 
