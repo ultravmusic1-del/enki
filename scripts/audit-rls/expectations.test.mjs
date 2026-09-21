@@ -18,6 +18,7 @@ describe("ANON_INVISIBLE_TABLES", () => {
       "profiles",
       "reviews",
       "story_excerpts",
+      "story_views",
       "subscribers",
       "tool_submissions",
     ]);

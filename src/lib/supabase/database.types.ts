@@ -269,6 +269,8 @@ export type Database = {
           id: string
           slug: string | null
           source_id: string
+          source_name: string
+          source_site_url: string
           source_url: string
           headline: string
           summary: string | null
@@ -295,6 +297,13 @@ export type Database = {
       story_tools: {
         Row: { story_id: string; tool_slug: string; position: number }
         Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      /** Anonymous view log. Anon may insert (story_id) for published stories only; admins read. */
+      story_views: {
+        Row: { id: number; story_id: string; created_at: string }
+        Insert: { story_id: string }
         Update: { [_ in never]: never }
         Relationships: []
       }
