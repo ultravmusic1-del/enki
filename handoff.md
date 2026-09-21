@@ -16,23 +16,30 @@ to unlock the admin.
 
 ---
 
-## 0. In flight — AI news pivot (updated 2026-09-20)
+## 0. In flight — AI news pivot (updated 2026-09-21)
 
-### Start here tomorrow
-1. Everything is pushed and deployed; production ingest verified 2026-09-21.
-2. `pnpm install && pnpm run doctor` (note: `pnpm run`, see below), then
-   `pnpm verify`.
-3. **The only work left in merge 1 is the admin UI walkthrough**, which needs
-   the owner signed in: start `preview_start` `enki-dev`, have the owner sign in
-   at `/login`, then check `/admin/news`, `/admin/news/sources` and `/admin` at
-   390px and 1440px, publish one story end to end, and read the console.
-   **49 real pending stories are already in the queue**, so nothing needs
-   fetching first.
+### Start here next session
+**Merge 1 is complete (2026-09-21).** Next is merge 2, which has no plan yet:
+write it with `superpowers:writing-plans` from spec §11 item 2 (story page,
+`/news`, beat pages, `/news/about`, `story_views`). Settle the open question
+below (directory coverage) and the byline question first.
+
+Merge 1 walkthrough results (owner signed in, 2026-09-21):
+- `/admin/news`, `/admin/news/sources` and `/admin` at 390px and 1440px: no
+  horizontal overflow and nothing clipped. Checked by hand in the signed-in
+  pane, because `pnpm sweep` cannot authenticate. No console or server errors.
+- J/K moved between stories; J typed in the summary box was ignored.
+- **First story published** by Claude under the new summary rule: slug
+  `gemini-hacked-three-real-companies-during-a-cybersecurity-31fc2b`, Policy &
+  Safety, featured. The TechCrunch duplicate of that event was rejected with the
+  `R` shortcut.
+- Queue: 47 pending, 1 published, 1 rejected. Anonymous visitors see exactly
+  the 1 published row and none of the other 48.
 
 ### Status
 The pivot is specified in four merges. **Merge 1 (news ingestion + admin queue)
-is code-complete, pushed and deployed: 15 of 16 tasks done.** What exists, with
-typecheck, lint and 448 tests green:
+is complete: all 16 tasks done, deployed and verified end to end.** What exists,
+with typecheck, lint and 448 tests green:
 - the RSS/Atom parser
 - the tool matcher
 - the ingest loop
@@ -48,14 +55,11 @@ the 7 sources, each with its excerpt, 19 with images, no source errors, and a
 second run inserted 0, proving dedup. The live `pnpm audit:rls` passes 16/16
 against a database that now genuinely has hidden rows.
 
-What is missing from **Task 16**:
-- **Production ingest verified 2026-09-21:** after the pnpm fix deployed,
-  `https://enkitools.com/api/ingest-news` returned 200 with 7 sources, 36 items
-  fetched, 8 new and 0 failed. That proves the Vercel secrets match Vault and
-  `.env.local` (the call used the local `CRON_SECRET`). The queue now holds 49
-  pending stories; the daily cron runs at 05:00 UTC.
-- the admin UI has **never been rendered in a browser**. No visual sweep has run
-  against it, because `/admin/*` needs a signed-in owner.
+**Production ingest verified 2026-09-21:** after the pnpm fix deployed,
+`https://enkitools.com/api/ingest-news` returned 200 with 7 sources, 36 items
+fetched, 8 new and 0 failed. That proves the Vercel secrets match Vault and
+`.env.local` (the call used the local `CRON_SECRET`). The daily cron runs at
+05:00 UTC. The admin UI walkthrough results are under "Start here" above.
 
 No public page has changed. Merges 2–4 (story pages, new homepage,
 repositioning) have no plans yet.
@@ -93,9 +97,16 @@ repositioning) have no plans yet.
 - `package.json` adds `fast-xml-parser@5.11.1`.
 
 ### Decisions (settled with the owner — do not re-litigate)
-- **Sourcing:** stories are **aggregated from RSS feeds and curated by the
-  owner**. Nothing publishes without approval, and the owner **writes every
-  summary by hand**. **No LLM** anywhere in the pipeline.
+- **Sourcing:** stories are **aggregated from RSS feeds and curated**. Nothing
+  publishes without a person or Claude deliberately approving it in the queue;
+  nothing auto-publishes.
+- **Summaries (changed by the owner 2026-09-21):** Claude **may write summaries
+  itself**, but only after reading the source article, and **never with em
+  dashes**. This replaces the original "owner writes every summary by hand" rule.
+  There is still no automated LLM step in the ingest pipeline: summaries are
+  written deliberately, story by story. Consequence for merge 2: spec §6.1's
+  "Summarised by Vivaan Kavalani" byline is no longer true for every story, so
+  the story page must not claim it.
 - **Excerpt:** the publisher's text is **never rendered publicly**. It lives in
   the admin-only table `story_excerpts`.
 - **Tool links:** they are auto-suggested at ingest and confirmed by the owner.
@@ -119,8 +130,6 @@ repositioning) have no plans yet.
   batch, followed by a spec review and then a code-quality review.
 
 ### Not done (in order)
-- [ ] **Task 16, last step:** the admin UI walkthrough with the owner signed in
-  (secrets, local and production ingest are all done and verified).
 - [ ] **Merges 2–4** each need their own plan, written with
   `superpowers:writing-plans` from spec §11:
   - **2:** story, `/news`, beat and about pages, plus `story_views`
