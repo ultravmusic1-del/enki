@@ -31,6 +31,17 @@ describe("site-wide brand copy", () => {
     }
   });
 
+  it("prints the canonical host on share images, never a preview deployment's", () => {
+    // siteConfig.url resolves to the preview origin on preview builds, so a
+    // share image built from it would advertise a *.vercel.app address.
+    for (const path of ["src/app/opengraph-image.tsx", "src/app/tools/[slug]/opengraph-image.tsx"]) {
+      const source = readFileSync(path, "utf8");
+      expect(source, path).toContain("new URL(CANONICAL_SITE_URL).host");
+      // Forbid building a host from it, not merely mentioning it in a comment.
+      expect(source, path).not.toMatch(/new URL\(\s*siteConfig\.url\s*\)/);
+    }
+  });
+
   it("has no em or en dash in the rewritten copy", () => {
     for (const text of [
       siteConfig.description,
