@@ -1,324 +1,179 @@
 # Enki — Project Handoff
 
-> A curated, human-vetted **AI tool review & directory** web app. Concept: **Enki**,
-> the Sumerian god of wisdom, "the oracle for AI tools." Fuses ancient
-> oracle/clay-tablet gravitas with a sleek dark AI-product UI.
+> **An AI news front page with a curated, human-vetted tool directory.** Concept:
+> **Enki**, the Sumerian god of wisdom. Fuses ancient oracle/clay-tablet gravitas
+> with a sleek dark AI-product UI. Live at **https://enkitools.com**.
 > Tagline: **"Wisdom for the age of AI."**
 
-Single source of truth for continuing work in a fresh session. **Read §0 first**
-(the work in flight), then §1 and §2: current state, the live backend, and how
-to unlock the admin.
-
-> **Direction change (2026-09-19):** Enki is pivoting from a tool directory to an
-> **AI news front page** (Yahoo Finance-style) with affiliate links on each
-> story; the directory becomes secondary. §1–§12 still describe the directory
-> accurately. §0 describes the pivot.
+Single source of truth for continuing work in a fresh session.
+- **§0** is the current state, the daily news job, open items and traps. Read it
+  first.
+- **§2** covers env vars and admin access.
+- **§4** is the database.
+- **§1 and §3–§12** describe the directory, which is unchanged since the pivot.
 
 ---
 
-## 0. In flight — AI news pivot (updated 2026-09-21)
+## 0. Start here (updated 2026-09-22)
 
-### Start here next session
-**All four merges of the news pivot are complete (2026-09-22).** Merges 1–3 are
-live on enkitools.com. Merge 4 (site-wide copy and metadata, plan
-`docs/superpowers/plans/2026-09-22-news-repositioning.md`) is committed; check
-`git log origin/main..HEAD` for whether it is pushed.
+**Enki is now an AI news front page** (in the spirit of Yahoo Finance) with the
+vetted tool directory as its second product. The pivot is complete: all four
+merges are built. Merges 1–3 are live on enkitools.com, and merge 4 is live once
+pushed; check `git log origin/main..HEAD`.
 
-**Merge 4 shipped:**
-- The news-first site description, used by metadata, the manifest, JSON-LD and
-  `llms.txt`.
-- The new footer blurb.
-- The homepage share image leads with "AI news, curated".
-- **Both share images now print `enkitools.com`.** They had printed the wrong
-  `enki.tools` since the domain move.
-- A News section in `llms.txt`.
-- The affiliate disclosure and privacy policy now cover story tool links, and
-  their em dashes are removed.
-- The pivot is roadmap **Phase 7**. The old appendix §7 is now §8.
-- `src/lib/brand-copy.test.ts` guards the domain, the tagline and dashes.
+§1–§12 below describe the directory, which still runs unchanged at `/tools`.
+Read them for directory work; this section is everything news.
 
-**Needs the owner:**
-- New wording for `src/app/terms/page.tsx:32` ("Enki is a curated directory of
-  AI tools").
-- Whether to fix the tool share image showing the editor score twice.
+### First five minutes, on any machine
+```bash
+git pull
+pnpm install
+pnpm run doctor     # NOT `pnpm doctor`: pnpm 11.26's built-in command shadows the script
+pnpm verify         # expect 544 tests passing
+pnpm audit:rls      # expect 17/17 PASS and "RLS holds."
+```
+- **Doctor env check:** it fails if `.env.local` lacks `NEWS_INGEST_SECRET`.
+  Only the owner sets that value (see Traps).
+- **Dev server:** `preview_start` `enki-dev`. Stop it when done; this machine is
+  short on RAM.
 
-The ongoing work is running the news queue (see the roadmap's Phase 7 "Open"
-list).
+### What exists
+| Area | Where | Notes |
+|---|---|---|
+| Ingestion | `src/lib/news/*`, and the cron at `src/app/api/ingest-news/route.ts` (daily, 05:00 UTC) | 7 RSS sources, written through secret-gated RPCs. **Verified in production:** the queue grew by itself from 44 to 71 overnight on 2026-09-22 |
+| Admin queue | `/admin/news` and `/admin/news/sources` | Needs the owner signed in. J/K move, P publishes, R rejects |
+| Story page | `/news/[slug]` | "Summary by Enki". `noindex` unless the take is 300+ characters. Tool cards link through `/go` |
+| Archive | `/news`, `/news/page/[n]`, `/news/beat/[beat]` (5 beats), `/news/about` | |
+| Homepage | `/`, built by the pure, tested `src/lib/news/home-feed.ts` | Ticker needs 3 or more tools. Popular needs 10+ views on the rail's own top story, otherwise it shows Latest |
+| Directory | `/tools` (oracle hero, grid, showcase, How I vet) | ChatGPT, Claude and Gemini added under "AI Assistants" |
+| Views | `/api/story-view` writes to `story_views`; `popular_stories` reads aggregates | Anon can insert views only for published stories |
 
-**Merge 3 shipped** (plan `docs/superpowers/plans/2026-09-21-news-homepage.md`):
-- **`/` is the AI news front page:**
-  - a "Tools in the news" strip, shown only once 3 or more directory tools have mentions
-  - the lead story
-  - a Popular rail that becomes Latest until the rail's own top story has 10+
-    views in 48h
-  - a sidebar with "Find a tool", the top 5 tools by editor score and the Finder
-  - beat sections, a Latest column, and the directory band
-- **Rules:** every section rule lives in the pure, tested
-  `src/lib/news/home-feed.ts`.
-- **Navigation:** the header is now News · Tools · Finder · Deals, and a beat
-  row runs on `/` and every `/news` page.
-- **`/tools`** now opens on the oracle hero, followed by the directory, featured
-  tools, the Finder, categories and How I vet (`#how-we-vet`). This was pulled
-  forward from merge 4.
-- **Database:** `popular_stories(p_hours, p_limit)` returns aggregate view
-  counts for published stories only, and anon can call it.
-- **Two fixes found during verification:**
-  - **Build-time story reads were timing out.** The 2.5 s guard fired while
-    `next build` saturated the event loop (the DB answers in about 250 ms), so
-    `/`, `/news` and the beat pages were baked empty. `dbTimeoutMs()` in
-    `stories.ts` now allows 20 s during the build only.
-  - **The lead image was lazy-loaded.** It now loads eagerly at high priority.
-- **Verified:**
-  - 539 unit tests and all 13 end-to-end tests pass
-  - `pnpm audit:rls` passes 17/17
-  - the sweep passes on `/`, `/tools`, `/tools/cursor`, `/news`, a beat page,
-    the story page and `/categories` at 390px and 1440px
-- **Known:** the first request to a cold dev server can still time out a story
-  read while the page compiles. In production that would at worst cache one
-  empty 5-minute window during a background refresh.
+**Queue on 2026-09-22:** 71 pending, 4 published, 2 rejected.
 
-**Merge 2 shipped** (plan `docs/superpowers/plans/2026-09-21-news-public-pages.md`):
-- Pages: `/news/[slug]` (story page), `/news`, `/news/page/[n]`, the five beat
-  pages at `/news/beat/[beat]`, and `/news/about`.
-- `/api/story-view` records anonymous views, and the sitemap lists the news
-  routes plus stories with an indexable take.
-- Publish and unpublish refresh the cached pages.
-- Migration `news_public_pages`: `stories.source_name` and `source_site_url`
-  (copied from the source at ingest), and the `story_views` table.
-- Verified:
-  - 498 tests pass
-  - `pnpm audit:rls` passes 17/17
-  - the visual sweep passes 16/16 at 390px and 1440px
-  - on a production build, unpublishing the Gemini story turned its cached page
-    into a 404 and dropped it from `/news`; republishing restored the same slug
-    and publish time
-- **Owner step still open:** create the Vercel Firewall rate-limit rule
-  `enki-story-view` (30 per minute per IP). Until it exists, view counting is
-  not rate limited: it fails open and reports once to Sentry.
+### Running the news: the daily job
+**Nothing publishes by itself.** A story reaches the homepage only when someone
+publishes it from `/admin/news`. The owner's rules, also in the memory file
+`news-summaries-by-claude`:
+- **Research first.** Claude may write summaries and takes and publish them, but
+  only after reading the source article, not just the feed excerpt.
+  - The Verge and Ars Technica block the fetch tool, so read them in a browser
+    tab (`get_page_text`).
+  - When two outlets disagree, leave the disputed detail out.
+- **The summary** is 40–320 characters of plain, factual text, with **no em
+  dashes or en dashes**.
+- **A take** is original commentary. One of 300+ characters makes the page
+  indexable.
+- **The byline** is "Summary by Enki". Never claim who wrote a summary, and add
+  no AI disclosure.
+- **At publish:**
+  - pick a beat
+  - check the tool suggestions, removing incidental ones: the aliases "OpenAI"
+    and "Anthropic" over-suggest
+  - reject duplicates of the same event; rejected rows are kept for dedup
+- **The admin needs the owner signed in** inside the browser pane. Claude must
+  never type the password. Filling fields through the native value setter plus
+  `input`/`change` events works with React's controlled inputs.
 
-Merge 1 walkthrough results (owner signed in, 2026-09-21):
-- `/admin/news`, `/admin/news/sources` and `/admin` at 390px and 1440px: no
-  horizontal overflow and nothing clipped. Checked by hand in the signed-in
-  pane, because `pnpm sweep` cannot authenticate. No console or server errors.
-- J/K moved between stories; J typed in the summary box was ignored.
-- **First story published** by Claude under the new summary rule: slug
-  `gemini-hacked-three-real-companies-during-a-cybersecurity-31fc2b`, Policy &
-  Safety, featured. The TechCrunch duplicate of that event was rejected with the
-  `R` shortcut.
-- Queue: 47 pending, 1 published, 1 rejected. Anonymous visitors see exactly
-  the 1 published row and none of the other 48.
+### Open items, in order
+- **Owner:** create the Vercel Firewall rule `enki-story-view`, at 30 per minute
+  per IP. View counting is not rate limited until it exists.
+- **Owner:** new wording for `src/app/terms/page.tsx:32`, which still reads "Enki
+  is a curated directory of AI tools".
+- **Owner decision:** tool share images show the editor score twice.
+- **Revenue gap.** ChatGPT, Claude and Gemini have no affiliate programmes, so
+  their cards earn nothing. The lever is stories that mention tools which do have
+  programmes, such as Perplexity, or adding such tools. **Never choose stories
+  for commission**, because the public disclosure promises it.
+- **CI is red** on `pnpm audit --prod --audit-level high`. These are pre-existing
+  advisories in `next`, `sharp`, `@sentry/nextjs`, `@react-three/drei` and
+  `browserslist`.
+- **Deferred minors from the merge-4 review:**
+  - the dash guard covers only the description and the disclosure
+  - the guard reads source files, not rendered pages
+  - the July phase-0 plan still points at roadmap §7, which is now §8
+  - the roadmap's sequencing diagram lacks Phase 7
+  - the roadmap revenue note should add "without choosing stories for it"
+  - the 404 page still says "Even the oracle can't find this"
 
-### Status
-The pivot is specified in four merges. **Merge 1 (news ingestion + admin queue)
-is complete: all 16 tasks done, deployed and verified end to end.** What exists,
-with typecheck, lint and 448 tests green:
-- the RSS/Atom parser
-- the tool matcher
-- the ingest loop
-- the Supabase ingest store
-- the daily cron route
-- the admin server actions
-- the RLS audit extension (16/16 PASS live on 2026-09-20)
-- the admin UI: `/admin/news`, `/admin/news/sources`, and the dashboard KPI
+### Where the record lives
+- **Spec:** `docs/superpowers/specs/2026-09-19-ai-news-pivot-design.md`. **Read
+  its §0 amendments first**; they override the body.
+- **One plan per merge**, each listing its deliberate deviations at the top, in
+  `docs/superpowers/plans/`:
+  - `2026-09-19-news-ingestion-and-admin.md`
+  - `2026-09-21-news-public-pages.md`
+  - `2026-09-21-news-homepage.md`
+  - `2026-09-22-news-repositioning.md`
+- **Roadmap Phase 7** (`docs/roadmap.md`) is the news to-do list.
+- **§4 below** lists every table, RPC and migration, including the news ones.
 
-The database migration is **live in production**, 7 feeds are seeded, and
-**ingestion has now run for real** (2026-09-20): 41 pending stories from 5 of
-the 7 sources, each with its excerpt, 19 with images, no source errors, and a
-second run inserted 0, proving dedup. The live `pnpm audit:rls` passes 16/16
-against a database that now genuinely has hidden rows.
-
-**Production ingest verified 2026-09-21:** after the pnpm fix deployed,
-`https://enkitools.com/api/ingest-news` returned 200 with 7 sources, 36 items
-fetched, 8 new and 0 failed. That proves the Vercel secrets match Vault and
-`.env.local` (the call used the local `CRON_SECRET`). The daily cron runs at
-05:00 UTC. The admin UI walkthrough results are under "Start here" above.
-
-Merges 2 and 3 added the public pages and the homepage (see "Start here"
-above). Merge 4 (metadata and copy) has no plan yet.
-
-### Where to read
-- **Spec (approved):** `docs/superpowers/specs/2026-09-19-ai-news-pivot-design.md`.
-  All four merges and every product decision are in it.
-- **Plan for merge 1:** `docs/superpowers/plans/2026-09-19-news-ingestion-and-admin.md`.
-  All 16 tasks are done. The top of the plan lists six deliberate deviations
-  from the spec.
-- **Plans for merges 2 and 3:** `docs/superpowers/plans/2026-09-21-news-public-pages.md`
-  and `docs/superpowers/plans/2026-09-21-news-homepage.md`.
-- **Git:** branch `main`. Merge 2 is deployed (`5287bf9`). Merge 3 is local
-  until pushed; run `git log origin/main..HEAD`.
-
-### What changed (merge 1, commits `3037c50..b112de4`)
-- `src/lib/news/` holds the whole ingestion pipeline:
-  - `parse-feed.ts` (RSS 2.0/1.0/Atom)
-  - `match-tools.ts` (name/alias matching, case-sensitive for common-word names)
-  - `ingest.ts` (`ingestAll` over an `IngestStore` interface)
-  - `ingest-store.ts` (store over the ingest RPCs)
-  - `run-ingest.ts` (wires env + anon client + Sentry)
-  - `schemas.ts`, `slug.ts`, `format-age.ts`
-  - every module has a sibling test
-- `src/data/beats.ts` defines the 5 news beats; its slugs must match the
-  `stories.beat` check constraint.
-- `src/lib/schemas.ts` gains optional `aliases` on tools, and `src/data/tools.ts`
-  seeds aliases on 7 tools.
-- `src/app/api/ingest-news/route.ts` is the daily cron (`vercel.json`, `0 5 * * *`)
-  with the Sentry monitor `ingest-news`. It **fails closed without
-  `CRON_SECRET`**.
-- `src/app/admin/news/actions.ts` holds the actions `publishStory`,
-  `setStoryStatus`, `fetchNewsNow`, `addNewsSource` and `setNewsSourceActive`.
-- `src/lib/supabase/database.types.ts` gains hand-written types for the new
-  tables and RPCs. Do not regenerate the file.
-- `scripts/audit-rls*` adds probes for unpublished stories, excerpts, sources and
-  the five RPCs. The live `pnpm audit:rls` was all PASS on 2026-09-19.
-- `package.json` adds `fast-xml-parser@5.11.1`.
-
-### Decisions (settled with the owner — do not re-litigate)
-- **Sourcing:** stories are **aggregated from RSS feeds and curated**. Nothing
-  publishes without a person or Claude deliberately approving it in the queue;
-  nothing auto-publishes.
-- **Summaries (changed by the owner 2026-09-21):** Claude **may write summaries
-  itself**, but only after reading the source article, and **never with em
-  dashes**. This replaces the original "owner writes every summary by hand" rule.
-  There is still no automated LLM step in the ingest pipeline: summaries are
-  written deliberately, story by story. Consequence for merge 2: spec §6.1's
-  "Summarised by Vivaan Kavalani" byline is no longer true for every story, so
-  the story page must not claim it.
-- **Excerpt:** the publisher's text is **never rendered publicly**. It lives in
+### Decisions (settled with the owner, do not re-litigate)
+- **Sourcing:** stories come from RSS feeds and are curated. Nothing
+  auto-publishes, and there is no automated LLM step in the pipeline.
+- **Summaries and takes:** Claude may write both (2026-09-21), after reading the
+  source, with no dashes. The byline is "Summary by Enki", with no AI disclosure.
+  The owner chose this over the recommended disclosure.
+- **Excerpts:** the publisher's text is never rendered publicly. It lives only in
   the admin-only table `story_excerpts`.
-- **Tool links:** they are auto-suggested at ingest and confirmed by the owner.
-- **Story pages:** a headline click opens an Enki story page (`/news/[slug]`)
-  that links to the source. The page is `noindex` unless the owner's "take" is at
-  least 300 characters.
-- **Ticker:** it shows "Tools in the news" (mention counts). **No stock or
-  market data.** It is hidden until 3 or more tools have mentions.
-- **Sections:** 5 fixed news beats, not directory categories.
-- **Oracle hero:** the 3D hero **moves to `/tools`**; the homepage opens on news.
-- **Keep:** the domain `enkitools.com` and the tagline.
-- **Ingest trigger:** a daily cron plus an admin "Fetch now" button.
+- **Source names** are copied onto stories (`source_name`, `source_site_url`), so
+  public pages never read the admin-only `news_sources`.
+- **Ticker and rail:** no stock or market data. The ticker is hidden below 3
+  tools, and Popular is gated on real views. Nothing is ever padded.
+- **Sections:** 5 fixed beats, not directory categories.
+- **The oracle hero lives on `/tools`.** Site-wide copy is news-first. Keep the
+  domain `enkitools.com` and the tagline "Wisdom for the age of AI".
 - **Database writes:**
-  - **No `service_role` key.** The cron writes through secret-gated `SECURITY
-    DEFINER` RPCs, and the secret can only create *pending* stories.
-  - `stories` has **no table-level write grant** for any API role. Admin writes
-    go only through `admin_publish_story` and `admin_set_story_status`.
-- **Git workflow:** the owner's rule is to work on `main`, with **no branches,
-  worktrees or PRs unless asked**, and to push only when explicitly asked.
-- **Execution method:** subagent-driven. There is one implementer per task or
-  batch, followed by a spec review and then a code-quality review.
+  - there is **no `service_role` key**
+  - the cron writes pending stories through secret-gated RPCs
+  - `stories` has no table-level write grant; admin writes go only through
+    `admin_publish_story` and `admin_set_story_status`
+- **Git:** work on `main`, with **no branches, worktrees or PRs unless asked**.
+  Push only when the owner says so.
+- **Execution:** plans are written with `superpowers:writing-plans`. Multi-task
+  merges run subagent-driven, with a spec review then a code-quality review per
+  task. Small ones run inline, followed by one final review on the most capable
+  model.
 
-### Not done (in order)
-- [x] **Merge 2:** public news pages (done 2026-09-21).
-- [x] **Merge 3:** the news homepage (done 2026-09-21).
-- [ ] **Publish more stories before pushing merge 3**, so the homepage has more
-  than one lead card.
-- [ ] **Merge 4** needs its own plan, written with `superpowers:writing-plans`
-  from spec §8.2–8.3 and §11 item 4. It covers:
-  - the site description, root metadata, homepage OG image, `manifest.ts` and
-    `llms.txt`
-  - the site footer's "The oracle for AI tools" line
-  - the affiliate disclosure copy
-  - a new roadmap phase
-
-  The `/tools` repositioning already shipped in merge 3.
-- [ ] **Owner:** create the Vercel Firewall rule `enki-story-view`.
-- [ ] **Pre-existing em dashes the owner may want removed.** Not changed,
-  because the no-dash rule covers new copy only:
-  - `src/components/shared/affiliate-disclosure.tsx`, which merge 2 now shows on
-    story pages
-  - `src/app/privacy/page.tsx` ("rankings — those are decided")
-- [ ] **CI is red on `main`, and not from this work.** `pnpm audit --prod
-  --audit-level high` fails on 11 advisories in `next`, `sharp`, `@sentry/nextjs`,
-  `@react-three/drei` and `browserslist`. It was already failing on 2026-09-15.
-
-### Directory coverage: partly resolved 2026-09-21
-ChatGPT, Claude and Gemini were added (commit `96d1fe4`) under a new **AI
-Assistants** category. Scores were drafted by Claude and approved by the owner:
-ChatGPT 9.2, Claude 9.0, Gemini 8.9. `lastVetted` is left unset on purpose, and
-there are no logos or screenshots yet (monogram and gradient fallbacks). The 14
-existing pending stories were backfilled with tool suggestions by SQL, and the
-published Gemini story now links Gemini.
-
-**None of the three has an affiliate programme.** OpenAI and Anthropic run
-enterprise partner networks only. Google's referral and affiliate programmes
-cover Workspace, not Gemini's consumer plans. Their tool cards drive tracked
-`/go` clicks (demand data) but no commission, so revenue still depends on the
-smaller tools that do have programmes. The "OpenAI" and "Anthropic" aliases also
-suggest tools on incidental mentions (the Gemini story's excerpt mentions
-OpenAI), so check suggestions at publish.
-
-### Original question (raised 2026-09-20)
-**The directory does not contain the tools the news is about, so almost no story
-earns an affiliate link.** Of the first 41 ingested stories, 8 mention ChatGPT or
-OpenAI, 7 mention Claude or Anthropic and 2 mention Gemini — none of which are
-listed — while Cursor, Perplexity, Midjourney and ElevenLabs appear zero times.
-Tool links came out at **0 of 41**, and the matcher is behaving correctly. The
-likely fix is to add the lab products (ChatGPT, Claude, Gemini, Copilot, Grok) to
-the directory. Decide before merge 3 builds a homepage around the revenue.
-
-### Traps
-- **A parameter must never share a name with a column it is compared against**
-  (cost an hour on 2026-09-20). `news_ingest_authorized(secret text)` compared
-  `vault.decrypted_secrets.decrypted_secret = secret`, and because that view has
-  its own `secret` column, Postgres resolved the name to the column — so the
-  check rejected *every* call, correct secret included, and the RLS audit's
-  "refused" results proved nothing. Fixed by renaming the parameter `p_secret`
-  (migration `fix_news_ingest_authorized_param_shadowing`); the three public RPCs
-  keep `secret` as their argument name, so the app was unchanged.
-- **`pnpm doctor` now runs pnpm's own built-in command.** pnpm 11.26 added a
-  `doctor` subcommand that shadows the project script: use **`pnpm run doctor`**.
-- **pnpm 11.12.0 is a broken release** (npm marks it deprecated) and Vercel
-  refuses to install it, which failed the deploy of `b112de4`. The pin is now
-  `pnpm@11.26.0`; keep it on 11.x so the lockfile format does not change.
-- **The ingest secret must be identical in three places:**
-  - `.env.local` as `NEWS_INGEST_SECRET`
-  - Vercel env vars (with `CRON_SECRET`)
-  - Supabase Vault:
-    ```sql
-    select vault.create_secret('<value>', 'news_ingest_secret', '...');
-    ```
-
-  It must be at least 32 characters. **Claude must never see or handle the
-  value.** The owner generates it with
-  `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
-  Until then, `pnpm run doctor` fails the env check on purpose, because
-  `.env.example` marks the key as required.
-- **The admin UI can't be swept automatically.** `pnpm sweep` is
-  unauthenticated, so it cannot reach `/admin/*`, and Claude cannot type the
-  admin password. The owner signs in inside the browser pane, then Claude checks
-  390px and 1440px by hand.
-- **Literal `\uXXXX` escapes get decoded into real characters** by the
-  file-editing tools on this setup. Write them through a Node script using
-  `String.fromCharCode(92)`, then check the bytes on disk.
-- **Supabase grants new tables and functions to `anon` and `authenticated` by
-  default.** Every new object needs `revoke all ... from public, anon,
-  authenticated` before its own grants. See the `enki-supabase-change` skill.
-- **Feed quirks:**
-  - VentureBeat returns 429 to bots and was left out of the seed.
-  - The OpenAI feed carries about 1,210 items; the 72h window plus the 30-per-source
-    cap handles it.
-  - Anthropic and Meta have no official RSS.
-- **Compute `formatAge` on the server** and pass the string down. Doing it in a
-  client component causes a hydration mismatch.
-- **Route tests** need `// @vitest-environment node` as their **first line**.
-- **Cron timing:** Vercel Hobby crons can fire any time within the hour, so this
-  route's monitor uses `checkinMargin: 60`. `keep-warm` uses `10` and may
-  false-alarm. Not verified.
-- **`story_tools.tool_slug` has no foreign key to the directory.** A slug is
-  trusted if it matches the slug regex.
-
-### How to run and verify (current state)
-```bash
-git pull && pnpm install && pnpm run doctor   # env check fails until NEWS_INGEST_SECRET is set (expected)
-pnpm verify                               # expect 437 tests passing
-pnpm audit:rls                            # expect all PASS, "RLS holds."
-pnpm build                                # expect ƒ /api/ingest-news in the route list
-```
-Once the secret is set, start the dev server (`preview_start` `enki-dev`) and
-run:
-```bash
-curl -H "Authorization: Bearer $CRON_SECRET" localhost:3000/api/ingest-news
-```
-The first run should return `inserted > 0`, and an immediate second run
-`inserted: 0` (dedup). `/admin/news` and `/admin/news/sources` return 404 until
-Tasks 13–14 are built.
+### Traps (each one cost real time)
+- **A function parameter must never share a column's name.**
+  `news_ingest_authorized(secret)` compared against the view's own `secret`
+  column and rejected every call. Use `p_*` parameters, and prove a gate accepts
+  valid input, not just that it rejects bad input.
+- **Build-time reads time out.** `next build` saturates the event loop, so the
+  2.5 s read guard fired on healthy 250 ms reads and baked empty pages.
+  `dbTimeoutMs()` in `src/lib/news/stories.ts` allows 20 s during the build
+  only. The same pattern exists, unfixed, for tools in `src/lib/content.ts`,
+  which is harmless because the `tools` table is empty.
+- **The dev server's first request compiles the page**, which can time out a
+  story read and fail the sweep's first route. Hit `/` once before sweeping.
+- **pnpm:** `pnpm doctor` is pnpm's own command; the project's is `pnpm run doctor`.
+  11.12.0 was a broken release that failed a Vercel deploy. The pin is
+  `pnpm@11.26.0`; stay on 11.x.
+- **The ingest secret must be identical in three places:** `.env.local`
+  (`NEWS_INGEST_SECRET`), Vercel (with `CRON_SECRET`), and the Supabase Vault
+  secret `news_ingest_secret`. It must be at least 32 characters. **Claude never
+  sees or handles the value.**
+- **`pnpm sweep` can't sign in**, so admin pages are checked by hand in the
+  owner's signed-in pane at 390px and 1440px.
+- **Share images must build their domain from `CANONICAL_SITE_URL`**, never
+  `siteConfig.url`, which is a preview host on preview builds.
+  `src/lib/brand-copy.test.ts` guards this.
+- **Supabase grants new objects to `anon` and `authenticated` by default.** Run
+  `revoke all ... from public, anon, authenticated` before granting. See the
+  `enki-supabase-change` skill.
+- **Literal `\uXXXX` escapes get decoded** by the editing tools on this setup.
+  Build the backslash with `String.fromCharCode(92)` in a Node script.
+- **Feeds:**
+  - VentureBeat returns 429 to bots and is not seeded
+  - Anthropic and Meta have no official RSS
+  - OpenAI's feed has about 1,210 items; the 72-hour window and the 30-per-source
+    cap handle it
+- **Hydration:** compute `formatAge` on the server only. Route tests need
+  `// @vitest-environment node` as their first line.
+- **`story_tools.tool_slug` has no foreign key.** Unknown slugs are skipped when
+  a page renders.
+- **The plan workspace `.superpowers/` is not gitignored.** This machine excludes
+  it in `.git/info/exclude`; a fresh clone does not. Never stage it.
 
 ---
 
@@ -433,7 +288,9 @@ add `RESEND_API_KEY`.
 - **`CRON_SECRET`** is set in Vercel; locally it's only needed to call
   `/api/ingest-news` by hand.
 
-Neither is set anywhere yet.
+Both are set on the owner's machine, in Vercel and (the ingest secret) in Vault,
+and production ingest is verified (2026-09-21). A second machine needs its own
+`.env.local` copy from the owner.
 
 ### 2b. Deployed ✅
 Live at **https://enkitools.com**; `git push` to `main` auto-deploys.
