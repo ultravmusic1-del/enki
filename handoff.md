@@ -11,6 +11,154 @@ Single source of truth for continuing work in a fresh session.
 - **§2** covers env vars and admin access.
 - **§4** is the database.
 - **§1 and §3–§12** describe the directory, which is unchanged since the pivot.
+- **§IN-FLIGHT** (directly below) is work stopped mid-build. Read it before §0.
+
+---
+
+## IN-FLIGHT: full stories build (stopped 2026-09-22, evening)
+
+### Status
+Story pages are being turned from a 40–320 character summary plus an outbound
+link into **full articles**: 400–700 words, written from several outlets'
+coverage merged into one story, ending with a **"What it means for founders"**
+section. The spec is approved, and so is the plan (7 tasks). Build progress:
+- **Tasks 1–3:** done, each task-reviewed clean.
+- **Task 4 (story page):** code is committed as WIP, but it has **not** been
+  task-reviewed and the visual sweep has **not** been run. Its 3 component tests
+  pass, and `pnpm verify` passed at commit (560 tests).
+- **Tasks 5–7:** not started.
+
+The **database migration is live in production**. **None of this code is
+deployed.** The 7 commits below are local on `main` and unpushed.
+
+> **⚠ Publishing on enkitools.com is broken right now.** The migration replaced
+> `admin_publish_story(…, p_take, …)` with `admin_publish_story(…, p_body, …)`.
+> The deployed code still sends `p_take`, so **Publish in the live admin fails**
+> until this build is pushed and deployed. Reject, unpublish and ingestion still
+> work. Either finish the build and push, or accept that nothing can be published
+> until then.
+
+### What changed (branch `main`, head `3346731`, working tree clean)
+- `290cfc5` spec: `docs/superpowers/specs/2026-09-22-full-stories-design.md`
+- `44146df`, `0eb7cf2` plan: `docs/superpowers/plans/2026-09-22-full-stories.md`.
+  The SQL for the migration is in Task 1.
+- `b3f50e0` **Task 1:**
+  - live migration `full_stories`:
+    - new `stories` columns: `body`, generated `body_words`, `merged_into`
+    - status `merged`
+    - constraints `stories_body_check` and `stories_merged_has_parent`
+    - new RPCs `admin_merge_story` and `story_sources` (anon-callable); a
+      changed `admin_set_story_status`
+  - hand-written `src/lib/supabase/database.types.ts`
+  - RLS probes in `scripts/audit-rls/expectations.mjs` (19 checks)
+- `9448180` **Tasks 2+3:**
+  - body rules (`countWords`, `bodyProblems`, `FOUNDER_HEADING`) in
+    `src/lib/news/schemas.ts`
+  - Markdown parser in `src/lib/news/article-body.ts`
+  - `getStorySources`, `PublicStoryDetail` and word-count sitemap in
+    `src/lib/news/stories.ts`
+  - `storyRobots(bodyWords)`
+  - `newsArticleJsonLd(story, sources)`
+  - a minimal take-to-body swap in the admin editor
+- `3346731` **Task 4 WIP:**
+  - `src/components/news/article-body.tsx` (+ test)
+  - `src/app/news/[slug]/page.tsx`: "By Enki", "Reporting from …", Sources list;
+    legacy stories keep the old layout
+  - `src/app/news/about/page.tsx` copy
+
+### Decisions (settled with the owner; do not re-litigate)
+- **Writing:** Claude writes articles in sessions, after reading every source.
+  There is still **no automated LLM step** in the pipeline.
+- **Article shape:** 300–1,200 words is enforced by the database; 400–700 is the
+  target. It must contain the line `## What it means for founders`, and it must
+  contain no en or em dashes.
+- **Data model:** "option A": extend `stories`. **Duplicate coverage is merged
+  into a story as its sources**, instead of being rejected.
+- **Byline and disclosure:** the byline is **"By Enki"**, with no AI disclosure
+  anywhere.
+- **Indexing:** a page is indexable at 300+ body words.
+- **Stories are synthesis, never rewording:** no copied or closely paraphrased
+  sentences, and at most one short attributed quote. Where outlets disagree,
+  leave the detail out.
+- **Site description copy is approved** (plan Task 6). Use it verbatim.
+- **Workflow:** subagent-driven, per `superpowers:subagent-driven-development`:
+  1. A fresh implementer builds each task.
+  2. A task reviewer checks it.
+  3. A final whole-branch review runs on the most capable model.
+  Work on `main`: no branches or worktrees.
+
+### Not done (in order)
+- [ ] **Task 4: review.** Diff `9448180..3346731` against
+  `.superpowers/sdd/2026-09-22-full-stories/task-4-brief.md`. Then run the sweep
+  (brief Step 8):
+  1. Temporarily set a filler body on one published story.
+  2. Run `pnpm sweep -- / /tools /news /news/<slug> /news/about /news/<legacy-slug>`.
+  3. Take screenshots at 390px and 1440px.
+  4. **Restore `body = null`.**
+- [ ] **Task 5: admin editor, sources panel, merge.** Start in
+  `src/app/admin/news/story-editor.tsx`. Step 10 needs the owner signed in on
+  `localhost:3000/admin/news`. It also covers the deferred browser check of the
+  editor from Tasks 2+3.
+- [ ] **Task 6: site description.** Files: `src/lib/site.ts:59`,
+  `src/components/layout/site-footer.tsx`.
+- [ ] **Task 7, Steps 1–4:** HANDOFF §0/§4, the memory file
+  `news-summaries-by-claude.md`, then ask the owner to push. **Claude never
+  pushes.**
+- [ ] **Final whole-branch review** on the most capable model, over
+  `290cfc5^..HEAD`. The deferred minors below are for it to triage.
+- [ ] **After the deploy (Task 7, Step 5), content:**
+  - Publish the 5 researched stories as full articles, merging their duplicates.
+    Research was done on 2026-09-22: OpenAI's math advisory group, the AI
+    hallucination and the Chinese ship, Google's CC, the Muse zero-day, and
+    Trump's "AI Force".
+  - Rewrite the 4 live stories as full articles.
+
+### Known issues and traps
+- **Some of the ledger is local only.** `.superpowers/sdd/2026-09-22-full-stories/`
+  is gitignored and exists only on this machine. It holds the task briefs,
+  reports, review diffs and `progress.md`. On the other machine, regenerate the
+  briefs with
+  `bash ~/.claude/plugins/cache/superpowers-dev/superpowers/6.4.1/skills/subagent-driven-development/scripts/task-brief docs/superpowers/plans/2026-09-22-full-stories.md <N>`.
+- **An interrupted subagent leaves writes behind.** When Task 4 was interrupted,
+  it left a filler body on the live story
+  `amazon-blocks-meta-s-muse-ai-agent-from-shopping-its-store-a80bd8`. It was
+  found and restored to null. Before and after any sweep, check with
+  `select slug from stories where body is not null;`.
+- **Rulings made during the build:**
+  - The Tasks 2+3 reviewer flagged the skipped admin browser check as Important.
+    It was deferred to Task 5, Step 10.
+  - Task 4's sweep writes to production. That's acceptable only if the body is
+    restored immediately.
+- **Deferred minors, for the final review:**
+  - the docstring in `expectations.mjs:44` doesn't mention the merged probe
+  - `src/app/admin/news/page.tsx:32` still selects the unused `take` column
+  - `FOUNDER_LINE` in `schemas.ts` interpolates the heading into a RegExp
+    without escaping it
+- **Admin pages need the owner.** They can only be checked with the owner signed
+  in; Claude never types the password.
+- **Grep can't find the dashes.** `grep -P` can't search for en or em dashes in
+  this Git Bash locale. Check with Node instead, testing each file for the
+  pattern `/[–—]/`.
+
+### How to run and verify
+```bash
+git pull
+pnpm install
+pnpm run doctor     # not `pnpm doctor`
+pnpm verify         # expect 560 tests passing
+pnpm audit:rls      # expect 19/19 PASS and "RLS holds."
+```
+
+Then:
+- **Dev server:** `preview_start` `{ name: "enki-dev" }` (port 3000). Stop it when
+  done.
+- **Routes that matter:**
+  - `/news/<slug>`: a story with no body shows the legacy layout with "By Enki"
+  - `/news/about`
+  - `/admin/news`: the owner must be signed in
+- **Confirm the database state:**
+  `select status, count(*) from stories group by status;`. On 2026-09-22 this
+  showed 71 pending, 4 published, 2 rejected and 0 merged.
 
 ---
 
