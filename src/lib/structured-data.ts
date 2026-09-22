@@ -1,6 +1,6 @@
 import { siteConfig } from "@/lib/site";
 import type { Tool } from "@/lib/schemas";
-import type { PublicStory } from "@/lib/news/stories";
+import type { PublicStoryDetail, StorySource } from "@/lib/news/stories";
 
 /* =========================================================================
    Schema.org JSON-LD builders. Kept out of the components so the shapes are
@@ -157,8 +157,8 @@ export function breadcrumbJsonLd(crumbs: { name: string; path: string }[]) {
   };
 }
 
-/** NewsArticle, emitted only on story pages that are indexable (spec §6.1). */
-export function newsArticleJsonLd(story: PublicStory) {
+/** NewsArticle, emitted only on story pages that are indexable (full-stories spec §6). */
+export function newsArticleJsonLd(story: PublicStoryDetail, sources: StorySource[]) {
   const url = abs(`/news/${story.slug}`);
   const org = { "@type": "Organization", name: siteConfig.name, url: BASE };
   return {
@@ -173,6 +173,7 @@ export function newsArticleJsonLd(story: PublicStory) {
     ...(story.imageUrl ? { image: [story.imageUrl] } : {}),
     author: org,
     publisher: org,
-    isBasedOn: story.sourceUrl,
+    isBasedOn: sources.length > 0 ? sources.map((s) => s.url) : [story.sourceUrl],
+    wordCount: story.bodyWords,
   };
 }

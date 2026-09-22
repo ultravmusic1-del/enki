@@ -3,7 +3,7 @@
 import { useState, useTransition, type Ref } from "react";
 import { toast } from "sonner";
 import { beats, type BeatSlug } from "@/data/beats";
-import { isIndexableTake, SUMMARY_MAX, SUMMARY_MIN } from "@/lib/news/schemas";
+import { countWords, SUMMARY_MAX, SUMMARY_MIN } from "@/lib/news/schemas";
 import { safeExternalHref } from "@/lib/safe-url";
 import { cn } from "@/lib/utils";
 import { publishStory, setStoryStatus } from "@/app/admin/news/actions";
@@ -26,7 +26,7 @@ export function StoryEditor({
 }) {
   const [headline, setHeadline] = useState(story.headline);
   const [summary, setSummary] = useState(story.summary);
-  const [take, setTake] = useState(story.take);
+  const [body, setBody] = useState(story.body);
   const [beat, setBeat] = useState<BeatSlug | "">(story.beat);
   const [featured, setFeatured] = useState(story.featured);
   const [toolSlugs, setToolSlugs] = useState(story.toolSlugs);
@@ -53,7 +53,7 @@ export function StoryEditor({
           return;
         }
         startTransition(async () => {
-          const res = await publishStory({ id: story.id, headline, summary, take, beat, featured, toolSlugs });
+          const res = await publishStory({ id: story.id, headline, summary, body, beat, featured, toolSlugs });
           if (res.ok) toast.success(view === "pending" ? "Published" : "Saved");
           else toast.error(res.error);
         });
@@ -85,14 +85,10 @@ export function StoryEditor({
 
       <label className="flex flex-col gap-1.5 text-xs text-muted-foreground">
         <span className="flex justify-between">
-          Your take (optional)
-          {isIndexableTake(take) ? (
-            <span className="text-teal">Indexable</span>
-          ) : (
-            <span>300+ characters makes the page indexable</span>
-          )}
+          Story
+          <span>{countWords(body)} words</span>
         </span>
-        <textarea className={cn(field, "min-h-20")} value={take} onChange={(e) => setTake(e.target.value)} />
+        <textarea className={cn(field, "min-h-20")} value={body} onChange={(e) => setBody(e.target.value)} />
       </label>
 
       <div className="grid gap-4 sm:grid-cols-2">

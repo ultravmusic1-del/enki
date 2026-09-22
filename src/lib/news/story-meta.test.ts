@@ -2,12 +2,10 @@ import { describe, it, expect } from "vitest";
 import { pageCount, pageRange, parsePageParam, storyRobots } from "@/lib/news/story-meta";
 
 describe("storyRobots", () => {
-  it("keeps a story without a take out of the index", () => {
-    expect(storyRobots(null)).toEqual({ index: false, follow: true });
-  });
-  it("indexes a story whose take is 300+ characters", () => {
-    expect(storyRobots("t".repeat(300))).toEqual({ index: true, follow: true });
-    expect(storyRobots("t".repeat(299))).toEqual({ index: false, follow: true });
+  it("indexes a page whose body reaches 300 words", () => {
+    expect(storyRobots(300)).toEqual({ index: true, follow: true });
+    expect(storyRobots(299)).toEqual({ index: false, follow: true });
+    expect(storyRobots(0)).toEqual({ index: false, follow: true });
   });
 });
 

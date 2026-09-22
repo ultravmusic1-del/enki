@@ -51,7 +51,7 @@ describe("publishStory", () => {
     });
     createClient.mockReturnValue(stub);
 
-    const res = await publishStory({ ...valid, take: "   " });
+    const res = await publishStory({ ...valid, body: "   " });
 
     expect(res).toEqual({ ok: true, slug: "openai-ships-gpt-6-3f2a9c" });
     expect(stub.rpc).toHaveBeenCalledWith("admin_publish_story", {

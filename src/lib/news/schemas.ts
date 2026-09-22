@@ -5,10 +5,40 @@ import { isHttpUrl } from "@/lib/safe-url";
 export const HEADLINE_MAX = 300;
 export const SUMMARY_MIN = 40;
 export const SUMMARY_MAX = 320;
-export const TAKE_MAX = 5000;
-/** A take this long makes a story page indexable (spec §6.1). */
-export const TAKE_INDEXABLE_MIN = 300;
 export const MAX_STORY_TOOLS = 5;
+
+export const BODY_MIN_WORDS = 300;
+export const BODY_MAX_WORDS = 1200;
+/** A story page is indexable once its body reaches this many words (full-stories spec §6). */
+export const BODY_INDEXABLE_MIN_WORDS = BODY_MIN_WORDS;
+export const FOUNDER_HEADING = "What it means for founders";
+
+// Built from char codes: the editing tools decode escape sequences into the real characters.
+const EN_DASH = String.fromCharCode(0x2013);
+const EM_DASH = String.fromCharCode(0x2014);
+const FOUNDER_LINE = new RegExp(`^## ${FOUNDER_HEADING}[ \\t]*$`, "m");
+
+/** Whitespace-split word count. Must agree with the generated column stories.body_words. */
+export function countWords(text: string | null | undefined): number {
+  const trimmed = text?.trim() ?? "";
+  return trimmed === "" ? 0 : trimmed.split(/\s+/).length;
+}
+
+/** Why a body would be refused, in plain words. Mirrors the stories_body_check constraint. */
+export function bodyProblems(body: string): string[] {
+  const problems: string[] = [];
+  const words = countWords(body);
+  if (words < BODY_MIN_WORDS || words > BODY_MAX_WORDS) {
+    problems.push(`The story needs ${BODY_MIN_WORDS} to ${BODY_MAX_WORDS} words (it has ${words}).`);
+  }
+  if (body.includes(EN_DASH) || body.includes(EM_DASH)) {
+    problems.push("Replace the en or em dash with a comma, colon or full stop.");
+  }
+  if (!FOUNDER_LINE.test(body)) {
+    problems.push(`Add the heading "## ${FOUNDER_HEADING}" on its own line.`);
+  }
+  return problems;
+}
 
 const toolSlug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
 
@@ -20,12 +50,15 @@ export const storyPublishSchema = z.object({
     .trim()
     .min(SUMMARY_MIN, `The summary needs at least ${SUMMARY_MIN} characters.`)
     .max(SUMMARY_MAX, `Keep the summary under ${SUMMARY_MAX} characters.`),
-  take: z
+  body: z
     .string()
     .trim()
-    .max(TAKE_MAX)
     .optional()
-    .transform((v) => (v ? v : undefined)),
+    .transform((v) => (v ? v : undefined))
+    .superRefine((v, ctx) => {
+      if (v === undefined) return;
+      for (const message of bodyProblems(v)) ctx.addIssue({ code: "custom", message });
+    }),
   beat: z.enum(beatSlugs, "Pick a beat."),
   featured: z.boolean(),
   toolSlugs: z
@@ -35,10 +68,6 @@ export const storyPublishSchema = z.object({
 });
 
 export type StoryPublishInput = z.input<typeof storyPublishSchema>;
-
-export function isIndexableTake(take: string | null | undefined): boolean {
-  return (take?.trim().length ?? 0) >= TAKE_INDEXABLE_MIN;
-}
 
 const httpUrl = z.string().trim().refine(isHttpUrl, "Must be an http:// or https:// URL.");
 

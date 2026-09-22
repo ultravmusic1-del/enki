@@ -1,4 +1,4 @@
-import { isIndexableTake } from "@/lib/news/schemas";
+import { BODY_INDEXABLE_MIN_WORDS } from "@/lib/news/schemas";
 
 /** Stories per archive page. */
 export const NEWS_PAGE_SIZE = 30;
@@ -6,12 +6,11 @@ export const NEWS_PAGE_SIZE = 30;
 export const MORE_IN_BEAT = 5;
 
 /**
- * A story page is `noindex, follow` unless it carries a take long enough to be
- * original commentary (spec §1, §6.1). Aggregated summaries alone are the thin
- * pages roadmap item 0.1b removed.
+ * A story page is `noindex, follow` until it carries a full article (full-stories
+ * spec §6). Summary-only pages are the thin pages roadmap item 0.1b removed.
  */
-export function storyRobots(take: string | null): { index: boolean; follow: true } {
-  return { index: isIndexableTake(take), follow: true };
+export function storyRobots(bodyWords: number): { index: boolean; follow: true } {
+  return { index: bodyWords >= BODY_INDEXABLE_MIN_WORDS, follow: true };
 }
 
 /**

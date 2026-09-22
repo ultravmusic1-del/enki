@@ -16,6 +16,7 @@ vi.mock("@/lib/content", () => ({
 const {
   toPublicStory,
   getPublishedStory,
+  getStorySources,
   getStoryTools,
   listPublishedStories,
   listIndexableStories,
@@ -101,6 +102,12 @@ describe("getPublishedStory", () => {
     await vi.advanceTimersByTimeAsync(2600);
     expect(await pending).toBeNull();
   });
+  it("returns the body and its word count with the story", async () => {
+    respond({ data: { ...row, body: "Some body.", body_words: 2 }, error: null });
+    const story = await getPublishedStory(row.slug);
+    expect(story?.body).toBe("Some body.");
+    expect(story?.bodyWords).toBe(2);
+  });
 });
 
 describe("getStoryTools", () => {
@@ -147,18 +154,41 @@ describe("listPublishedStories", () => {
 });
 
 describe("listIndexableStories", () => {
-  it("keeps only stories with a take long enough to index", async () => {
+  it("keeps only stories whose body is long enough to index", async () => {
     respond({
       data: [
-        { slug: "a-story", take: "x".repeat(300), published_at: "2026-09-21T10:00:00Z" },
-        { slug: "b-story", take: "short", published_at: "2026-09-21T09:00:00Z" },
-        { slug: "c-story", take: null, published_at: "2026-09-21T08:00:00Z" },
+        { slug: "a-story", body_words: 300, published_at: "2026-09-21T10:00:00Z" },
+        { slug: "b-story", body_words: 120, published_at: "2026-09-21T09:00:00Z" },
+        { slug: "c-story", body_words: 0, published_at: "2026-09-21T08:00:00Z" },
       ],
       error: null,
     });
     expect(await listIndexableStories()).toEqual([
       { slug: "a-story", publishedAt: "2026-09-21T10:00:00Z" },
     ]);
+    expect(builder().gte).toHaveBeenCalledWith("body_words", 300);
+  });
+});
+
+describe("getStorySources", () => {
+  it("maps the RPC rows to sources, primary first", async () => {
+    rpc.mockResolvedValue({
+      data: [
+        { source_name: "TechCrunch", source_site_url: "https://techcrunch.com", source_url: "https://techcrunch.com/a" },
+        { source_name: "Ars Technica", source_site_url: "https://arstechnica.com", source_url: "https://arstechnica.com/b" },
+      ],
+      error: null,
+    });
+    expect(await getStorySources(row.id)).toEqual([
+      { name: "TechCrunch", siteUrl: "https://techcrunch.com", url: "https://techcrunch.com/a" },
+      { name: "Ars Technica", siteUrl: "https://arstechnica.com", url: "https://arstechnica.com/b" },
+    ]);
+    expect(rpc).toHaveBeenCalledWith("story_sources", { p_story_id: row.id });
+  });
+
+  it("degrades to an empty list when the RPC fails", async () => {
+    rpc.mockResolvedValue({ data: null, error: { message: "down" } });
+    expect(await getStorySources(row.id)).toEqual([]);
   });
 });
 

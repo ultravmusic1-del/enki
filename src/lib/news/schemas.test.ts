@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
 import {
-  isIndexableTake,
+  BODY_MAX_WORDS,
+  BODY_MIN_WORDS,
+  FOUNDER_HEADING,
+  bodyProblems,
+  countWords,
   newsSourceInputSchema,
   storyPublishSchema,
 } from "@/lib/news/schemas";
@@ -46,29 +50,73 @@ describe("storyPublishSchema", () => {
     ).toBe(false);
   });
 
-  it("turns a whitespace-only take into no take", () => {
-    const parsed = storyPublishSchema.parse({ ...base, take: "   " });
-    expect(parsed.take).toBeUndefined();
-  });
-
   it("rejects an id that is not a uuid", () => {
     expect(storyPublishSchema.safeParse({ ...base, id: "42" }).success).toBe(false);
   });
 });
 
-describe("isIndexableTake", () => {
-  it.each([
-    [299, false],
-    [300, true],
-    [301, true],
-  ])("take of %i chars → %s", (n, expected) => {
-    expect(isIndexableTake("y".repeat(n))).toBe(expected);
+const DASHES = String.fromCharCode(0x2013, 0x2014);
+
+function body(words: number, extra = ""): string {
+  // "## What it means for founders" is 6 words ("##" counts); the rest are filler.
+  return `${"word ".repeat(words - 6)}\n\n## ${FOUNDER_HEADING}\n${extra}`;
+}
+
+describe("countWords", () => {
+  it("splits on any whitespace and ignores padding", () => {
+    expect(countWords("  one\ttwo\n\nthree  ")).toBe(3);
+    expect(countWords("")).toBe(0);
+    expect(countWords(null)).toBe(0);
+  });
+});
+
+describe("bodyProblems", () => {
+  it("accepts the word-count boundaries", () => {
+    expect(bodyProblems(body(BODY_MIN_WORDS))).toEqual([]);
+    expect(bodyProblems(body(BODY_MAX_WORDS))).toEqual([]);
   });
 
-  it("ignores surrounding whitespace and handles no take", () => {
-    expect(isIndexableTake(`   ${"y".repeat(299)}   `)).toBe(false);
-    expect(isIndexableTake(null)).toBe(false);
-    expect(isIndexableTake(undefined)).toBe(false);
+  it("rejects one word either side of the boundaries", () => {
+    expect(bodyProblems(body(BODY_MIN_WORDS - 1))).toHaveLength(1);
+    expect(bodyProblems(body(BODY_MAX_WORDS + 1))).toHaveLength(1);
+  });
+
+  it("rejects either dash", () => {
+    for (const dash of DASHES) {
+      expect(bodyProblems(body(BODY_MIN_WORDS) + ` a${dash}b`).join(" ")).toMatch(/dash/i);
+    }
+  });
+
+  it("requires the founder heading on its own line", () => {
+    const noHeading = "word ".repeat(BODY_MIN_WORDS);
+    expect(bodyProblems(noHeading).join(" ")).toMatch(/founders/);
+    const inline = `${"word ".repeat(BODY_MIN_WORDS)} ## ${FOUNDER_HEADING}`;
+    expect(bodyProblems(inline).join(" ")).toMatch(/founders/);
+  });
+});
+
+describe("storyPublishSchema body", () => {
+  const base = {
+    id: "3f2a9c10-5b7e-4d21-9a0b-2c4d6e8f1a3b",
+    headline: "H",
+    summary: "A summary that is comfortably over forty characters long.",
+    beat: "research",
+    featured: false,
+    toolSlugs: [],
+  };
+
+  it("treats a blank body as absent", () => {
+    const parsed = storyPublishSchema.parse({ ...base, body: "   " });
+    expect(parsed.body).toBeUndefined();
+  });
+
+  it("refuses a body that breaks the rules", () => {
+    expect(storyPublishSchema.safeParse({ ...base, body: "too short" }).success).toBe(false);
+  });
+
+  it("accepts a valid body, trimmed", () => {
+    const parsed = storyPublishSchema.parse({ ...base, body: `  ${body(BODY_MIN_WORDS)}  ` });
+    expect(parsed.body?.startsWith("word")).toBe(true);
   });
 });
 

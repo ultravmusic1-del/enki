@@ -108,6 +108,8 @@ describe("newsArticleJsonLd", () => {
     headline: "H".repeat(140),
     summary: "A summary.",
     take: "t".repeat(300),
+    body: "word ".repeat(400),
+    bodyWords: 400,
     beat: "policy-safety" as const,
     beatName: "Policy & Safety",
     imageUrl: null,
@@ -119,20 +121,26 @@ describe("newsArticleJsonLd", () => {
     featured: false,
   };
 
+  const sources = [
+    { name: "The Verge", siteUrl: "https://www.theverge.com", url: "https://www.theverge.com/story" },
+    { name: "Ars Technica", siteUrl: "https://arstechnica.com", url: "https://arstechnica.com/story" },
+  ];
+
   it("describes the story as a NewsArticle at its absolute URL", () => {
-    const ld = newsArticleJsonLd(story) as Record<string, unknown>;
+    const ld = newsArticleJsonLd(story, sources) as Record<string, unknown>;
     expect(ld["@type"]).toBe("NewsArticle");
     expect(String(ld.url)).toMatch(/^https?:\/\/.+\/news\/gemini-hacked-31fc2b$/);
-    expect(ld.isBasedOn).toBe(story.sourceUrl);
+    expect(ld.isBasedOn).toEqual(sources.map((s) => s.url));
+    expect(ld.wordCount).toBe(400);
     expect(ld.datePublished).toBe(story.publishedAt);
   });
 
   it("truncates the headline to the 110 characters search engines accept", () => {
-    const ld = newsArticleJsonLd(story) as { headline: string };
+    const ld = newsArticleJsonLd(story, sources) as { headline: string };
     expect(ld.headline.length).toBeLessThanOrEqual(110);
   });
 
   it("omits the image when the story has none", () => {
-    expect(newsArticleJsonLd(story)).not.toHaveProperty("image");
+    expect(newsArticleJsonLd(story, sources)).not.toHaveProperty("image");
   });
 });

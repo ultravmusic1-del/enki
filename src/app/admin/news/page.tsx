@@ -29,7 +29,7 @@ export default async function AdminNewsPage({
 
   const supabase = await createClient();
   const columns =
-    "id, headline, source_id, source_url, image_url, summary, take, beat, featured, slug, source_published_at, published_at, created_at";
+    "id, headline, source_id, source_url, image_url, summary, take, body, beat, featured, slug, source_published_at, published_at, created_at";
   const storiesQuery =
     view === "pending"
       ? supabase.from("stories").select(columns).eq("status", "pending").order("created_at", { ascending: false }).limit(100)
@@ -67,7 +67,7 @@ export default async function AdminNewsPage({
     imageUrl: r.image_url,
     excerpt: excerptOf.get(r.id) ?? null,
     summary: r.summary ?? "",
-    take: r.take ?? "",
+    body: r.body ?? "",
     beat: r.beat && getBeat(r.beat) ? (r.beat as QueueStory["beat"]) : "",
     featured: r.featured,
     slug: r.slug,

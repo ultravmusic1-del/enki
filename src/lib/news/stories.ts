@@ -1,7 +1,7 @@
 import { getBeat, type BeatSlug } from "@/data/beats";
 import { getToolBySlug } from "@/lib/content";
 import type { Tool } from "@/lib/schemas";
-import { isIndexableTake } from "@/lib/news/schemas";
+import { BODY_INDEXABLE_MIN_WORDS } from "@/lib/news/schemas";
 import { MORE_IN_BEAT, pageRange } from "@/lib/news/story-meta";
 import { createAnonClient } from "@/lib/supabase/anon";
 
@@ -87,6 +87,10 @@ export function toPublicStory(row: PublicStoryRow): PublicStory | null {
   };
 }
 
+export type PublicStoryDetail = PublicStory & { body: string | null; bodyWords: number };
+
+export type StorySource = { name: string; siteUrl: string; url: string };
+
 function toPublicStories(rows: unknown): PublicStory[] {
   return ((rows ?? []) as PublicStoryRow[])
     .map(toPublicStory)
@@ -127,18 +131,32 @@ async function withTimeout<R extends { error: unknown }>(
   }
 }
 
-export async function getPublishedStory(slug: string): Promise<PublicStory | null> {
+export async function getPublishedStory(slug: string): Promise<PublicStoryDetail | null> {
   if (!SLUG_RE.test(slug)) return null;
   const result = await withTimeout(
     createAnonClient()
       .from("stories")
-      .select(PUBLIC_STORY_COLUMNS)
+      .select(`${PUBLIC_STORY_COLUMNS}, body, body_words`)
       .eq("slug", slug)
       .eq("status", "published")
       .maybeSingle(),
     "getPublishedStory",
   );
-  return result?.data ? toPublicStory(result.data as unknown as PublicStoryRow) : null;
+  if (!result?.data) return null;
+  const row = result.data as unknown as PublicStoryRow & { body: string | null; body_words: number | null };
+  const story = toPublicStory(row);
+  return story ? { ...story, body: row.body, bodyWords: row.body_words ?? 0 } : null;
+}
+
+/** Every source of a published story, its own first. Empty on failure; the page falls back to the story's own source. */
+export async function getStorySources(storyId: string): Promise<StorySource[]> {
+  const result = await withTimeout(
+    createAnonClient().rpc("story_sources", { p_story_id: storyId }),
+    "getStorySources",
+  );
+  return ((result?.data ?? []) as { source_name: string; source_site_url: string; source_url: string }[]).map(
+    (r) => ({ name: r.source_name, siteUrl: r.source_site_url, url: r.source_url }),
+  );
 }
 
 /** The story's tools in position order, skipping any no longer in the directory. */
@@ -189,20 +207,21 @@ export async function listMoreInBeat(beat: BeatSlug, excludeId: string): Promise
   return toPublicStories(result?.data);
 }
 
-/** Stories whose take makes them indexable, for the sitemap. */
+/** Stories with a full article, for the sitemap. */
 export async function listIndexableStories(): Promise<{ slug: string; publishedAt: string }[]> {
   const result = await withTimeout(
     createAnonClient()
       .from("stories")
-      .select("slug, take, published_at")
+      .select("slug, body_words, published_at")
       .eq("status", "published")
+      .gte("body_words", BODY_INDEXABLE_MIN_WORDS)
       .order("published_at", { ascending: false })
       .limit(5000),
     "listIndexableStories",
   );
-  const rows = (result?.data ?? []) as { slug: string | null; take: string | null; published_at: string | null }[];
+  const rows = (result?.data ?? []) as { slug: string | null; body_words: number | null; published_at: string | null }[];
   return rows.flatMap((r) =>
-    r.slug && r.published_at && isIndexableTake(r.take)
+    r.slug && r.published_at && (r.body_words ?? 0) >= BODY_INDEXABLE_MIN_WORDS
       ? [{ slug: r.slug, publishedAt: r.published_at }]
       : [],
   );

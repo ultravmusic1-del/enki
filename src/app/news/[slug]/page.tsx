@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: story.headline,
     description: story.summary,
     alternates: { canonical: `/news/${story.slug}` },
-    robots: storyRobots(story.take),
+    robots: storyRobots(story.bodyWords),
     openGraph: {
       type: "article",
       title: story.headline,
@@ -53,7 +53,7 @@ export default async function StoryPage({ params }: Props) {
   ]);
   const now = new Date();
   const reportedAt = story.sourcePublishedAt ?? story.publishedAt;
-  const indexable = storyRobots(story.take).index;
+  const indexable = storyRobots(story.bodyWords).index;
 
   return (
     <Container className="pt-28 pb-20">
@@ -64,7 +64,7 @@ export default async function StoryPage({ params }: Props) {
           { name: story.headline, path: `/news/${story.slug}` },
         ])}
       />
-      {indexable ? <JsonLd data={newsArticleJsonLd(story)} /> : null}
+      {indexable ? <JsonLd data={newsArticleJsonLd(story, [])} /> : null}
 
       <article className="mx-auto flex max-w-3xl flex-col gap-8">
         <StoryViewPing storyId={story.id} />

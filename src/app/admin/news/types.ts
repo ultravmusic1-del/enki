@@ -9,7 +9,7 @@ export type QueueStory = {
   imageUrl: string | null;
   excerpt: string | null;
   summary: string;
-  take: string;
+  body: string;
   beat: BeatSlug | "";
   featured: boolean;
   slug: string | null;
