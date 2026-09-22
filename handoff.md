@@ -19,13 +19,31 @@ to unlock the admin.
 ## 0. In flight — AI news pivot (updated 2026-09-21)
 
 ### Start here next session
-**Merges 1, 2 and 3 are complete (2026-09-21).** Merges 1 and 2 are live on
-enkitools.com. Merge 3 (the news homepage) is committed locally; check
-`git log origin/main..HEAD` before assuming it is deployed. **Before pushing
-merge 3, publish more stories:** with one published story the homepage is a
-single lead card. What remains is merge 4 (spec §8.2–8.3: metadata, copy, the
-footer's "oracle for AI tools" line, and the roadmap phase), which has no plan
-yet.
+**All four merges of the news pivot are complete (2026-09-22).** Merges 1–3 are
+live on enkitools.com. Merge 4 (site-wide copy and metadata, plan
+`docs/superpowers/plans/2026-09-22-news-repositioning.md`) is committed; check
+`git log origin/main..HEAD` for whether it is pushed.
+
+**Merge 4 shipped:**
+- The news-first site description, used by metadata, the manifest, JSON-LD and
+  `llms.txt`.
+- The new footer blurb.
+- The homepage share image leads with "AI news, curated".
+- **Both share images now print `enkitools.com`.** They had printed the wrong
+  `enki.tools` since the domain move.
+- A News section in `llms.txt`.
+- The affiliate disclosure and privacy policy now cover story tool links, and
+  their em dashes are removed.
+- The pivot is roadmap **Phase 7**. The old appendix §7 is now §8.
+- `src/lib/brand-copy.test.ts` guards the domain, the tagline and dashes.
+
+**Needs the owner:**
+- New wording for `src/app/terms/page.tsx:32` ("Enki is a curated directory of
+  AI tools").
+- Whether to fix the tool share image showing the editor score twice.
+
+The ongoing work is running the news queue (see the roadmap's Phase 7 "Open"
+list).
 
 **Merge 3 shipped** (plan `docs/superpowers/plans/2026-09-21-news-homepage.md`):
 - **`/` is the AI news front page:**
