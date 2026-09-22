@@ -275,6 +275,12 @@ export type Database = {
           headline: string
           summary: string | null
           take: string | null
+          /** Restricted Markdown article. Null for stories published before full stories. */
+          body: string | null
+          /** Generated from body: whitespace-split word count, 0 when null. */
+          body_words: number
+          /** Set only when status is 'merged': the story this row is a source of. */
+          merged_into: string | null
           beat: string | null
           image_url: string | null
           status: string
@@ -353,17 +359,27 @@ export type Database = {
           p_slug: string
           p_headline: string
           p_summary: string
-          p_take: string | null
+          p_body: string | null
           p_beat: string
           p_featured: boolean
           p_tool_slugs: string[]
         }
         Returns: string | null
       }
-      /** Admin-only. 'rejected' from pending, or 'pending' to unpublish. */
+      /** Admin-only. Merge a pending or rejected row into a pending or published story. */
+      admin_merge_story: {
+        Args: { p_story_id: string; p_into_id: string }
+        Returns: boolean
+      }
+      /** Admin-only. 'rejected' from pending (with its merged rows), or 'pending' from published or merged. */
       admin_set_story_status: {
         Args: { p_story_id: string; p_status: string }
         Returns: boolean
+      }
+      /** Anon-callable. A published story's sources; empty for any other story. */
+      story_sources: {
+        Args: { p_story_id: string }
+        Returns: { source_name: string; source_site_url: string; source_url: string }[]
       }
       /** Aggregate view counts for published stories only. Anon-callable. */
       popular_stories: {

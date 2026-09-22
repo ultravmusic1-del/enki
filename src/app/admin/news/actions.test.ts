@@ -59,7 +59,7 @@ describe("publishStory", () => {
       p_slug: "openai-ships-gpt-6-3f2a9c",
       p_headline: "OpenAI ships GPT-6",
       p_summary: valid.summary,
-      p_take: null,
+      p_body: null,
       p_beat: "models-labs",
       p_featured: true,
       p_tool_slugs: ["cursor"],

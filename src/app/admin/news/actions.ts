@@ -37,7 +37,7 @@ export async function publishStory(
     p_slug: makeStorySlug(story.headline, story.id),
     p_headline: story.headline,
     p_summary: story.summary,
-    p_take: story.take ?? null,
+    p_body: null,
     p_beat: story.beat,
     p_featured: story.featured,
     p_tool_slugs: story.toolSlugs,

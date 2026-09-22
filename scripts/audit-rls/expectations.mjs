@@ -60,6 +60,10 @@ export const ANON_INVISIBLE_QUERIES = [
     label: "story_tools (unpublished)",
     path: "story_tools?select=story_id,stories!inner(status)&stories.status=neq.published&limit=5",
   },
+  {
+    label: "stories (merged)",
+    path: "stories?select=id&status=eq.merged&limit=5",
+  },
 ];
 
 const WRONG_SECRET = "audit-probe-wrong-secret-000000000000000";
@@ -89,13 +93,14 @@ export const ANON_REFUSED_RPCS = [
       p_slug: "audit-probe",
       p_headline: "audit probe",
       p_summary: "x".repeat(40),
-      p_take: null,
+      p_body: null,
       p_beat: "research",
       p_featured: false,
       p_tool_slugs: [],
     },
   },
   { fn: "admin_set_story_status", body: { p_story_id: NIL_UUID, p_status: "rejected" } },
+  { fn: "admin_merge_story", body: { p_story_id: NIL_UUID, p_into_id: NIL_UUID } },
 ];
 
 /** @param {string} label @param {{status: number, rows: unknown[] | null}} response */

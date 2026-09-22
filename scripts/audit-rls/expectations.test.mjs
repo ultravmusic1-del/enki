@@ -54,6 +54,7 @@ describe("query probes", () => {
     expect(ANON_INVISIBLE_QUERIES.map((q) => q.label)).toEqual([
       "stories (unpublished)",
       "story_tools (unpublished)",
+      "stories (merged)",
     ]);
   });
 
@@ -80,6 +81,7 @@ describe("rpc probes", () => {
       "touch_news_source",
       "admin_publish_story",
       "admin_set_story_status",
+      "admin_merge_story",
     ]);
   });
 
