@@ -11,7 +11,7 @@ Size: **S** ≈ under an hour · **M** ≈ a focused session · **L** ≈ multi-
 
 Written 2026-07-31, merging the existing pre-launch list with an external review
 of the live site. Every external claim was checked against the source before it
-earned a place here; §7 lists the ones that did not survive that check.
+earned a place here; §8 lists the ones that did not survive that check.
 
 ---
 
@@ -462,7 +462,29 @@ homepage placement.
 
 ---
 
-## 7. External review claims that did not survive verification
+## Phase 7 — The news pivot (2026-09-19 onward)
+
+Enki became an AI news front page with the tool directory as its second
+product. Spec: `docs/superpowers/specs/2026-09-19-ai-news-pivot-design.md`
+(read its §0 amendments first). Each merge has its own plan in
+`docs/superpowers/plans/`.
+
+| Merge | What | Status |
+|---|---|---|
+| 1 | Feed ingestion, the admin news queue, daily cron | **Done**, live |
+| 2 | Story pages, `/news`, beats, `/news/about`, view counting, sitemap | **Done**, live |
+| 3 | The news homepage, header nav and beat row, `/tools` gets the hero | **Done**, live |
+| 4 | Site-wide copy and metadata, share-image domain, this phase | **Done** |
+
+**Open, in priority order:**
+- **Owner:** create the Vercel Firewall rule `enki-story-view` (30/minute per IP). View counting is not rate limited until then.
+- **Affiliate coverage.** News is mostly about ChatGPT, Claude and Gemini, and none of them has an affiliate programme. Tool cards on those stories earn nothing. Revenue depends on stories that mention tools that do (for example Perplexity), or on adding tools that have programmes.
+- **Publishing cadence.** Stories only reach the homepage when someone publishes them from `/admin/news`. The daily cron fills the queue; it does not publish.
+- **CI is red on the dependency audit** (`pnpm audit --prod --audit-level high`, pre-existing advisories in `next`, `sharp`, `@sentry/nextjs`, `@react-three/drei` and `browserslist`).
+
+---
+
+## 8. External review claims that did not survive verification
 
 Checked against the source and **not** carried into the roadmap. Recorded so
 nobody spends a session on them.

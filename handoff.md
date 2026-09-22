@@ -820,10 +820,6 @@ live site, and it supersedes the lists in
 and the Operator Checklists inside `docs/superpowers/plans/*`. Every one of those
 points at the roadmap. **Do not start a second one.**
 
-**Exception while it is in flight:** the AI news pivot is tracked in §0 and its
-spec and plan, not yet in the roadmap. Merge 4 of the spec adds it as a roadmap
-phase.
-
 Orientation only, so a fresh session knows where things stand:
 
 - **Phase 0** is the launch gate. Three items on it are defects that contradict
