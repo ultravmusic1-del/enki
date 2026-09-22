@@ -4,7 +4,8 @@ import { Container } from "@/components/shared/container";
 
 export const metadata: Metadata = {
   title: "How Enki covers news",
-  description: "Where Enki's AI news comes from, and how tool links on stories work.",
+  description:
+    "Where Enki's AI news comes from, how stories are written from their sources, and how tool links work.",
   alternates: { canonical: "/news/about" },
 };
 
@@ -18,12 +19,13 @@ export default function NewsAboutPage() {
         </header>
         <p>
           Enki follows a set of AI news sources every day and picks the stories worth your time.
-          Each story links to the publisher that reported it. The headline and the reporting
-          belong to them.
+          Each story is written by Enki from the reporting of the outlets it lists as sources, and
+          every one of them is linked. Their original reporting belongs to them.
         </p>
         <p>
-          Every summary and take on Enki is written from the linked source. For the complete
-          reporting, read the full story at the publisher.
+          The section headed &ldquo;What it means for founders&rdquo; is Enki&apos;s own analysis:
+          what the news changes for people building companies. Where outlets disagree on a detail,
+          we leave it out rather than guess.
         </p>
         <p>
           Some stories list the AI tools they mention. Those links may earn Enki a commission if

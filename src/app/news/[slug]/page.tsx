@@ -9,10 +9,17 @@ import { StoryToolCard } from "@/components/news/story-tool-card";
 import { StoryList } from "@/components/news/story-list";
 import { StoryViewPing } from "@/components/news/story-view-ping";
 import { BeatRow } from "@/components/news/beat-row";
+import { ArticleBody } from "@/components/news/article-body";
 import { breadcrumbJsonLd, newsArticleJsonLd } from "@/lib/structured-data";
 import { formatAge } from "@/lib/news/format-age";
 import { storyRobots } from "@/lib/news/story-meta";
-import { getPublishedStory, getStoryTools, listMoreInBeat } from "@/lib/news/stories";
+import {
+  getPublishedStory,
+  getStoryTools,
+  getStorySources,
+  listMoreInBeat,
+  type StorySource,
+} from "@/lib/news/stories";
 import { safeExternalHref } from "@/lib/safe-url";
 
 // Rendered on demand and cached; admin publish/unpublish revalidates /news.
@@ -47,10 +54,17 @@ export default async function StoryPage({ params }: Props) {
   const story = await getPublishedStory(slug);
   if (!story) notFound();
 
-  const [tools, more] = await Promise.all([
+  const [tools, more, fetchedSources] = await Promise.all([
     getStoryTools(story.id),
     listMoreInBeat(story.beat, story.id),
+    getStorySources(story.id),
   ]);
+  const sources: StorySource[] =
+    fetchedSources.length > 0
+      ? fetchedSources
+      : [{ name: story.sourceName, siteUrl: story.sourceSiteUrl, url: story.sourceUrl }];
+  const outletNames = [...new Set(sources.map((s) => s.name))];
+  const hasBody = story.body !== null && story.bodyWords > 0;
   const now = new Date();
   const reportedAt = story.sourcePublishedAt ?? story.publishedAt;
   const indexable = storyRobots(story.bodyWords).index;
@@ -64,7 +78,7 @@ export default async function StoryPage({ params }: Props) {
           { name: story.headline, path: `/news/${story.slug}` },
         ])}
       />
-      {indexable ? <JsonLd data={newsArticleJsonLd(story, [])} /> : null}
+      {indexable ? <JsonLd data={newsArticleJsonLd(story, sources)} /> : null}
 
       <article className="mx-auto flex max-w-3xl flex-col gap-8">
         <StoryViewPing storyId={story.id} />
@@ -88,39 +102,74 @@ export default async function StoryPage({ params }: Props) {
             {story.headline}
           </h1>
           <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-            <a
-              href={safeExternalHref(story.sourceSiteUrl)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="break-words text-foreground hover:text-teal"
-            >
-              {story.sourceName}
-            </a>
+            <span className="text-foreground">By Enki</span>
             <span aria-hidden>·</span>
-            <time dateTime={reportedAt}>{formatAge(reportedAt, now)}</time>
-            <span aria-hidden>·</span>
-            <span>Summary by Enki</span>
+            {hasBody ? (
+              <>
+                <time dateTime={story.publishedAt}>{formatAge(story.publishedAt, now)}</time>
+                <span aria-hidden>·</span>
+                <span className="break-words">Reporting from {outletNames.join(", ")}</span>
+              </>
+            ) : (
+              <>
+                <a
+                  href={safeExternalHref(story.sourceSiteUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="break-words text-foreground hover:text-teal"
+                >
+                  {story.sourceName}
+                </a>
+                <span aria-hidden>·</span>
+                <time dateTime={reportedAt}>{formatAge(reportedAt, now)}</time>
+              </>
+            )}
           </p>
         </header>
 
         <p className="text-lg leading-relaxed text-pretty">{story.summary}</p>
 
-        {story.take ? (
-          <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card/60 p-6 ring-hairline">
-            <h2 className="font-mono text-xs tracking-[0.3em] text-teal uppercase">Enki&apos;s take</h2>
-            <p className="leading-relaxed whitespace-pre-line text-pretty">{story.take}</p>
-          </section>
-        ) : null}
-
-        <a
-          href={safeExternalHref(story.sourceUrl)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex w-fit max-w-full items-center gap-2 rounded-full bg-teal px-6 py-2.5 text-sm font-semibold text-[#04171a] transition-colors hover:bg-teal-bright"
-        >
-          <span className="break-words">Read the full story at {story.sourceName}</span>
-          <Icon name="ArrowUpRight" className="size-4 shrink-0" />
-        </a>
+        {hasBody && story.body ? (
+          <>
+            <ArticleBody body={story.body} />
+            <section className="flex flex-col gap-3 border-t border-border pt-6">
+              <h2 className="font-mono text-xs tracking-[0.3em] text-teal uppercase">Sources</h2>
+              <ul className="flex flex-col gap-2 text-sm">
+                {sources.map((source) => (
+                  <li key={source.url} className="min-w-0">
+                    <a
+                      href={safeExternalHref(source.url)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex max-w-full items-center gap-1.5 text-muted-foreground hover:text-foreground"
+                    >
+                      <span className="break-words">{source.name}</span>
+                      <Icon name="ArrowUpRight" className="size-3.5 shrink-0" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </>
+        ) : (
+          <>
+            {story.take ? (
+              <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card/60 p-6 ring-hairline">
+                <h2 className="font-mono text-xs tracking-[0.3em] text-teal uppercase">Enki&apos;s take</h2>
+                <p className="leading-relaxed whitespace-pre-line text-pretty">{story.take}</p>
+              </section>
+            ) : null}
+            <a
+              href={safeExternalHref(story.sourceUrl)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex w-fit max-w-full items-center gap-2 rounded-full bg-teal px-6 py-2.5 text-sm font-semibold text-[#04171a] transition-colors hover:bg-teal-bright"
+            >
+              <span className="break-words">Read the full story at {story.sourceName}</span>
+              <Icon name="ArrowUpRight" className="size-4 shrink-0" />
+            </a>
+          </>
+        )}
 
         {tools.length > 0 ? (
           <section className="flex flex-col gap-4">
