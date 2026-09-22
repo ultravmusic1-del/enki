@@ -45,7 +45,7 @@ export default async function Image() {
             color: OG.tealBright,
           }}
         >
-          THE ORACLE FOR AI TOOLS
+          AI NEWS, CURATED
         </div>
         <div
           style={{

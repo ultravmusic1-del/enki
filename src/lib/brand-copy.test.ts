@@ -19,6 +19,12 @@ describe("site-wide brand copy", () => {
     expect(siteConfig.description.toLowerCase()).not.toContain("oracle for ai tools");
   });
 
+  it("keeps the directory tagline off the homepage share image", () => {
+    // Case-insensitive: the image source writes its eyebrow in capitals.
+    const source = readFileSync("src/app/opengraph-image.tsx", "utf8").toLowerCase();
+    expect(source).not.toContain("oracle for ai tools");
+  });
+
   it("never prints the old enki.tools domain on a share image or page", () => {
     for (const path of COPY_FILES) {
       expect(readFileSync(path, "utf8"), path).not.toContain("enki.tools");
