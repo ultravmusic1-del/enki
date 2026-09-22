@@ -56,7 +56,7 @@ export const siteConfig = {
   name: "Enki",
   tagline: "Wisdom for the age of AI",
   description:
-    "Enki is the oracle for AI tools: a curated, human-vetted directory to discover, compare, and trust the tools shaping the future of work.",
+    "Enki is AI news, curated: the day's most important AI stories in clear summaries, with a vetted directory of the tools behind them.",
   url: resolveSiteUrl(),
   ogImage: "/brand/logo.png",
   /**

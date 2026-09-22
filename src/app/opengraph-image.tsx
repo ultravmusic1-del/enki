@@ -1,8 +1,8 @@
 import { ImageResponse } from "next/og";
-import { siteConfig } from "@/lib/site";
+import { CANONICAL_SITE_URL, siteConfig } from "@/lib/site";
 import { OG, OG_SIZE, ogFonts } from "@/lib/og";
 
-export const alt = `${siteConfig.name} — ${siteConfig.tagline}`;
+export const alt = `${siteConfig.name}: ${siteConfig.tagline}`;
 export const size = OG_SIZE;
 export const contentType = "image/png";
 
@@ -79,7 +79,7 @@ export default async function Image() {
             color: OG.muted,
           }}
         >
-          <div style={{ display: "flex", color: OG.teal }}>Curated</div>
+          <div style={{ display: "flex", color: OG.teal }}>AI news</div>
           <div
             style={{
               display: "flex",
@@ -89,7 +89,7 @@ export default async function Image() {
               background: OG.muted,
             }}
           />
-          <div style={{ display: "flex", color: OG.teal }}>Human-vetted</div>
+          <div style={{ display: "flex", color: OG.teal }}>Tool directory</div>
           <div
             style={{
               display: "flex",
@@ -99,7 +99,8 @@ export default async function Image() {
               background: OG.muted,
             }}
           />
-          <div style={{ display: "flex" }}>enki.tools</div>
+          {/* The canonical host, never a preview deployment's (siteConfig.url). */}
+          <div style={{ display: "flex" }}>{new URL(CANONICAL_SITE_URL).host}</div>
         </div>
       </div>
     ),

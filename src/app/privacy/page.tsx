@@ -69,9 +69,11 @@ export default function PrivacyPage() {
           <p>
             Some outbound links to tools are affiliate links, meaning Enki may
             earn a commission if you sign up or purchase through them, at no
-            extra cost to you. Affiliate relationships never influence our editor
-            scores, verdicts, or rankings — those are decided independently
-            before any commercial arrangement.
+            extra cost to you. This includes tool links on news stories.
+            Affiliate relationships never influence our editor scores,
+            verdicts, rankings, or which stories we cover and how we summarise
+            them. Those are decided independently of any commercial
+            arrangement.
           </p>
         </section>
       </div>

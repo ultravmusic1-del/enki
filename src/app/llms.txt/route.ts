@@ -1,3 +1,4 @@
+import { beats } from "@/data/beats";
 import { getAllTools, getCategories } from "@/lib/content";
 import { siteConfig } from "@/lib/site";
 
@@ -13,6 +14,12 @@ export async function GET() {
     `# ${siteConfig.name}`,
     "",
     `> ${siteConfig.description}`,
+    "",
+    "## News",
+    `- [AI news front page](${base}/): the day's most important AI stories`,
+    `- [All news](${base}/news): every published story, newest first`,
+    ...beats.map((beat) => `- [${beat.name}](${base}/news/beat/${beat.slug})`),
+    `- [How Enki covers news](${base}/news/about)`,
     "",
     "## Categories",
     ...categories.map(

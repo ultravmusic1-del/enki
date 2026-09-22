@@ -5,6 +5,7 @@ import {
   getCategoryBySlug,
 } from "@/lib/content";
 import { OG, OG_SIZE, ogFonts, publicImageDataUri } from "@/lib/og";
+import { CANONICAL_SITE_URL } from "@/lib/site";
 
 export const alt = "AI tool review on Enki";
 export const size = OG_SIZE;
@@ -224,7 +225,7 @@ export default async function Image({
               color: OG.muted,
             }}
           >
-            enki.tools
+            {new URL(CANONICAL_SITE_URL).host}
           </div>
         </div>
       </div>

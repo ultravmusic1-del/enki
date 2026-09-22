@@ -23,10 +23,11 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   keywords: [
+    "AI news",
+    "AI news today",
     "AI tools",
     "AI directory",
     "AI tool reviews",
-    "best AI software",
     "AI tool comparison",
     "Enki",
   ],

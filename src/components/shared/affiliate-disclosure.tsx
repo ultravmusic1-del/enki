@@ -13,7 +13,8 @@ export function AffiliateDisclosure({ className }: { className?: string }) {
       >
         We may earn a commission
       </Link>{" "}
-      if you sign up through our links — it never affects our rating.
+      if you sign up through our links. It never affects our ratings or which
+      stories we cover.
     </p>
   );
 }
