@@ -1647,7 +1647,80 @@ git commit -m "feat(admin): write full stories, see their sources, merge duplica
 
 ---
 
-### Task 6: Records, then content
+### Task 6: Site description copy
+
+Added at the owner's request after spec review. The site-wide description and footer still promise "clear summaries", which is wrong once stories are full articles. `siteConfig.description` flows into the root metadata, the web manifest, the Organization/WebSite JSON-LD and `llms.txt`, so it changes in one place.
+
+**The new copy** (owner to confirm the wording at review; change only these strings if they reword):
+
+| Where | New text |
+|---|---|
+| `siteConfig.description` (`src/lib/site.ts:59`) | `AI news for founders: the day's key AI stories, written from the best reporting, with what each one means for your company. Plus a vetted directory of AI tools.` |
+| Footer blurb (`src/components/layout/site-footer.tsx:83-84`) | `AI news for founders. The day's stories in full, with what they mean for your company, plus a vetted directory of the tools behind them.` |
+
+**Files:**
+- Modify: `src/lib/site.ts:59`
+- Modify: `src/components/layout/site-footer.tsx:83-84`
+- Modify: `src/lib/brand-copy.test.ts`
+
+**Interfaces:**
+- Consumes: nothing from earlier tasks.
+- Produces: nothing later tasks rely on.
+
+- [ ] **Step 1: Write the failing guard test**
+
+In `src/lib/brand-copy.test.ts`, add inside the `describe`:
+
+```ts
+  it("describes full stories for founders, not summaries", () => {
+    const footer = readFileSync("src/components/layout/site-footer.tsx", "utf8");
+    for (const text of [siteConfig.description, footer]) {
+      expect(text.toLowerCase()).not.toContain("clear summaries");
+    }
+    expect(siteConfig.description.toLowerCase()).toContain("founders");
+  });
+```
+
+In the "has no em or en dash" test, add `readFileSync("src/components/layout/site-footer.tsx", "utf8"),` to the array.
+
+- [ ] **Step 2: Run it to see it fail**
+
+Run: `pnpm test src/lib/brand-copy.test.ts`
+Expected: FAIL on "clear summaries".
+
+- [ ] **Step 3: Change the copy**
+
+In `src/lib/site.ts`, set `description` to the table's text. In `site-footer.tsx`, replace the two blurb lines with:
+
+```tsx
+              AI news for founders. The day&apos;s stories in full, with what they mean
+              for your company, plus a vetted directory of the tools behind them.
+```
+
+- [ ] **Step 4: Run the gate**
+
+Run: `pnpm verify`
+Expected: PASS. If a snapshot or metadata test pins the old description string, update its expected value to the new text (and nothing else).
+
+- [ ] **Step 5: Check it renders**
+
+With `enki-dev` running, run `pnpm sweep -- / /tools /news`.
+Expected: PASS at 390px and 1440px. Screenshot the footer at 390px to confirm the blurb wraps cleanly.
+
+Confirm the new description is served:
+- in the homepage `<meta name="description">`, using `read_page` or `javascript_tool`: `document.querySelector('meta[name=description]').content`
+- in `/llms.txt`
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add src/lib/site.ts src/components/layout/site-footer.tsx src/lib/brand-copy.test.ts
+git commit -m "feat(brand): the site description promises full stories for founders"
+```
+
+---
+
+### Task 7: Records, then content
 
 **Files:**
 - Modify: `HANDOFF.md` (§0 "Running the news", §4 schema table, RPC list and "Migrations applied")
