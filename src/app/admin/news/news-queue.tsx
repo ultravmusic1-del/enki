@@ -5,7 +5,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { setStoryStatus } from "@/app/admin/news/actions";
 import { StoryEditor } from "@/app/admin/news/story-editor";
-import type { MergeTarget, QueueStory, ToolOption } from "@/app/admin/news/types";
+import { RejectedStory } from "@/app/admin/news/rejected-story";
+import type { MergeTarget, QueueStory, QueueView, ToolOption } from "@/app/admin/news/types";
 
 function isTyping(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
@@ -20,7 +21,7 @@ export function NewsQueue({
 }: {
   stories: QueueStory[];
   tools: ToolOption[];
-  view: "pending" | "published";
+  view: QueueView;
   mergeTargets: MergeTarget[];
 }) {
   const [activeId, setActiveId] = useState<string | null>(stories[0]?.id ?? null);
@@ -80,7 +81,9 @@ export function NewsQueue({
       <p className="rounded-2xl border border-border bg-card/60 p-6 text-sm text-muted-foreground ring-hairline">
         {view === "pending"
           ? "The queue is empty. Fetch now, or wait for tomorrow's run."
-          : "Nothing published yet."}
+          : view === "published"
+            ? "Nothing published yet."
+            : "Nothing rejected."}
       </p>
     );
   }
@@ -111,7 +114,9 @@ export function NewsQueue({
                 {story.sources.length > 0 ? ` · ${story.sources.length + 1} sources` : ""}
               </span>
             </button>
-            {open ? (
+            {!open ? null : view === "rejected" ? (
+              <RejectedStory key={story.id} story={story} mergeTargets={mergeTargets} />
+            ) : (
               <StoryEditor
                 key={story.id}
                 story={story}
@@ -123,7 +128,7 @@ export function NewsQueue({
                   else forms.current.delete(story.id);
                 }}
               />
-            ) : null}
+            )}
           </li>
         );
       })}

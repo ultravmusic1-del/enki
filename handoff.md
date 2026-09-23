@@ -61,14 +61,14 @@ in production**; **none of this code is deployed.**
   Work on `main`: no branches or worktrees.
 
 ### Not done (in order)
-- [ ] **Open decision before the content pass:** the admin queue only shows
-  pending and published stories, so rejected duplicates cannot be merged back
-  in from the UI (the `admin_merge_story` RPC itself accepts them). Options:
-  add a Rejected view with the merge picker, or merge them with owner-approved
-  SQL. Owner to choose.
-- [ ] **Final whole-branch review** on the most capable model, over
-  `290cfc5^..HEAD`. The deferred minors below are for it to triage.
-- [ ] **Task 7, Step 4:** ask the owner to push. **Claude never pushes.**
+- [x] **Rejected duplicates:** the queue has a **Rejected** tab
+  (`/admin/news?view=rejected`). A rejected row can't be published there, only
+  merged into a published or pending story, which is how a wrongly rejected
+  duplicate comes back as a source.
+- [x] **Final whole-branch review:** done 2026-09-23, ready to merge; its fixes
+  are in `260a3d6` and `a231254`.
+- [ ] **Push:** the owner pushes. **Claude never pushes.** Check with
+  `git status -sb` that `main` is not ahead of `origin/main`.
 - [ ] **After the deploy (Task 7, Step 5), content:**
   - Publish the 5 researched stories as full articles, merging their duplicates.
     Research was done on 2026-09-22: OpenAI's math advisory group, the AI

@@ -10,14 +10,12 @@ import { Container } from "@/components/shared/container";
 import { Icon } from "@/components/shared/icon";
 import { NewsQueue } from "@/app/admin/news/news-queue";
 import { FetchNowButton } from "@/app/admin/news/fetch-now-button";
-import type { MergeTarget, QueueSource, QueueStory } from "@/app/admin/news/types";
+import type { MergeTarget, QueueSource, QueueStory, QueueView } from "@/app/admin/news/types";
 
 export const metadata: Metadata = {
   title: "News queue",
   robots: { index: false, follow: false },
 };
-
-type View = "pending" | "published";
 
 export default async function AdminNewsPage({
   searchParams,
@@ -25,15 +23,16 @@ export default async function AdminNewsPage({
   searchParams: Promise<{ view?: string }>;
 }) {
   await requireAdmin();
-  const view: View = (await searchParams).view === "published" ? "published" : "pending";
+  const requested = (await searchParams).view;
+  const view: QueueView = requested === "published" || requested === "rejected" ? requested : "pending";
 
   const supabase = await createClient();
   const columns =
     "id, headline, source_id, source_url, image_url, summary, take, body, beat, featured, slug, source_published_at, published_at, created_at";
   const storiesQuery =
-    view === "pending"
-      ? supabase.from("stories").select(columns).eq("status", "pending").order("created_at", { ascending: false }).limit(100)
-      : supabase.from("stories").select(columns).eq("status", "published").order("published_at", { ascending: false }).limit(50);
+    view === "published"
+      ? supabase.from("stories").select(columns).eq("status", "published").order("published_at", { ascending: false }).limit(50)
+      : supabase.from("stories").select(columns).eq("status", view).order("created_at", { ascending: false }).limit(100);
 
   const [{ data: storyRows }, { data: sourceRows }, allTools] = await Promise.all([
     storiesQuery,
@@ -72,10 +71,17 @@ export default async function AdminNewsPage({
     ]);
   }
 
-  const { data: publishedTargets } =
-    view === "pending"
-      ? await supabase.from("stories").select("id, headline").eq("status", "published").order("published_at", { ascending: false }).limit(30)
-      : { data: [] as { id: string; headline: string }[] };
+  const noTargets = { data: [] as { id: string; headline: string }[] };
+  // Pending rows merge into each other or into a live story. Rejected rows
+  // merge back into either, which is how a wrongly rejected duplicate returns.
+  const [{ data: publishedTargets }, { data: pendingTargets }] = await Promise.all([
+    view === "published"
+      ? noTargets
+      : supabase.from("stories").select("id, headline").eq("status", "published").order("published_at", { ascending: false }).limit(30),
+    view === "rejected"
+      ? supabase.from("stories").select("id, headline").eq("status", "pending").order("created_at", { ascending: false }).limit(100)
+      : noTargets,
+  ]);
 
   const now = new Date();
   const stories: QueueStory[] = rows.map((r) => ({
@@ -92,7 +98,7 @@ export default async function AdminNewsPage({
     featured: r.featured,
     slug: r.slug,
     // Formatted here, not in the client, so server and client HTML agree.
-    age: formatAge(view === "pending" ? (r.source_published_at ?? r.created_at) : r.published_at, now),
+    age: formatAge(view === "published" ? r.published_at : (r.source_published_at ?? r.created_at), now),
     toolSlugs: toolsOf.get(r.id) ?? [],
   }));
 
@@ -100,17 +106,17 @@ export default async function AdminNewsPage({
     .map((t) => ({ slug: t.slug, name: t.name }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
+  const published = (publishedTargets ?? []).map((r) => ({ id: r.id, headline: `Published: ${r.headline}` }));
   const mergeTargets: MergeTarget[] =
     view === "pending"
-      ? [
-          ...rows.map((r) => ({ id: r.id, headline: r.headline })),
-          ...(publishedTargets ?? []).map((r) => ({ id: r.id, headline: `Published: ${r.headline}` })),
-        ]
-      : [];
+      ? [...rows.map((r) => ({ id: r.id, headline: r.headline })), ...published]
+      : view === "rejected"
+        ? [...published, ...(pendingTargets ?? []).map((r) => ({ id: r.id, headline: `Pending: ${r.headline}` }))]
+        : [];
 
-  const tab = (target: View, label: string) => (
+  const tab = (target: QueueView, label: string) => (
     <Link
-      href={target === "pending" ? "/admin/news" : "/admin/news?view=published"}
+      href={target === "pending" ? "/admin/news" : `/admin/news?view=${target}`}
       aria-current={view === target ? "page" : undefined}
       className={cn(
         "rounded-full border px-4 py-1.5 text-sm transition-colors",
@@ -154,6 +160,7 @@ export default async function AdminNewsPage({
         <nav className="flex gap-2" aria-label="Queue view">
           {tab("pending", "Pending")}
           {tab("published", "Published")}
+          {tab("rejected", "Rejected")}
         </nav>
 
         <NewsQueue stories={stories} tools={tools} view={view} mergeTargets={mergeTargets} />

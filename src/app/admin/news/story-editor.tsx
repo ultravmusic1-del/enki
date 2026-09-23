@@ -16,7 +16,7 @@ import { safeExternalHref } from "@/lib/safe-url";
 import { cn } from "@/lib/utils";
 import { mergeStory, publishStory, setStoryStatus } from "@/app/admin/news/actions";
 import { ToolPicker } from "@/app/admin/news/tool-picker";
-import type { MergeTarget, QueueStory, ToolOption } from "@/app/admin/news/types";
+import type { MergeTarget, QueueStory, QueueView, ToolOption } from "@/app/admin/news/types";
 
 const field =
   "w-full rounded-xl border border-input bg-background/60 px-3 py-2 text-sm focus:border-teal/50 focus:ring-2 focus:ring-ring/40 focus:outline-none";
@@ -30,7 +30,7 @@ export function StoryEditor({
 }: {
   story: QueueStory;
   tools: ToolOption[];
-  view: "pending" | "published";
+  view: Exclude<QueueView, "rejected">;
   mergeTargets: MergeTarget[];
   formRef: Ref<HTMLFormElement>;
 }) {
