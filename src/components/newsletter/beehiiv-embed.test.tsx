@@ -66,4 +66,47 @@ describe("BeehiivEmbed", () => {
     });
     expect(screen.getByRole("link", { name: /Subscribe to Enki Daily/ })).toBeTruthy();
   });
+
+  describe("lazy embeds", () => {
+    let intersectionCallback: ((entries: { isIntersecting: boolean }[]) => void) | null = null;
+
+    class MockIntersectionObserver {
+      constructor(callback: (entries: { isIntersecting: boolean }[]) => void) {
+        intersectionCallback = callback;
+      }
+      observe() {}
+      disconnect() {}
+      unobserve() {}
+    }
+
+    beforeEach(() => {
+      intersectionCallback = null;
+      vi.stubGlobal("IntersectionObserver", MockIntersectionObserver as unknown as typeof IntersectionObserver);
+    });
+    afterEach(() => vi.unstubAllGlobals());
+
+    it("does not show the fallback after 8 seconds while not intersecting", () => {
+      config.NEWSLETTER.forms.home.src = "https://subscribe-forms.beehiiv.com/abc";
+      config.NEWSLETTER.hostedUrl = "https://enkidaily.beehiiv.com/subscribe";
+      render(<BeehiivEmbed form="home" lazy />);
+      act(() => {
+        vi.advanceTimersByTime(8000);
+      });
+      expect(screen.getByTitle("Subscribe to Enki Daily")).toBeTruthy();
+      expect(screen.queryByRole("link", { name: /Subscribe to Enki Daily/ })).toBeNull();
+    });
+
+    it("shows the fallback 8 seconds after intersecting the viewport", () => {
+      config.NEWSLETTER.forms.home.src = "https://subscribe-forms.beehiiv.com/abc";
+      config.NEWSLETTER.hostedUrl = "https://enkidaily.beehiiv.com/subscribe";
+      render(<BeehiivEmbed form="home" lazy />);
+      act(() => {
+        intersectionCallback?.([{ isIntersecting: true }]);
+      });
+      act(() => {
+        vi.advanceTimersByTime(8000);
+      });
+      expect(screen.getByRole("link", { name: /Subscribe to Enki Daily/ })).toBeTruthy();
+    });
+  });
 });

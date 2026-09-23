@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { NEWSLETTER, type NewsletterForm } from "@/lib/newsletter";
 import { cn } from "@/lib/utils";
 
@@ -28,12 +28,45 @@ export function BeehiivEmbed({ form, lazy = false, className }: { form: Newslett
   const config = NEWSLETTER.forms[form];
   const [loaded, setLoaded] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!config.src || loaded) return;
-    const timer = setTimeout(() => setTimedOut(true), LOAD_TIMEOUT_MS);
-    return () => clearTimeout(timer);
-  }, [config.src, loaded]);
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let observer: IntersectionObserver | undefined;
+
+    const armTimer = () => {
+      timer = setTimeout(() => setTimedOut(true), LOAD_TIMEOUT_MS);
+    };
+
+    // Non-lazy embeds start counting toward the fallback as soon as they
+    // mount. Lazy embeds don't request the iframe until it nears the
+    // viewport, so counting from mount would replace a healthy, not-yet-
+    // requested form with the fallback for a slow scroller. Wait for the
+    // wrapper to be near the viewport instead, unless IntersectionObserver
+    // isn't available (old browser, some test environments), in which case
+    // fall back to the mount-time timer.
+    if (!lazy || typeof IntersectionObserver === "undefined") {
+      armTimer();
+    } else if (wrapperRef.current) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((entry) => entry.isIntersecting)) {
+            armTimer();
+            observer?.disconnect();
+          }
+        },
+        { rootMargin: "200px" },
+      );
+      observer.observe(wrapperRef.current);
+    }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      observer?.disconnect();
+    };
+  }, [config.src, loaded, lazy]);
 
   if (!config.src || (timedOut && !loaded)) {
     return (
@@ -45,6 +78,7 @@ export function BeehiivEmbed({ form, lazy = false, className }: { form: Newslett
 
   return (
     <div
+      ref={wrapperRef}
       className={cn("relative w-full", className)}
       style={{ ["--embed-h" as string]: `${config.mobileHeight}px`, ["--embed-h-sm" as string]: `${config.height}px` }}
     >
