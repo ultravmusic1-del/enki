@@ -4,7 +4,8 @@
 # within the same major, so the APIs Next relies on are unchanged.
 overrides:
   postcss: '>=8.5.18'
-  sharp: '>=0.35.0'
+  # GHSA-rgj7-g3m4-5g8c: libheif CVEs, fixed in 0.35.4.
+  sharp: '>=0.35.4'
   # GHSA-mh99-v99m-4gvg: DoS via unbounded brace expansion. Reached only
   # through @sentry/nextjs's build-time plugins (bundler-plugin-core /
   # webpack-plugin -> glob -> minimatch@10), so it never runs at request time --
@@ -30,7 +31,13 @@ overrides:
   # (-> schema-utils -> ajv), so it never parses a request-time URL -- but
   # `pnpm audit --prod` cannot see that, and the CI gate is not worth weakening.
   # Upper-bounded for the same reason as nanoid: unbounded, this landed on 4.1.2.
-  fast-uri@3: '>=3.1.5 <4'
+  # 3.1.6 also closes GHSA-5jgf-p345-68v8, GHSA-f65p-4m7j-42xc,
+  # GHSA-fph4-wmhf-6fwf and GHSA-jqff-g426-hqxp (host confusion and SSRF).
+  fast-uri@3: '>=3.1.6 <4'
+  # GHSA-c83g-rgw3-j3cx, GHSA-73wf-gq98-2v4g: unbounded memory growth and a
+  # prototype write. Reached only through @sentry/nextjs's build-time babel and
+  # webpack, but audited as production. Bounded to 4.x like the others.
+  browserslist@4: '>=4.28.7 <5'
 allowBuilds:
   sharp: true
   unrs-resolver: true
@@ -41,18 +48,18 @@ allowBuilds:
   # minified and unreadable.
   '@sentry/cli': true
 minimumReleaseAgeExclude:
-  - '@next/env@16.2.12'
-  - '@next/swc-darwin-arm64@16.2.12'
-  - '@next/swc-darwin-x64@16.2.12'
-  - '@next/swc-linux-arm64-gnu@16.2.12'
-  - '@next/swc-linux-arm64-musl@16.2.12'
-  - '@next/swc-linux-x64-gnu@16.2.12'
-  - '@next/swc-linux-x64-musl@16.2.12'
-  - '@next/swc-win32-arm64-msvc@16.2.12'
-  - '@next/swc-win32-x64-msvc@16.2.12'
-  - next@16.2.12
-  - '@next/eslint-plugin-next@16.2.12'
-  - eslint-config-next@16.2.12
+  - '@next/env@16.3.6'
+  - '@next/swc-darwin-arm64@16.3.6'
+  - '@next/swc-darwin-x64@16.3.6'
+  - '@next/swc-linux-arm64-gnu@16.3.6'
+  - '@next/swc-linux-arm64-musl@16.3.6'
+  - '@next/swc-linux-x64-gnu@16.3.6'
+  - '@next/swc-linux-x64-musl@16.3.6'
+  - '@next/swc-win32-arm64-msvc@16.3.6'
+  - '@next/swc-win32-x64-msvc@16.3.6'
+  - next@16.3.6
+  - '@next/eslint-plugin-next@16.3.6'
+  - eslint-config-next@16.3.6
 onlyBuiltDependencies:
   - sharp
   - unrs-resolver
