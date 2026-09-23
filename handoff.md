@@ -11,12 +11,114 @@ Single source of truth for continuing work in a fresh session.
 - **§2** covers env vars and admin access.
 - **§4** is the database.
 - **§1 and §3–§12** describe the directory, which is unchanged since the pivot.
-- **§IN-FLIGHT** (directly below) is work built and awaiting final review and
-  push. Read it before §0.
+- **§IN-FLIGHT: Enki Daily home** (directly below) is work paused mid-way.
+  Read it before anything else.
+- **§DONE: full stories** is the previous build, live since 2026-09-23. Its
+  traps still apply.
 
 ---
 
-## IN-FLIGHT: full stories, built and awaiting final review and push
+## IN-FLIGHT: Enki Daily home (paused 2026-09-23, evening)
+
+### Status
+`/` is being turned into a funnel for the **Enki Daily** newsletter (a free
+email every weekday morning for founders), with the old front page moved to
+`/news`. Signups go through **beehiiv's embedded form** (free plan, no API).
+- **Spec:** `docs/superpowers/specs/2026-09-23-enki-daily-home-design.md`
+- **Plan:** `docs/superpowers/plans/2026-09-23-enki-daily-home.md` (7 tasks)
+- **Tasks 1 to 6:** built, task-reviewed and browser-checked. Each of Tasks 2,
+  4, 5 and 6 took one fix round. `pnpm verify` passes (606 tests);
+  `tests/e2e/home.spec.ts` passes 3/3; `pnpm sweep` passes on `/`, `/news`,
+  `/welcome`, `/unsubscribe`, `/tools` and a full story at 390px and 1440px.
+- **Not done:** the final whole-branch review, pushing, and Task 7.
+- **Nothing from this build is pushed or deployed.** The live site still shows
+  the old home. Check with `git log --oneline origin/main..HEAD`.
+
+### Next session, in order
+1. **Final whole-branch review** on the most capable model, per
+   `superpowers:subagent-driven-development`. Package the branch with
+   `bash ~/.claude/plugins/cache/superpowers-dev/superpowers/6.4.1/skills/subagent-driven-development/scripts/review-package docs/superpowers/plans/2026-09-23-enki-daily-home.md 970c365 HEAD`
+   and point the reviewer at the deferred minors below. One fix wave, one
+   scoped re-review.
+2. **Owner pushes** (or says "push it"). Confirm it landed with
+   `git ls-remote origin refs/heads/main`, then wait for the Vercel production
+   build of that commit and check that `https://enkitools.com/llms.txt` still
+   serves and `/` shows "AI news for founders."
+3. **Owner, in beehiiv (spec §4 and §9):** create the publication "Enki Daily";
+   create three forms named "Enki Daily: Home", "Enki Daily: Story end" and
+   "Enki Daily: Footer", each redirecting to
+   `https://enkitools.com/welcome?from=home|story|footer`, styled per spec §4;
+   write the welcome email; decide on double opt-in. Paste the three embed codes
+   into the session.
+4. **Task 7:** put each iframe `src` and the hosted subscribe URL into
+   `src/lib/newsletter.ts`; check the script URLs and CSP hosts in
+   `next.config.ts` against the real embed codes; measure the form heights at
+   390px and 1440px and set `height`/`mobileHeight`; sweep; submit one real
+   address only with the owner's go-ahead, and confirm the redirect to
+   `/welcome?from=home`.
+5. Until step 4, every embed shows **"Signups open soon."**, so the page can
+   ship before beehiiv exists.
+
+### What changed (local commits `f266017..c9bdb4b` on `main`)
+- `src/lib/news/issue.ts`, `issue-data.ts`: today's issue (3 newest full
+  stories, featured first; masthead date and count from the newest day;
+  founder takeaway parsed from each body) and the 7-day "how it's made" figures.
+- `src/lib/newsletter.ts` and `src/components/newsletter/`: beehiiv config,
+  `BeehiivEmbed` (skeleton; 8s fallback, started near the viewport for lazy
+  embeds) and `BeehiivScripts`. CSP gains beehiiv in `script-src` and a new
+  `frame-src`.
+- `src/components/home/`: hero, The Issue, How it's made, Anatomy of a
+  takeaway, subscribe bands, Trending tools (sponsored tools excluded), FAQ,
+  and the phone-only sticky bar (reserves 5rem at the bottom via
+  `html[data-sticky-bar]` in `globals.css`).
+- Routes: `/` is the funnel; `/news` is the old front page ("Older stories"
+  links appear only once there are more than 30 stories); nav **News** now
+  points to `/news`; the header button is **Subscribe** (`/#subscribe`).
+- `/welcome` (noindex), a signup card at the end of full-story pages, the
+  footer block renamed to Enki Daily, and `/unsubscribe` now points to the
+  link in each email.
+- **Retired:** the `subscribe()` and unsubscribe server actions, the
+  unsubscribe form and `newsletterSchema`. The `subscribers` table (0 rows) is
+  untouched.
+
+### Decisions (settled with the owner; do not re-litigate)
+- The newsletter is **Enki Daily**, "every weekday morning", free. It replaces
+  "The Tablet".
+- **beehiiv free plan, embedded form, no API**: no survey, no custom fields.
+  Attribution comes from three forms, each redirecting to `/welcome?from=…`.
+- Hero direction A ("The Promise") and "The Issue" treatment, from the mockups
+  approved on 2026-09-23.
+- **No reader counts, logos or archive claims** anywhere; Enki has not sent a
+  newsletter yet.
+- Sending the daily email and an issue archive are a separate, later project.
+
+### Deferred minors, for the final review
+- `getHomeIssueData` makes one `story_sources` RPC per needed story (up to about
+  30), acceptable under the 5-minute revalidation.
+- Each Issue row is one link, so its accessible name includes beat, headline,
+  takeaway and outlets.
+- The How-it's-made watermark numerals sit partly outside their card and rely
+  on `overflow-hidden` to crop.
+- The sticky bar's lazy `dismissed` initializer is hydration-safe only because
+  `heroVisible` starts true (commented in the code).
+- `beehiiv-embed.tsx`: if `wrapperRef` were ever null, no fallback timer would
+  arm (unreachable in normal React ordering).
+
+### Traps learned in this build
+- **The browser pane can't screenshot below the fold on the new home.** It
+  returns blank frames after scrolling, although the content is there. Use
+  Playwright from Node for full-page or clipped screenshots instead.
+- **A Playwright run kills the dev server.** `playwright.config.ts` builds and
+  starts its own server; afterwards restart `enki-dev` before sweeping.
+- **Sweep in Git Bash:** `MSYS_NO_PATHCONV=1 pnpm sweep -- --base http://localhost:3000 /route …`.
+- **Pushes can silently send nothing** if run from the other machine or another
+  folder. Always confirm with `git ls-remote origin refs/heads/main`.
+- **The ledger is local only:** `.superpowers/sdd/2026-09-23-enki-daily-home/`
+  (briefs, reports, review diffs, `progress.md`) is gitignored.
+
+---
+
+## DONE: full stories (built 2026-09-22 to 23, live since 2026-09-23)
 
 ### Status
 Story pages are being turned from a 40 to 320 character summary plus an
@@ -122,13 +224,6 @@ Then:
 - **Confirm the database state:**
   `select status, count(*) from stories group by status;`. On 2026-09-22 this
   showed 71 pending, 4 published, 2 rejected and 0 merged.
-
----
-
-### Enki Daily home (2026-09-23)
-`/` is the funnel, `/news` is the front page, beehiiv embeds are configured in
-`src/lib/newsletter.ts` and empty until the owner creates the three forms
-(spec §4, §9), and the old `subscribers` table is unused.
 
 ---
 
