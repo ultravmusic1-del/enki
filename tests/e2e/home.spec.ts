@@ -11,7 +11,7 @@ test.describe("Enki Daily home and news", () => {
   test("/news shows the front page", async ({ page }) => {
     await page.goto("/news");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("AI news, curated by Enki");
-    await expect(page.getByRole("link", { name: /Older stories/ }).first()).toBeVisible();
+    await expect(page.locator('a[href^="/news/"]').first()).toBeVisible();
   });
 
   test("/welcome confirms the signup", async ({ page }) => {

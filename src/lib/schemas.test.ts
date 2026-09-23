@@ -38,7 +38,7 @@ describe("schemas: submission", () => {
 
 /**
  * The review modal is signed-in only, so no E2E test can open it and click
- * Submit — an earlier one tried, and sat timing out on a button that is never
+ * Submit: an earlier one tried, and sat timing out on a button that is never
  * rendered for a logged-out visitor. The rules the modal shows are pinned here
  * instead, including the exact copy, because the messages are what a user reads.
  */

@@ -21,7 +21,7 @@ const STEPS = [
 export default async function WelcomePage() {
   const { issue } = await getHomeIssueData(new Date());
   return (
-    <Container className="flex flex-col gap-12 pt-28 pb-24">
+    <Container className="flex flex-col gap-12 overflow-x-clip pt-28 pb-24">
       <header className="relative mx-auto flex max-w-2xl flex-col items-center gap-4 text-center">
         <div aria-hidden="true" className="pointer-events-none absolute -top-10 left-1/2 h-[240px] w-[520px] max-w-[140%] -translate-x-1/2 rounded-full bg-teal/20 blur-[80px]" />
         <p className="relative font-mono text-xs tracking-[0.3em] text-teal uppercase">Enki Daily</p>
