@@ -243,6 +243,27 @@ export async function listRecentStories(limit: number = HOME_STORY_LIMIT): Promi
   return toPublicStories(result?.data);
 }
 
+export type FullStory = PublicStory & { body: string; bodyWords: number };
+
+/** Newest published stories that have a full body. Empty on failure. */
+export async function listRecentFullStories(limit: number = 30): Promise<FullStory[]> {
+  const result = await withTimeout(
+    createAnonClient()
+      .from("stories")
+      .select(`${PUBLIC_STORY_COLUMNS}, body, body_words`)
+      .eq("status", "published")
+      .not("body", "is", null)
+      .order("published_at", { ascending: false })
+      .limit(limit),
+    "listRecentFullStories",
+  );
+  const rows = (result?.data ?? []) as unknown as (PublicStoryRow & { body: string | null; body_words: number | null })[];
+  return rows.flatMap((row) => {
+    const story = toPublicStory(row);
+    return story && row.body ? [{ ...story, body: row.body, bodyWords: row.body_words ?? 0 }] : [];
+  });
+}
+
 /** Tool slugs per story, in position order, for many stories in one query. */
 export async function getToolSlugsForStories(storyIds: string[]): Promise<Map<string, string[]>> {
   const map = new Map<string, string[]>();
