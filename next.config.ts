@@ -37,7 +37,10 @@ const csp = [
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
   "style-src 'self' 'unsafe-inline'",
-  "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
+  "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://subscribe-forms.beehiiv.com https://embeds.beehiiv.com",
+  // beehiiv's embedded subscribe forms (Enki Daily). Both hosts appear in
+  // beehiiv's embed codes; keep them in sync with src/lib/newsletter.ts.
+  "frame-src 'self' https://subscribe-forms.beehiiv.com https://embeds.beehiiv.com",
   // Sentry error events are NOT sent cross-origin: tunnelRoute proxies them
   // through this origin, so 'self' covers them. The ingest origin is listed
   // only because the browser posts CSP reports to it directly.

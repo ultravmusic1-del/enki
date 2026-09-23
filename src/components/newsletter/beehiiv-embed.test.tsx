@@ -1,0 +1,69 @@
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { act, cleanup, render, screen } from "@testing-library/react";
+
+const config = vi.hoisted(() => ({
+  NEWSLETTER: {
+    name: "Enki Daily",
+    hostedUrl: "",
+    forms: {
+      home: { src: "", height: 56, mobileHeight: 112 },
+      story: { src: "", height: 56, mobileHeight: 112 },
+      footer: { src: "", height: 56, mobileHeight: 112 },
+    },
+  },
+}));
+vi.mock("@/lib/newsletter", () => config);
+
+const { BeehiivEmbed } = await import("@/components/newsletter/beehiiv-embed");
+
+describe("BeehiivEmbed", () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+    config.NEWSLETTER.forms.home.src = "";
+    config.NEWSLETTER.hostedUrl = "";
+  });
+
+  it("says signups open soon when neither the form nor the hosted page exists", () => {
+    render(<BeehiivEmbed form="home" />);
+    expect(screen.getByText("Signups open soon.")).toBeTruthy();
+    expect(screen.queryByTitle("Subscribe to Enki Daily")).toBeNull();
+  });
+
+  it("links to the hosted page when the form is not configured", () => {
+    config.NEWSLETTER.hostedUrl = "https://enkidaily.beehiiv.com/subscribe";
+    render(<BeehiivEmbed form="home" />);
+    expect(screen.getByRole("link", { name: /Subscribe to Enki Daily/ }).getAttribute("href")).toBe(
+      "https://enkidaily.beehiiv.com/subscribe",
+    );
+  });
+
+  it("renders a titled iframe with a skeleton, lazily when asked", () => {
+    config.NEWSLETTER.forms.home.src = "https://subscribe-forms.beehiiv.com/abc";
+    render(<BeehiivEmbed form="home" lazy />);
+    const frame = screen.getByTitle("Subscribe to Enki Daily");
+    expect(frame.getAttribute("src")).toBe("https://subscribe-forms.beehiiv.com/abc");
+    expect(frame.getAttribute("loading")).toBe("lazy");
+    expect(screen.getByTestId("embed-skeleton")).toBeTruthy();
+  });
+
+  it("hides the skeleton once the iframe loads", () => {
+    config.NEWSLETTER.forms.home.src = "https://subscribe-forms.beehiiv.com/abc";
+    render(<BeehiivEmbed form="home" />);
+    act(() => {
+      screen.getByTitle("Subscribe to Enki Daily").dispatchEvent(new Event("load"));
+    });
+    expect(screen.queryByTestId("embed-skeleton")).toBeNull();
+  });
+
+  it("shows the fallback if the iframe has not loaded after 8 seconds", () => {
+    config.NEWSLETTER.forms.home.src = "https://subscribe-forms.beehiiv.com/abc";
+    config.NEWSLETTER.hostedUrl = "https://enkidaily.beehiiv.com/subscribe";
+    render(<BeehiivEmbed form="home" />);
+    act(() => {
+      vi.advanceTimersByTime(8000);
+    });
+    expect(screen.getByRole("link", { name: /Subscribe to Enki Daily/ })).toBeTruthy();
+  });
+});
