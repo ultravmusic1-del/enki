@@ -11,7 +11,7 @@ vi.mock("next/cache", () => ({ revalidatePath: (...a: unknown[]) => revalidatePa
 const runNewsIngest = vi.fn();
 vi.mock("@/lib/news/run-ingest", () => ({ runNewsIngest: () => runNewsIngest() }));
 
-const { publishStory, setStoryStatus, fetchNewsNow, addNewsSource, setNewsSourceActive } =
+const { publishStory, setStoryStatus, fetchNewsNow, addNewsSource, setNewsSourceActive, mergeStory } =
   await import("@/app/admin/news/actions");
 
 const ID = "3f2a9c10-5b7e-4d21-9a0b-2c4d6e8f1a3b";
@@ -200,5 +200,60 @@ describe("setNewsSourceActive", () => {
     createClient.mockReturnValue(stub);
     expect((await setNewsSourceActive("s-1", false)).ok).toBe(true);
     expect(stub.builder.update).toHaveBeenCalledWith({ active: false });
+  });
+});
+
+const INTO = "9b1c2d3e-4f50-4a6b-8c7d-0e1f2a3b4c5d";
+
+describe("mergeStory", () => {
+  it("refuses a non-admin", async () => {
+    const stub = supabaseStub({ isAdmin: false });
+    createClient.mockReturnValue(stub);
+    expect((await mergeStory(ID, INTO)).ok).toBe(false);
+    expect(stub.rpc).not.toHaveBeenCalledWith("admin_merge_story", expect.anything());
+  });
+
+  it("refuses bad ids and self-merges before touching the database", async () => {
+    const stub = supabaseStub({ isAdmin: true });
+    createClient.mockReturnValue(stub);
+    expect((await mergeStory("not-a-uuid", INTO)).ok).toBe(false);
+    expect((await mergeStory(ID, ID)).ok).toBe(false);
+    expect(stub.rpc).not.toHaveBeenCalledWith("admin_merge_story", expect.anything());
+  });
+
+  it("merges through the guarded RPC and refreshes the queue", async () => {
+    const stub = supabaseStub({ isAdmin: true, rpc: { admin_merge_story: { data: true, error: null } } });
+    createClient.mockReturnValue(stub);
+    expect(await mergeStory(ID, INTO)).toEqual({ ok: true });
+    expect(stub.rpc).toHaveBeenCalledWith("admin_merge_story", { p_story_id: ID, p_into_id: INTO });
+    expect(revalidatePath).toHaveBeenCalledWith("/admin/news");
+    expect(revalidatePath).toHaveBeenCalledWith("/news", "layout");
+  });
+
+  it("reports a merge the database refused", async () => {
+    createClient.mockReturnValue(
+      supabaseStub({ isAdmin: true, rpc: { admin_merge_story: { data: false, error: null } } }),
+    );
+    const res = await mergeStory(ID, INTO);
+    expect(res.ok).toBe(false);
+    expect(revalidatePath).not.toHaveBeenCalled();
+  });
+});
+
+describe("publishStory body", () => {
+  it("passes a valid body to the RPC", async () => {
+    const stub = supabaseStub({ isAdmin: true, rpc: { admin_publish_story: { data: "s-3f2a9c", error: null } } });
+    createClient.mockReturnValue(stub);
+    const body = `${"word ".repeat(295)}\n## What it means for founders\n`;
+    await publishStory({ ...valid, body });
+    expect(stub.rpc).toHaveBeenCalledWith("admin_publish_story", expect.objectContaining({ p_body: body.trim() }));
+  });
+
+  it("refuses an invalid body before the database", async () => {
+    const stub = supabaseStub({ isAdmin: true });
+    createClient.mockReturnValue(stub);
+    const res = await publishStory({ ...valid, body: "far too short" });
+    expect(res.ok).toBe(false);
+    expect(stub.rpc).not.toHaveBeenCalledWith("admin_publish_story", expect.anything());
   });
 });

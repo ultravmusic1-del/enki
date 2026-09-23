@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { setStoryStatus } from "@/app/admin/news/actions";
 import { StoryEditor } from "@/app/admin/news/story-editor";
-import type { QueueStory, ToolOption } from "@/app/admin/news/types";
+import type { MergeTarget, QueueStory, ToolOption } from "@/app/admin/news/types";
 
 function isTyping(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
@@ -16,10 +16,12 @@ export function NewsQueue({
   stories,
   tools,
   view,
+  mergeTargets,
 }: {
   stories: QueueStory[];
   tools: ToolOption[];
   view: "pending" | "published";
+  mergeTargets: MergeTarget[];
 }) {
   const [activeId, setActiveId] = useState<string | null>(stories[0]?.id ?? null);
   const [, startTransition] = useTransition();
@@ -106,6 +108,7 @@ export function NewsQueue({
               <span className="font-mono text-xs text-muted-foreground">
                 {story.sourceName} · {story.age}
                 {story.toolSlugs.length > 0 ? ` · ${story.toolSlugs.length} tool(s)` : ""}
+                {story.sources.length > 0 ? ` · ${story.sources.length + 1} sources` : ""}
               </span>
             </button>
             {open ? (
@@ -114,6 +117,7 @@ export function NewsQueue({
                 story={story}
                 tools={tools}
                 view={view}
+                mergeTargets={mergeTargets}
                 formRef={(el) => {
                   if (el) forms.current.set(story.id, el);
                   else forms.current.delete(story.id);

@@ -86,6 +86,34 @@ export async function setStoryStatus(
   return { ok: true };
 }
 
+const mergeSchema = z
+  .object({ id: z.uuid(), intoId: z.uuid() })
+  .refine((v) => v.id !== v.intoId, "A story cannot be merged into itself.");
+
+export async function mergeStory(id: string, intoId: string): Promise<{ ok: true } | Fail> {
+  const admin = await assertAdmin();
+  if (!admin.ok) return { ok: false, error: admin.error };
+
+  const parsed = mergeSchema.safeParse({ id, intoId });
+  if (!parsed.success) return { ok: false, error: z.prettifyError(parsed.error) };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_merge_story", {
+    p_story_id: parsed.data.id,
+    p_into_id: parsed.data.intoId,
+  });
+  if (error) {
+    console.error("[enki] mergeStory failed", error);
+    return { ok: false, error: "Could not merge the story. Try again." };
+  }
+  if (!data) return { ok: false, error: "That merge is not allowed. The target may have moved on." };
+
+  revalidatePath("/admin/news");
+  // Merging into a published story changes its public Sources list.
+  revalidatePath("/news", "layout");
+  return { ok: true };
+}
+
 export async function fetchNewsNow(): Promise<{ ok: true; summary: IngestSummary } | Fail> {
   const admin = await assertAdmin();
   if (!admin.ok) return { ok: false, error: admin.error };

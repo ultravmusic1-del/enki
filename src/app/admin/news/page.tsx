@@ -10,7 +10,7 @@ import { Container } from "@/components/shared/container";
 import { Icon } from "@/components/shared/icon";
 import { NewsQueue } from "@/app/admin/news/news-queue";
 import { FetchNowButton } from "@/app/admin/news/fetch-now-button";
-import type { QueueStory } from "@/app/admin/news/types";
+import type { MergeTarget, QueueSource, QueueStory } from "@/app/admin/news/types";
 
 export const metadata: Metadata = {
   title: "News queue",
@@ -43,13 +43,18 @@ export default async function AdminNewsPage({
 
   const rows = storyRows ?? [];
   const ids = rows.map((r) => r.id);
-  const [excerptRes, toolRes] =
+  const [excerptRes, toolRes, childRes] =
     ids.length > 0
       ? await Promise.all([
           supabase.from("story_excerpts").select("story_id, excerpt").in("story_id", ids),
           supabase.from("story_tools").select("story_id, tool_slug, position").in("story_id", ids).order("position"),
+          supabase.from("stories").select("id, merged_into, source_name, source_url").eq("status", "merged").in("merged_into", ids),
         ])
-      : [{ data: [] as { story_id: string; excerpt: string }[] }, { data: [] as { story_id: string; tool_slug: string; position: number }[] }];
+      : [
+          { data: [] as { story_id: string; excerpt: string }[] },
+          { data: [] as { story_id: string; tool_slug: string; position: number }[] },
+          { data: [] as { id: string; merged_into: string | null; source_name: string; source_url: string }[] },
+        ];
 
   const sourceName = new Map((sourceRows ?? []).map((s) => [s.id, s.name]));
   const excerptOf = new Map((excerptRes.data ?? []).map((e) => [e.story_id, e.excerpt]));
@@ -58,12 +63,27 @@ export default async function AdminNewsPage({
     toolsOf.set(t.story_id, [...(toolsOf.get(t.story_id) ?? []), t.tool_slug]);
   }
 
+  const sourcesOf = new Map<string, QueueSource[]>();
+  for (const c of childRes.data ?? []) {
+    if (!c.merged_into) continue;
+    sourcesOf.set(c.merged_into, [
+      ...(sourcesOf.get(c.merged_into) ?? []),
+      { id: c.id, sourceName: c.source_name, sourceUrl: c.source_url },
+    ]);
+  }
+
+  const { data: publishedTargets } =
+    view === "pending"
+      ? await supabase.from("stories").select("id, headline").eq("status", "published").order("published_at", { ascending: false }).limit(30)
+      : { data: [] as { id: string; headline: string }[] };
+
   const now = new Date();
   const stories: QueueStory[] = rows.map((r) => ({
     id: r.id,
     headline: r.headline,
     sourceName: sourceName.get(r.source_id) ?? "Unknown source",
     sourceUrl: r.source_url,
+    sources: sourcesOf.get(r.id) ?? [],
     imageUrl: r.image_url,
     excerpt: excerptOf.get(r.id) ?? null,
     summary: r.summary ?? "",
@@ -79,6 +99,14 @@ export default async function AdminNewsPage({
   const tools = allTools
     .map((t) => ({ slug: t.slug, name: t.name }))
     .sort((a, b) => a.name.localeCompare(b.name));
+
+  const mergeTargets: MergeTarget[] =
+    view === "pending"
+      ? [
+          ...rows.map((r) => ({ id: r.id, headline: r.headline })),
+          ...(publishedTargets ?? []).map((r) => ({ id: r.id, headline: `Published: ${r.headline}` })),
+        ]
+      : [];
 
   const tab = (target: View, label: string) => (
     <Link
@@ -107,7 +135,8 @@ export default async function AdminNewsPage({
             <p className="font-mono text-xs tracking-[0.3em] text-teal uppercase">Operator</p>
             <h1 className="font-display text-4xl font-semibold">News queue</h1>
             <p className="text-sm text-muted-foreground">
-              J and K move between stories, P publishes, R rejects.
+              J and K move between stories, P publishes, R rejects. Merge duplicates into one story
+              before writing it.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -127,7 +156,7 @@ export default async function AdminNewsPage({
           {tab("published", "Published")}
         </nav>
 
-        <NewsQueue stories={stories} tools={tools} view={view} />
+        <NewsQueue stories={stories} tools={tools} view={view} mergeTargets={mergeTargets} />
       </div>
     </Container>
   );
