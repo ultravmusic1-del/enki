@@ -196,10 +196,10 @@ export function SiteHeader() {
           <AccountMenu />
 
           <Link
-            href="/tools"
+            href="/#subscribe"
             className="hidden items-center gap-1.5 rounded-full bg-mist px-4 py-1.5 text-sm font-medium text-[#16191d] transition-transform hover:-translate-y-px hover:shadow-glow-sm sm:inline-flex"
           >
-            Explore
+            Subscribe
             <Icon name="ArrowRight" className="size-3.5" />
           </Link>
 
