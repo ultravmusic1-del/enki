@@ -61,6 +61,11 @@ in production**; **none of this code is deployed.**
   Work on `main`: no branches or worktrees.
 
 ### Not done (in order)
+- [ ] **Open decision before the content pass:** the admin queue only shows
+  pending and published stories, so rejected duplicates cannot be merged back
+  in from the UI (the `admin_merge_story` RPC itself accepts them). Options:
+  add a Rejected view with the merge picker, or merge them with owner-approved
+  SQL. Owner to choose.
 - [ ] **Final whole-branch review** on the most capable model, over
   `290cfc5^..HEAD`. The deferred minors below are for it to triage.
 - [ ] **Task 7, Step 4:** ask the owner to push. **Claude never pushes.**
@@ -161,6 +166,8 @@ pnpm audit:rls      # expect 17/17 PASS and "RLS holds."
 publishes it from `/admin/news`. The workflow, also in the memory file
 `news-summaries-by-claude`:
 1. **Merge duplicate coverage** into the best row, instead of rejecting it.
+   Unmerging always returns the duplicate to pending, even if it had been
+   rejected before the merge, so reject it again if it turns out to be noise.
 2. **Read every source in full**, not just the feed excerpt.
    - The Verge and Ars Technica block the fetch tool, so read them in a
      browser tab (`get_page_text`).
@@ -222,7 +229,7 @@ publishes it from `/admin/news`. The workflow, also in the memory file
 - **Sourcing:** stories come from RSS feeds and are curated. Nothing
   auto-publishes, and there is no automated LLM step in the pipeline.
 - **Summaries and takes:** Claude may write both (2026-09-21), after reading the
-  source, with no dashes. The byline is "Summary by Enki", with no AI disclosure.
+  source, with no dashes. The byline is "By Enki", with no AI disclosure.
   The owner chose this over the recommended disclosure.
 - **Excerpts:** the publisher's text is never rendered publicly. It lives only in
   the admin-only table `story_excerpts`.
