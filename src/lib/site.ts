@@ -56,7 +56,7 @@ export const siteConfig = {
   name: "Enki",
   tagline: "Wisdom for the age of AI",
   description:
-    "Enki is AI news, curated: the day's most important AI stories in clear summaries, with a vetted directory of the tools behind them.",
+    "AI news for founders: the day's key AI stories, written from the best reporting, with what each one means for your company. Plus a vetted directory of AI tools.",
   url: resolveSiteUrl(),
   ogImage: "/brand/logo.png",
   /**

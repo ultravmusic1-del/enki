@@ -80,8 +80,8 @@ export function SiteFooter() {
               <span className="font-display text-xl font-semibold">Enki</span>
             </Link>
             <p className="max-w-xs text-sm text-pretty text-muted-foreground">
-              AI news, curated. The day&apos;s stories in clear summaries, plus a
-              vetted directory of the tools behind them.
+              AI news for founders. The day&apos;s stories in full, with what they mean
+              for your company, plus a vetted directory of the tools behind them.
             </p>
             <p className="font-mono text-xs tracking-wide text-muted-foreground/70 uppercase">
               {siteConfig.tagline}

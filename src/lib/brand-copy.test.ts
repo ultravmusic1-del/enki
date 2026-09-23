@@ -42,10 +42,19 @@ describe("site-wide brand copy", () => {
     }
   });
 
+  it("describes full stories for founders, not summaries", () => {
+    const footer = readFileSync("src/components/layout/site-footer.tsx", "utf8");
+    for (const text of [siteConfig.description, footer]) {
+      expect(text.toLowerCase()).not.toContain("clear summaries");
+    }
+    expect(siteConfig.description.toLowerCase()).toContain("founders");
+  });
+
   it("has no em or en dash in the rewritten copy", () => {
     for (const text of [
       siteConfig.description,
       readFileSync("src/components/shared/affiliate-disclosure.tsx", "utf8"),
+      readFileSync("src/components/layout/site-footer.tsx", "utf8"),
     ]) {
       expect(text.includes(EM_DASH) || text.includes(EN_DASH)).toBe(false);
     }
