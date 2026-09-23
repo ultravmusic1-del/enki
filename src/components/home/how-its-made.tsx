@@ -23,7 +23,7 @@ export function HowItsMade({ stats }: { stats: MakingStats }) {
       <ol className="grid gap-4 md:grid-cols-3">
         {STEPS.map((s, i) => (
           <li key={s.t} className="relative overflow-hidden rounded-2xl border border-border bg-card/60 p-6 ring-hairline">
-            <span aria-hidden="true" className="absolute -top-6 -right-2 font-display text-8xl font-semibold text-white/[0.03]">{i + 1}</span>
+            <span aria-hidden="true" className="absolute -bottom-5 right-3 font-display text-8xl leading-none font-semibold text-white/[0.03]">{i + 1}</span>
             <p className="relative font-semibold">{s.t}</p>
             <p className="relative mt-2 text-sm leading-relaxed text-muted-foreground">{s.d}</p>
           </li>

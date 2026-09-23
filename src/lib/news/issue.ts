@@ -100,10 +100,13 @@ export function buildIssue(inputs: IssueStoryInput[]): Issue | null {
   const shown = ordered.slice(0, ISSUE_SIZE);
   const lead = shown[0];
   const words = shown.reduce((sum, s) => sum + s.bodyWords, 0);
+  // The masthead date is the newest story's day, not necessarily the
+  // (featured) lead's day: a featured story can be older than same-day news.
+  const newestPublishedAt = newest[0].publishedAt;
 
   return {
-    dateLabel: dateLabel(lead.publishedAt),
-    totalCount: inputs.filter((s) => dayKey(s.publishedAt) === dayKey(lead.publishedAt)).length,
+    dateLabel: dateLabel(newestPublishedAt),
+    totalCount: inputs.filter((s) => dayKey(s.publishedAt) === dayKey(newestPublishedAt)).length,
     minutes: Math.max(1, Math.round(words / WORDS_PER_MINUTE)),
     stories: shown.map((s) => ({
       slug: s.slug,

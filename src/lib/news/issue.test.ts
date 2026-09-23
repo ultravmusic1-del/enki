@@ -85,10 +85,21 @@ describe("buildIssue", () => {
     expect(buildIssue([story({ slug: "only" })])!.stories).toHaveLength(1);
   });
 
-  it("dedupes outlets in order and labels the lead's date", () => {
+  it("dedupes outlets in order and labels the newest story's date", () => {
     const issue = buildIssue([story({ sources: ["The Verge", "TechCrunch", "The Verge"] })])!;
     expect(issue.stories[0].outlets).toEqual(["The Verge", "TechCrunch"]);
     expect(issue.dateLabel).toBe("Wed 23 Sep");
+  });
+
+  it("leads with an older featured story but labels and counts from the newest day", () => {
+    const issue = buildIssue([
+      story({ slug: "old-featured", publishedAt: "2026-09-21T08:00:00Z", featured: true }),
+      story({ slug: "new-a", publishedAt: "2026-09-23T09:00:00Z" }),
+      story({ slug: "new-b", publishedAt: "2026-09-23T07:00:00Z" }),
+    ])!;
+    expect(issue.lead.slug).toBe("old-featured");
+    expect(issue.dateLabel).toBe("Wed 23 Sep");
+    expect(issue.totalCount).toBe(2);
   });
 
   it("counts full stories on the lead's day and rounds minutes at 230 wpm", () => {

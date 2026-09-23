@@ -19,7 +19,7 @@ export function HomeHero() {
       <div className="relative mx-auto flex max-w-3xl flex-col items-center motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-700">
         <p className="inline-flex items-center gap-2 rounded-full border border-teal-bright/20 bg-teal/[0.07] py-1.5 pr-3 pl-2">
           <span aria-hidden="true" className="size-[7px] rounded-full bg-teal-bright shadow-[0_0_0_4px_rgba(53,228,236,0.15)]" />
-          <span className="font-mono text-[0.65rem] tracking-[0.18em] text-[#cfe9ea] uppercase">Enki Daily · every weekday morning</span>
+          <span className="font-mono text-[0.6rem] tracking-[0.12em] whitespace-nowrap text-[#cfe9ea] uppercase sm:text-[0.65rem] sm:tracking-[0.18em]">Enki Daily · every weekday morning</span>
         </p>
         <h1 className="mt-6 font-display text-4xl leading-[1.02] font-semibold text-balance uppercase sm:text-6xl">
           AI news for founders.

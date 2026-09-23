@@ -74,7 +74,7 @@ export const siteConfig = {
    */
   hasVerifiedRatings: false,
   nav: [
-    { title: "News", href: "/" },
+    { title: "News", href: "/news" },
     { title: "Tools", href: "/tools" },
     { title: "Finder", href: "/finder" },
     { title: "Deals", href: "/deals" },

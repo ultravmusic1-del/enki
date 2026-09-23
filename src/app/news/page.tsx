@@ -10,6 +10,8 @@ import { BeatSection } from "@/components/front-page/beat-section";
 import { CompactStoryList } from "@/components/front-page/compact-story-list";
 import { DirectoryBand } from "@/components/front-page/directory-band";
 import { getHomeFeed } from "@/lib/news/home";
+import { listPublishedStories } from "@/lib/news/stories";
+import { pageCount } from "@/lib/news/story-meta";
 import { getAllTools, getFeaturedTools, getStats } from "@/lib/content";
 import type { Tool } from "@/lib/schemas";
 
@@ -23,11 +25,12 @@ export const metadata: Metadata = {
 
 export default async function NewsFrontPage() {
   const now = new Date();
-  const [feed, allTools, featuredAll, stats] = await Promise.all([
+  const [feed, allTools, featuredAll, stats, { total }] = await Promise.all([
     getHomeFeed(now),
     getAllTools(),
     getFeaturedTools(),
     getStats(),
+    listPublishedStories({ page: 1 }),
   ]);
 
   const bySlug = new Map(allTools.map((tool) => [tool.slug, tool]));
@@ -39,6 +42,7 @@ export default async function NewsFrontPage() {
   });
   const topTools = [...allTools].sort((a, b) => b.editorScore - a.editorScore).slice(0, 5);
   const hasRail = feed.rail.stories.length > 0;
+  const hasMorePages = pageCount(total) > 1;
 
   return (
     <Container className="flex flex-col gap-8 pt-28 pb-20">
@@ -71,9 +75,11 @@ export default async function NewsFrontPage() {
                 <section className="flex flex-col gap-3">
                   <h2 className="font-display text-xl font-semibold">Latest</h2>
                   <CompactStoryList stories={feed.latest} now={now} />
-                  <Link href="/news/page/2" className="text-sm text-teal hover:text-teal-bright">
-                    Older stories
-                  </Link>
+                  {hasMorePages ? (
+                    <Link href="/news/page/2" className="text-sm text-teal hover:text-teal-bright">
+                      Older stories
+                    </Link>
+                  ) : null}
                 </section>
               ) : null}
             </div>
@@ -92,9 +98,11 @@ export default async function NewsFrontPage() {
         categoryCount={stats.categoryCount}
         featured={featuredAll.slice(0, 3)}
       />
-      <Link href="/news/page/2" className="self-start text-sm font-semibold text-teal hover:text-teal-bright">
-        Older stories &rarr;
-      </Link>
+      {hasMorePages ? (
+        <Link href="/news/page/2" className="self-start text-sm font-semibold text-teal hover:text-teal-bright">
+          Older stories &rarr;
+        </Link>
+      ) : null}
     </Container>
   );
 }

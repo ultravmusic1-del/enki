@@ -3,12 +3,12 @@ import { activeBeatFor, isNavActive } from "@/lib/nav";
 
 describe("isNavActive", () => {
   it.each([
-    ["/", "/", true],
-    ["/", "/news", true],
-    ["/", "/news/beat/research", true],
-    ["/", "/news/some-story-31fc2b", true],
-    ["/", "/newsletter", false],
-    ["/", "/tools", false],
+    ["/news", "/news", true],
+    ["/news", "/news/page/2", true],
+    ["/news", "/news/some-slug", true],
+    ["/news", "/", false],
+    ["/news", "/newsletter", false],
+    ["/news", "/tools", false],
     ["/tools", "/tools", true],
     ["/tools", "/tools/cursor", true],
     ["/tools", "/news", false],

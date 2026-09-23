@@ -1,13 +1,11 @@
 import { getBeat, type BeatSlug } from "@/data/beats";
 
 /**
- * Whether a header nav item is the current section. "News" is the homepage
- * (href "/"), and it stays active across every /news page too.
+ * Whether a header nav item is the current section. Nothing is active on
+ * "/", the newsletter funnel; "News" (href "/news") is active on /news and
+ * every /news/* page via the default rule below.
  */
 export function isNavActive(href: string, pathname: string): boolean {
-  if (href === "/") {
-    return pathname === "/" || pathname === "/news" || pathname.startsWith("/news/");
-  }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
