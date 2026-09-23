@@ -6,8 +6,15 @@ import {
   bodyProblems,
   countWords,
   newsSourceInputSchema,
+  normalizeBody,
   storyPublishSchema,
 } from "@/lib/news/schemas";
+
+// Built from char codes: the editing tools decode escape sequences into the real characters.
+const BOM = String.fromCharCode(0xfeff);
+const NEL = String.fromCharCode(0x85);
+const LINE_SEP = String.fromCharCode(0x2028);
+const PARA_SEP = String.fromCharCode(0x2029);
 
 const base = {
   id: "3f2a9c10-5b7e-4d21-9a0b-2c4d6e8f1a3b",
@@ -68,6 +75,28 @@ describe("countWords", () => {
     expect(countWords("")).toBe(0);
     expect(countWords(null)).toBe(0);
   });
+
+  it("counts words separated by U+0085 the same as with spaces", () => {
+    expect(countWords(`one${NEL}two${NEL}three`)).toBe(3);
+  });
+
+  it("does not let a U+FEFF create a word", () => {
+    expect(countWords(`one ${BOM} two`)).toBe(2);
+  });
+});
+
+describe("normalizeBody", () => {
+  it("removes U+FEFF", () => {
+    expect(normalizeBody(`a${BOM}b`)).toBe("ab");
+  });
+
+  it("converts CRLF and bare CR to LF", () => {
+    expect(normalizeBody("a\r\nb\rc")).toBe("a\nb\nc");
+  });
+
+  it("converts U+0085, U+2028 and U+2029 to LF", () => {
+    expect(normalizeBody(`a${NEL}b${LINE_SEP}c${PARA_SEP}d`)).toBe("a\nb\nc\nd");
+  });
 });
 
 describe("bodyProblems", () => {
@@ -93,6 +122,11 @@ describe("bodyProblems", () => {
     const inline = `${"word ".repeat(BODY_MIN_WORDS)} ## ${FOUNDER_HEADING}`;
     expect(bodyProblems(inline).join(" ")).toMatch(/founders/);
   });
+
+  it("accepts the founder heading on a line ending in a bare CR", () => {
+    const bareCr = `${"word ".repeat(BODY_MIN_WORDS - 6)}\r\r## ${FOUNDER_HEADING}\r`;
+    expect(bodyProblems(bareCr)).toEqual([]);
+  });
 });
 
 describe("storyPublishSchema body", () => {
@@ -117,6 +151,13 @@ describe("storyPublishSchema body", () => {
   it("accepts a valid body, trimmed", () => {
     const parsed = storyPublishSchema.parse({ ...base, body: `  ${body(BODY_MIN_WORDS)}  ` });
     expect(parsed.body?.startsWith("word")).toBe(true);
+  });
+
+  it("publishes a body with bare CR line breaks only after normalising to LF", () => {
+    const bareCrBody = body(BODY_MIN_WORDS).split("\n").join("\r");
+    const parsed = storyPublishSchema.parse({ ...base, body: bareCrBody });
+    expect(parsed.body).not.toContain("\r");
+    expect(parsed.body).toContain("\n");
   });
 });
 

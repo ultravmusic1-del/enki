@@ -90,6 +90,27 @@ describe("publishStory", () => {
     expect(res.ok).toBe(false);
     if (!res.ok) expect(res.error).not.toContain("constraint");
   });
+
+  it("names the body check constraint plainly when the database refuses it", async () => {
+    createClient.mockReturnValue(
+      supabaseStub({
+        isAdmin: true,
+        rpc: {
+          admin_publish_story: {
+            data: null,
+            error: { code: "23514", message: 'violates check constraint "stories_body_check"' },
+          },
+        },
+      }),
+    );
+    const res = await publishStory(valid);
+    expect(res.ok).toBe(false);
+    if (!res.ok) {
+      expect(res.error).toBe(
+        "The database refused the story body (word count, dash or founders heading).",
+      );
+    }
+  });
 });
 
 describe("setStoryStatus", () => {

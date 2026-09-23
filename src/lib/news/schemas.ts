@@ -18,23 +18,47 @@ const EN_DASH = String.fromCharCode(0x2013);
 const EM_DASH = String.fromCharCode(0x2014);
 const FOUNDER_LINE = new RegExp(`^## ${FOUNDER_HEADING}[ \\t]*$`, "m");
 
+// JS `\s` and Postgres whitespace disagree at a few code points (U+FEFF, U+0085), and JS's
+// `m`-flag `^`/`$` treat line ends (bare CR, U+2028, U+2029) that the SQL heading check does
+// not. Normalising first keeps the editor, this schema and the database constraint agreed.
+const BYTE_ORDER_MARK = String.fromCharCode(0xfeff);
+const NEXT_LINE = String.fromCharCode(0x85);
+const LINE_SEPARATOR = String.fromCharCode(0x2028);
+const PARAGRAPH_SEPARATOR = String.fromCharCode(0x2029);
+const BYTE_ORDER_MARK_RE = new RegExp(BYTE_ORDER_MARK, "g");
+const NEXT_LINE_RE = new RegExp(NEXT_LINE, "g");
+const LINE_SEPARATOR_RE = new RegExp(LINE_SEPARATOR, "g");
+const PARAGRAPH_SEPARATOR_RE = new RegExp(PARAGRAPH_SEPARATOR, "g");
+
+/** Makes line ends and whitespace agree with the database before counting or validating a body. */
+export function normalizeBody(text: string): string {
+  return text
+    .replace(BYTE_ORDER_MARK_RE, "")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .replace(NEXT_LINE_RE, "\n")
+    .replace(LINE_SEPARATOR_RE, "\n")
+    .replace(PARAGRAPH_SEPARATOR_RE, "\n");
+}
+
 /** Whitespace-split word count. Must agree with the generated column stories.body_words. */
 export function countWords(text: string | null | undefined): number {
-  const trimmed = text?.trim() ?? "";
+  const trimmed = normalizeBody(text ?? "").trim();
   return trimmed === "" ? 0 : trimmed.split(/\s+/).length;
 }
 
 /** Why a body would be refused, in plain words. Mirrors the stories_body_check constraint. */
 export function bodyProblems(body: string): string[] {
+  const normalized = normalizeBody(body);
   const problems: string[] = [];
-  const words = countWords(body);
+  const words = countWords(normalized);
   if (words < BODY_MIN_WORDS || words > BODY_MAX_WORDS) {
     problems.push(`The story needs ${BODY_MIN_WORDS} to ${BODY_MAX_WORDS} words (it has ${words}).`);
   }
-  if (body.includes(EN_DASH) || body.includes(EM_DASH)) {
+  if (normalized.includes(EN_DASH) || normalized.includes(EM_DASH)) {
     problems.push("Replace the en or em dash with a comma, colon or full stop.");
   }
-  if (!FOUNDER_LINE.test(body)) {
+  if (!FOUNDER_LINE.test(normalized)) {
     problems.push(`Add the heading "## ${FOUNDER_HEADING}" on its own line.`);
   }
   return problems;
@@ -54,7 +78,7 @@ export const storyPublishSchema = z.object({
     .string()
     .trim()
     .optional()
-    .transform((v) => (v ? v : undefined))
+    .transform((v) => (v ? normalizeBody(v).trim() : undefined))
     .superRefine((v, ctx) => {
       if (v === undefined) return;
       for (const message of bodyProblems(v)) ctx.addIssue({ code: "custom", message });

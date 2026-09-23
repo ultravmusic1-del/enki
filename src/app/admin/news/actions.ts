@@ -45,6 +45,12 @@ export async function publishStory(
 
   if (error) {
     console.error("[enki] publishStory failed", error);
+    if ((error as { code?: string }).code === "23514") {
+      return {
+        ok: false,
+        error: "The database refused the story body (word count, dash or founders heading).",
+      };
+    }
     return { ok: false, error: "Could not publish the story. Try again." };
   }
   if (!data) return { ok: false, error: "That story is no longer in the queue." };
