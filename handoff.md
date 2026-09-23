@@ -67,16 +67,16 @@ in production**; **none of this code is deployed.**
   duplicate comes back as a source.
 - [x] **Final whole-branch review:** done 2026-09-23, ready to merge; its fixes
   are in `260a3d6` and `a231254`.
-- [ ] **Push:** the owner pushes. **Claude never pushes.** Check with
-  `git status -sb` that `main` is not ahead of `origin/main`.
-- [ ] **After the deploy (Task 7, Step 5), content:**
-  - Publish the 5 researched stories as full articles, merging their duplicates.
-    Research was done on 2026-09-22: OpenAI's math advisory group, the AI
-    hallucination and the Chinese ship, Google's CC, the Muse zero-day, and
-    Trump's "AI Force".
-  - Rewrite the 4 live stories as full articles, merging their rejected
-    duplicates back in: Muse blocked by Amazon, Anthropic's wet lab, Claude
-    used to reach an OpenAI account, Gemini hacking three companies.
+- [x] **Pushed and deployed** 2026-09-23 at `a30dd0d`, which also moved Next to
+  16.3.6 for two critical RCE advisories. Push only when the owner says so, and
+  confirm it landed with `git ls-remote origin refs/heads/main`: a push run from
+  the other machine, or a different folder, silently sends nothing.
+- [x] **Content pass** done 2026-09-23: 9 full stories live (5 new, 4 rewritten),
+  11 duplicates merged in. Each draft was written from every source read in
+  full, checked for copied wording, then fact-checked against the sources.
+- [ ] **CI `e2e` job cannot start:** the Playwright web server needs the
+  Supabase URL and anon key, which the workflow does not provide. `verify`
+  failing on the audit used to hide this. Owner to add them as secrets or env.
 
 ### Known issues and traps
 - **Some of the ledger is local only.** `.superpowers/sdd/2026-09-22-full-stories/`
