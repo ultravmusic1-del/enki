@@ -11,60 +11,33 @@ Single source of truth for continuing work in a fresh session.
 - **§2** covers env vars and admin access.
 - **§4** is the database.
 - **§1 and §3–§12** describe the directory, which is unchanged since the pivot.
-- **§IN-FLIGHT** (directly below) is work stopped mid-build. Read it before §0.
+- **§IN-FLIGHT** (directly below) is work built and awaiting final review and
+  push. Read it before §0.
 
 ---
 
-## IN-FLIGHT: full stories build (stopped 2026-09-22, evening)
+## IN-FLIGHT: full stories, built and awaiting final review and push
 
 ### Status
-Story pages are being turned from a 40–320 character summary plus an outbound
-link into **full articles**: 400–700 words, written from several outlets'
-coverage merged into one story, ending with a **"What it means for founders"**
-section. The spec is approved, and so is the plan (7 tasks). Build progress:
-- **Tasks 1–3:** done, each task-reviewed clean.
-- **Task 4 (story page):** code is committed as WIP, but it has **not** been
-  task-reviewed and the visual sweep has **not** been run. Its 3 component tests
-  pass, and `pnpm verify` passed at commit (560 tests).
-- **Tasks 5–7:** not started.
+Story pages are being turned from a 40 to 320 character summary plus an
+outbound link into **full articles**: 400 to 700 words, written from several
+outlets' coverage merged into one story, ending with a **"What it means for
+founders"** section. The spec is approved, and so is the plan (7 tasks).
+- **Tasks 1 to 6:** built, task-reviewed and browser-checked. Task 4's sweep
+  and Task 5's admin check both ran on 2026-09-23.
+- **Task 7, Steps 1 to 3:** this commit (HANDOFF and the memory file
+  `news-summaries-by-claude`).
+- **Next:** a final whole-branch review, then Step 4 (ask the owner to push).
 
-The **database migration is live in production**. **None of this code is
-deployed.** The 7 commits below are local on `main` and unpushed.
+All commits are local on `main` and unpushed. The **database migration is live
+in production**; **none of this code is deployed.**
 
 > **⚠ Publishing on enkitools.com is broken right now.** The migration replaced
 > `admin_publish_story(…, p_take, …)` with `admin_publish_story(…, p_body, …)`.
 > The deployed code still sends `p_take`, so **Publish in the live admin fails**
 > until this build is pushed and deployed. Reject, unpublish and ingestion still
-> work. Either finish the build and push, or accept that nothing can be published
-> until then.
-
-### What changed (branch `main`, head `3346731`, working tree clean)
-- `290cfc5` spec: `docs/superpowers/specs/2026-09-22-full-stories-design.md`
-- `44146df`, `0eb7cf2` plan: `docs/superpowers/plans/2026-09-22-full-stories.md`.
-  The SQL for the migration is in Task 1.
-- `b3f50e0` **Task 1:**
-  - live migration `full_stories`:
-    - new `stories` columns: `body`, generated `body_words`, `merged_into`
-    - status `merged`
-    - constraints `stories_body_check` and `stories_merged_has_parent`
-    - new RPCs `admin_merge_story` and `story_sources` (anon-callable); a
-      changed `admin_set_story_status`
-  - hand-written `src/lib/supabase/database.types.ts`
-  - RLS probes in `scripts/audit-rls/expectations.mjs` (19 checks)
-- `9448180` **Tasks 2+3:**
-  - body rules (`countWords`, `bodyProblems`, `FOUNDER_HEADING`) in
-    `src/lib/news/schemas.ts`
-  - Markdown parser in `src/lib/news/article-body.ts`
-  - `getStorySources`, `PublicStoryDetail` and word-count sitemap in
-    `src/lib/news/stories.ts`
-  - `storyRobots(bodyWords)`
-  - `newsArticleJsonLd(story, sources)`
-  - a minimal take-to-body swap in the admin editor
-- `3346731` **Task 4 WIP:**
-  - `src/components/news/article-body.tsx` (+ test)
-  - `src/app/news/[slug]/page.tsx`: "By Enki", "Reporting from …", Sources list;
-    legacy stories keep the old layout
-  - `src/app/news/about/page.tsx` copy
+> work. Either push and deploy, or accept that nothing can be published until
+> then.
 
 ### Decisions (settled with the owner; do not re-litigate)
 - **Writing:** Claude writes articles in sessions, after reading every source.
@@ -88,30 +61,17 @@ deployed.** The 7 commits below are local on `main` and unpushed.
   Work on `main`: no branches or worktrees.
 
 ### Not done (in order)
-- [ ] **Task 4: review.** Diff `9448180..3346731` against
-  `.superpowers/sdd/2026-09-22-full-stories/task-4-brief.md`. Then run the sweep
-  (brief Step 8):
-  1. Temporarily set a filler body on one published story.
-  2. Run `pnpm sweep -- / /tools /news /news/<slug> /news/about /news/<legacy-slug>`.
-  3. Take screenshots at 390px and 1440px.
-  4. **Restore `body = null`.**
-- [ ] **Task 5: admin editor, sources panel, merge.** Start in
-  `src/app/admin/news/story-editor.tsx`. Step 10 needs the owner signed in on
-  `localhost:3000/admin/news`. It also covers the deferred browser check of the
-  editor from Tasks 2+3.
-- [ ] **Task 6: site description.** Files: `src/lib/site.ts:59`,
-  `src/components/layout/site-footer.tsx`.
-- [ ] **Task 7, Steps 1–4:** HANDOFF §0/§4, the memory file
-  `news-summaries-by-claude.md`, then ask the owner to push. **Claude never
-  pushes.**
 - [ ] **Final whole-branch review** on the most capable model, over
   `290cfc5^..HEAD`. The deferred minors below are for it to triage.
+- [ ] **Task 7, Step 4:** ask the owner to push. **Claude never pushes.**
 - [ ] **After the deploy (Task 7, Step 5), content:**
   - Publish the 5 researched stories as full articles, merging their duplicates.
     Research was done on 2026-09-22: OpenAI's math advisory group, the AI
     hallucination and the Chinese ship, Google's CC, the Muse zero-day, and
     Trump's "AI Force".
-  - Rewrite the 4 live stories as full articles.
+  - Rewrite the 4 live stories as full articles, merging their rejected
+    duplicates back in: Muse blocked by Amazon, Anthropic's wet lab, Claude
+    used to reach an OpenAI account, Gemini hacking three companies.
 
 ### Known issues and traps
 - **Some of the ledger is local only.** `.superpowers/sdd/2026-09-22-full-stories/`
@@ -119,16 +79,9 @@ deployed.** The 7 commits below are local on `main` and unpushed.
   reports, review diffs and `progress.md`. On the other machine, regenerate the
   briefs with
   `bash ~/.claude/plugins/cache/superpowers-dev/superpowers/6.4.1/skills/subagent-driven-development/scripts/task-brief docs/superpowers/plans/2026-09-22-full-stories.md <N>`.
-- **An interrupted subagent leaves writes behind.** When Task 4 was interrupted,
-  it left a filler body on the live story
-  `amazon-blocks-meta-s-muse-ai-agent-from-shopping-its-store-a80bd8`. It was
-  found and restored to null. Before and after any sweep, check with
+- **Check for stray bodies before and after any sweep.** An interrupted
+  subagent can leave a filler body on a live story. Check with
   `select slug from stories where body is not null;`.
-- **Rulings made during the build:**
-  - The Tasks 2+3 reviewer flagged the skipped admin browser check as Important.
-    It was deferred to Task 5, Step 10.
-  - Task 4's sweep writes to production. That's acceptable only if the body is
-    restored immediately.
 - **Deferred minors, for the final review:**
   - the docstring in `expectations.mjs:44` doesn't mention the merged probe
   - `src/app/admin/news/page.tsx:32` still selects the unused `take` column
@@ -136,6 +89,11 @@ deployed.** The 7 commits below are local on `main` and unpushed.
     without escaping it
 - **Admin pages need the owner.** They can only be checked with the owner signed
   in; Claude never types the password.
+- **In `/admin/news`, a failed focus still fires shortcuts.** The J/K/P/R
+  keyboard shortcuts fire globally when a click fails to land focus in a text
+  field, so a stray keystroke can move or publish/reject the wrong row.
+  Confirm `document.activeElement` is the intended field before typing in the
+  browser pane.
 - **Grep can't find the dashes.** `grep -P` can't search for en or em dashes in
   this Git Bash locale. Check with Node instead, testing each file for the
   pattern `/[–—]/`.
@@ -145,7 +103,7 @@ deployed.** The 7 commits below are local on `main` and unpushed.
 git pull
 pnpm install
 pnpm run doctor     # not `pnpm doctor`
-pnpm verify         # expect 560 tests passing
+pnpm verify
 pnpm audit:rls      # expect 19/19 PASS and "RLS holds."
 ```
 
@@ -190,7 +148,7 @@ pnpm audit:rls      # expect 17/17 PASS and "RLS holds."
 |---|---|---|
 | Ingestion | `src/lib/news/*`, and the cron at `src/app/api/ingest-news/route.ts` (daily, 05:00 UTC) | 7 RSS sources, written through secret-gated RPCs. **Verified in production:** the queue grew by itself from 44 to 71 overnight on 2026-09-22 |
 | Admin queue | `/admin/news` and `/admin/news/sources` | Needs the owner signed in. J/K move, P publishes, R rejects |
-| Story page | `/news/[slug]` | "Summary by Enki". `noindex` unless the take is 300+ characters. Tool cards link through `/go` |
+| Story page | `/news/[slug]` | "By Enki". Full stories carry a 400 to 700 word body with a "What it means for founders" section and a Sources list; `noindex` under 300 body words. Legacy stories (no body) keep the old summary layout. Tool cards link through `/go` |
 | Archive | `/news`, `/news/page/[n]`, `/news/beat/[beat]` (5 beats), `/news/about` | |
 | Homepage | `/`, built by the pure, tested `src/lib/news/home-feed.ts` | Ticker needs 3 or more tools. Popular needs 10+ views on the rail's own top story, otherwise it shows Latest |
 | Directory | `/tools` (oracle hero, grid, showcase, How I vet) | ChatGPT, Claude and Gemini added under "AI Assistants" |
@@ -198,26 +156,31 @@ pnpm audit:rls      # expect 17/17 PASS and "RLS holds."
 
 **Queue on 2026-09-22:** 71 pending, 4 published, 2 rejected.
 
-### Running the news: the daily job
+### Running the news: the per-story workflow
 **Nothing publishes by itself.** A story reaches the homepage only when someone
-publishes it from `/admin/news`. The owner's rules, also in the memory file
+publishes it from `/admin/news`. The workflow, also in the memory file
 `news-summaries-by-claude`:
-- **Research first.** Claude may write summaries and takes and publish them, but
-  only after reading the source article, not just the feed excerpt.
-  - The Verge and Ars Technica block the fetch tool, so read them in a browser
-    tab (`get_page_text`).
-  - When two outlets disagree, leave the disputed detail out.
-- **The summary** is 40–320 characters of plain, factual text, with **no em
-  dashes or en dashes**.
-- **A take** is original commentary. One of 300+ characters makes the page
-  indexable.
-- **The byline** is "Summary by Enki". Never claim who wrote a summary, and add
-  no AI disclosure.
-- **At publish:**
-  - pick a beat
-  - check the tool suggestions, removing incidental ones: the aliases "OpenAI"
-    and "Anthropic" over-suggest
-  - reject duplicates of the same event; rejected rows are kept for dedup
+1. **Merge duplicate coverage** into the best row, instead of rejecting it.
+2. **Read every source in full**, not just the feed excerpt.
+   - The Verge and Ars Technica block the fetch tool, so read them in a
+     browser tab (`get_page_text`).
+   - Where outlets disagree, leave the disputed detail out.
+3. **Write the headline, summary and a 400 to 700 word body:**
+   - The summary is 40 to 320 characters of plain, factual text.
+   - The body is synthesis only: no sentence copied or closely paraphrased
+     from a publisher, combined in Enki's own structure and words.
+   - At most one short quote per story, attributed to the person and to the
+     outlet that reported it.
+   - Company claims are attributed ("OpenAI says"), never stated as fact.
+   - A founder section, the line `## What it means for founders`, with 2 to 4
+     concrete points on costs, platform risk, openings or what to watch. No
+     investment advice, and never choose or angle a story for commission.
+   - No em dashes or en dashes anywhere.
+   - Reject promos (ticket posts and the like) and items that are not news.
+4. **Pick the beat**, prune incidental tool suggestions (the aliases "OpenAI"
+   and "Anthropic" over-suggest), publish.
+- **The byline** is "By Enki". Never claim who wrote a story, and add no AI
+  disclosure.
 - **The admin needs the owner signed in** inside the browser pane. Claude must
   never type the password. Filling fields through the native value setter plus
   `input`/`change` events works with React's controlled inputs.
@@ -555,7 +518,7 @@ Managed via the Supabase MCP connector.
 | `subscribers` | `(id, email unique, status, created_at)` | anon **insert**; admins read |
 | `tools` | `(slug pk, **data jsonb**, published, created_at, updated_at)` — CMS content | public-read published; **admins write** |
 | `news_sources` | `(id, name, feed_url unique, site_url, active, last_fetched_at, last_error, created_at)` | **admins only** (read/insert/update) |
-| `stories` | `(id, slug?, source_id, source_url unique, headline, summary?, take?, beat?, image_url?, status pending/published/rejected, featured, source_published_at?, published_at?, created_at)` | public-read **published**; **no API write grants**: written only by the RPCs below |
+| `stories` | `(id, slug?, source_id, source_url unique, headline, summary?, take?, body?, body_words generated, merged_into?, beat?, image_url?, status pending/published/rejected/merged, featured, source_published_at?, published_at?, created_at)` | public-read **published**; **no API write grants**: written only by the RPCs below |
 | `story_excerpts` | `(story_id pk, excerpt)` — publisher text | **admins read only**; never rendered publicly |
 | `story_tools` | `(story_id, tool_slug, position)` | readable exactly when the parent story is |
 | `story_views` | `(id identity, story_id, created_at)` — anonymous view log, no visitor data | anon/authenticated may `insert (story_id)` **only for published stories**; admins read |
@@ -584,6 +547,13 @@ sources table.
 - **`admin_publish_story(…)`** returns the slug and **`admin_set_story_status(…)`**
   returns a boolean. Both are guarded by `is_admin()` and executable by
   authenticated only.
+- **`admin_merge_story(p_story_id, p_into_id)`** returns a boolean. Admin-only,
+  executable by authenticated only. Merges a pending or rejected row into a
+  pending or published story: sets status `merged` and `merged_into`.
+- **`story_sources(p_story_id)`** returns `(source_name, source_site_url,
+  source_url)`: the story's own source plus its merged rows'. Anon-callable,
+  but returns rows only when the parent story is published, and only those
+  three columns.
 
 ### Migrations applied (via MCP)
 `init_auth_backend`, `lock_down_handle_new_user`, `create_outbound_clicks`,
@@ -596,7 +566,9 @@ sources table.
 in the merge-1 plan's Task 8, plus an index on `stories.source_id`),
 **`fix_news_ingest_authorized_param_shadowing`** (2026-09-20),
 **`news_public_pages`** (2026-09-21; SQL in the merge-2 plan's Task 1),
-**`popular_stories`** (2026-09-21; SQL in the merge-3 plan's Task 1).
+**`popular_stories`** (2026-09-21; SQL in the merge-3 plan's Task 1),
+**`full_stories`** (2026-09-22; SQL in
+`docs/superpowers/plans/2026-09-22-full-stories.md`, Task 1).
 
 ### Content layer — DB-preferred + seed fallback (IMPORTANT, new)
 `src/lib/content.ts` is now **async**. Tools load from the `tools` table
