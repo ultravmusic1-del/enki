@@ -491,6 +491,13 @@
   transform: translate3d(0, 0, 26px);
 }
 
+/* The home page's sticky Enki Daily bar (phones only) must never cover the page's last content. */
+@media (max-width: 767px) {
+  html[data-sticky-bar] body {
+    padding-bottom: 5rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .dim:hover .dim__card {
     transform: none;

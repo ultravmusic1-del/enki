@@ -33,6 +33,7 @@ afterEach(() => {
   try {
     sessionStorage.clear();
   } catch {}
+  delete document.documentElement.dataset.stickyBar;
 });
 
 function report(selector: string, isIntersecting: boolean) {
@@ -58,8 +59,18 @@ describe("StickySubscribeBar", () => {
     expect(screen.queryByRole("region", { name: "Subscribe to Enki Daily" })).toBeNull();
     report("#subscribe", false);
     expect(screen.getByRole("region", { name: "Subscribe to Enki Daily" })).toBeTruthy();
+    expect(document.documentElement.dataset.stickyBar).toBe("1");
     report("[data-subscribe-band]", true);
     expect(screen.queryByRole("region", { name: "Subscribe to Enki Daily" })).toBeNull();
+    expect(document.documentElement.dataset.stickyBar).toBeUndefined();
+  });
+
+  it("clears the reserved-space attribute on unmount", () => {
+    const { unmount } = render(<StickySubscribeBar />);
+    report("#subscribe", false);
+    expect(document.documentElement.dataset.stickyBar).toBe("1");
+    unmount();
+    expect(document.documentElement.dataset.stickyBar).toBeUndefined();
   });
 
   it("stays closed for the session after dismissal", () => {

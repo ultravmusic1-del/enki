@@ -20,6 +20,9 @@ function readDismissed(): boolean {
 export function StickySubscribeBar() {
   const [heroVisible, setHeroVisible] = useState(true);
   const [bandVisible, setBandVisible] = useState(false);
+  // Hydration-safe only because heroVisible starts true: the bar renders null
+  // on the server and on the first client render, so this lazy read never
+  // disagrees with the server-rendered markup.
   const [dismissed, setDismissed] = useState(() => readDismissed());
 
   useEffect(() => {
@@ -41,7 +44,20 @@ export function StickySubscribeBar() {
     return () => observer.disconnect();
   }, []);
 
-  if (!barVisible({ heroVisible, bandVisible, dismissed })) return null;
+  const visible = barVisible({ heroVisible, bandVisible, dismissed });
+
+  useEffect(() => {
+    if (visible) {
+      document.documentElement.dataset.stickyBar = "1";
+    } else {
+      delete document.documentElement.dataset.stickyBar;
+    }
+    return () => {
+      delete document.documentElement.dataset.stickyBar;
+    };
+  }, [visible]);
+
+  if (!visible) return null;
 
   const dismiss = () => {
     setDismissed(true);
