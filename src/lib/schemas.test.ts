@@ -1,32 +1,10 @@
 import { describe, it, expect } from "vitest";
 import {
-  newsletterSchema,
   reviewFormSchema,
   submissionFormSchema,
   toolSchema,
 } from "@/lib/schemas";
 import { tools as seedTools } from "@/data/tools";
-
-describe("schemas: newsletter", () => {
-  it("accepts a valid email with the honeypot left empty", () => {
-    expect(newsletterSchema.safeParse({ email: "a@example.com", hp: "" }).success).toBe(
-      true,
-    );
-  });
-
-  it("accepts a valid email with no honeypot key at all", () => {
-    expect(newsletterSchema.safeParse({ email: "a@example.com" }).success).toBe(true);
-  });
-
-  it("rejects a malformed email", () => {
-    expect(newsletterSchema.safeParse({ email: "nope" }).success).toBe(false);
-  });
-
-  it("caps the email length so a bot cannot post a megabyte", () => {
-    const long = `${"a".repeat(300)}@example.com`;
-    expect(newsletterSchema.safeParse({ email: long }).success).toBe(false);
-  });
-});
 
 describe("schemas: submission", () => {
   const valid = { name: "Acme AI", url: "https://acme.example.com" };

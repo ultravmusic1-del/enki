@@ -10,6 +10,8 @@ import { StoryList } from "@/components/news/story-list";
 import { StoryViewPing } from "@/components/news/story-view-ping";
 import { BeatRow } from "@/components/news/beat-row";
 import { ArticleBody } from "@/components/news/article-body";
+import { BeehiivEmbed } from "@/components/newsletter/beehiiv-embed";
+import { BeehiivScripts } from "@/components/newsletter/beehiiv-scripts";
 import { breadcrumbJsonLd, newsArticleJsonLd } from "@/lib/structured-data";
 import { formatAge } from "@/lib/news/format-age";
 import { storyRobots } from "@/lib/news/story-meta";
@@ -149,6 +151,18 @@ export default async function StoryPage({ params }: Props) {
                   </li>
                 ))}
               </ul>
+            </section>
+            <section className="relative overflow-hidden rounded-2xl border border-border bg-card/60 p-6 ring-hairline sm:p-8">
+              <div aria-hidden="true" className="pointer-events-none absolute -top-24 -right-16 h-[220px] w-[360px] rounded-full bg-teal/15 blur-[70px]" />
+              <p className="relative font-mono text-xs tracking-[0.3em] text-teal uppercase">Enki Daily</p>
+              <h2 className="relative mt-2 font-display text-2xl font-semibold text-balance uppercase">
+                Get stories like this every weekday morning.
+              </h2>
+              <p className="relative mt-2 text-sm text-muted-foreground">
+                The day&apos;s AI stories for founders, each with what it means for your company. Free.
+              </p>
+              <BeehiivEmbed form="story" lazy className="relative mt-5 max-w-md" />
+              <BeehiivScripts />
             </section>
           </>
         ) : (

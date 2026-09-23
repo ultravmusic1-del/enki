@@ -1,16 +1,8 @@
-"use client";
-
 import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 import { siteConfig } from "@/lib/site";
-import { newsletterSchema, type NewsletterValues } from "@/lib/schemas";
-import { subscribe } from "@/app/actions/newsletter";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { BeehiivEmbed } from "@/components/newsletter/beehiiv-embed";
+import { BeehiivScripts } from "@/components/newsletter/beehiiv-scripts";
 import { Icon } from "@/components/shared/icon";
-import { Honeypot } from "@/components/shared/honeypot";
 import { cn } from "@/lib/utils";
 
 const exploreLinks = [
@@ -33,28 +25,6 @@ const socialLinks = [
 ];
 
 export function SiteFooter() {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<NewsletterValues>({
-    resolver: zodResolver(newsletterSchema),
-    defaultValues: { email: "", hp: "" },
-  });
-
-  const onSubmit = async (values: NewsletterValues) => {
-    const res = await subscribe(values.email, values.hp);
-    if (res.ok) {
-      toast.success("You're on the list", {
-        description: `We'll send the best new AI tools to ${values.email}.`,
-      });
-      reset();
-    } else {
-      toast.error(res.error ?? "Could not subscribe");
-    }
-  };
-
   return (
     <footer className="relative mt-20 border-t border-border">
       {/* Soft centered bloom that fades to transparent before the top edge, so
@@ -107,42 +77,12 @@ export function SiteFooter() {
           {/* Newsletter */}
           <div className="flex flex-col gap-4">
             <span className="font-mono text-xs tracking-[0.2em] text-muted-foreground uppercase">
-              The Tablet: our newsletter
+              Enki Daily
             </span>
             <p className="text-sm text-muted-foreground">
-              A monthly dispatch of the most worthwhile new AI tools. No noise.
+              The day&apos;s AI stories for founders, every weekday morning.
             </p>
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="relative flex flex-col gap-2"
-              noValidate
-            >
-              <Honeypot register={register("hp")} />
-              <div className="flex gap-2">
-                <Input
-                  type="email"
-                  placeholder="you@company.com"
-                  aria-label="Email address"
-                  aria-invalid={!!errors.email}
-                  className="h-9 flex-1"
-                  {...register("email")}
-                />
-                <Button
-                  type="submit"
-                  size="lg"
-                  disabled={isSubmitting}
-                  className="shrink-0 gap-1.5"
-                >
-                  Subscribe
-                  <Icon name="ArrowRight" className="size-3.5" />
-                </Button>
-              </div>
-              {errors.email && (
-                <span className="text-xs text-destructive">
-                  {errors.email.message}
-                </span>
-              )}
-            </form>
+            <BeehiivEmbed form="footer" lazy />
           </div>
         </div>
 
@@ -192,6 +132,7 @@ export function SiteFooter() {
           </div>
         </div>
       </div>
+      <BeehiivScripts />
     </footer>
   );
 }

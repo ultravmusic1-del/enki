@@ -59,4 +59,32 @@ describe("site-wide brand copy", () => {
       expect(text.includes(EM_DASH) || text.includes(EN_DASH)).toBe(false);
     }
   });
+
+  it("keeps Enki Daily copy free of dashes and reader counts", () => {
+    const files = [
+      "src/components/home/home-hero.tsx",
+      "src/components/home/todays-issue.tsx",
+      "src/components/home/how-its-made.tsx",
+      "src/components/home/takeaway-anatomy.tsx",
+      "src/components/home/subscribe-band.tsx",
+      "src/components/home/trending-tools.tsx",
+      "src/components/home/home-faq.tsx",
+      "src/components/home/sticky-subscribe-bar.tsx",
+      "src/app/welcome/page.tsx",
+      "src/app/unsubscribe/page.tsx",
+      "src/components/layout/site-footer.tsx",
+    ];
+    for (const path of files) {
+      const text = readFileSync(path, "utf8");
+      expect(text, path).not.toContain(EM_DASH);
+      expect(text, path).not.toContain(EN_DASH);
+      expect(text, path).not.toMatch(/\b\d[\d,.]*\+?\s*(readers|subscribers)\b/i);
+    }
+  });
+
+  it("names the newsletter Enki Daily, not The Tablet", () => {
+    const footer = readFileSync("src/components/layout/site-footer.tsx", "utf8");
+    expect(footer).toContain("Enki Daily");
+    expect(footer).not.toContain("The Tablet");
+  });
 });

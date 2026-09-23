@@ -125,6 +125,13 @@ Then:
 
 ---
 
+### Enki Daily home (2026-09-23)
+`/` is the funnel, `/news` is the front page, beehiiv embeds are configured in
+`src/lib/newsletter.ts` and empty until the owner creates the three forms
+(spec §4, §9), and the old `subscribers` table is unused.
+
+---
+
 ## 0. Start here (updated 2026-09-22)
 
 **Enki is now an AI news front page** (in the spirit of Yahoo Finance) with the

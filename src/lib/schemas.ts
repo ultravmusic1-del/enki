@@ -2,7 +2,7 @@ import { z } from "zod";
 import { isHttpUrl } from "@/lib/safe-url";
 
 /* =========================================================================
-   Enki — content schemas (Sanity-shaped)
+   Enki, content schemas (Sanity-shaped)
 
    These Zod schemas mirror the documents we would author in a live Sanity
    dataset. Seed data in `src/data/*` is validated against them at module load
@@ -72,7 +72,7 @@ export const screenshotSchema = z.object({
    * When absent, the carousel synthesizes a gradient "screen" from `hue`.
    */
   src: z.string().optional(),
-  /** Hue (0–360) used to synthesize the gradient placeholder when `src` is absent. */
+  /** Hue (0 to 360) used to synthesize the gradient placeholder when `src` is absent. */
   hue: z.number().min(0).max(360),
 });
 
@@ -183,22 +183,13 @@ export const reviewFormSchema = z.object({
 
 export type ReviewFormValues = z.infer<typeof reviewFormSchema>;
 
-/* -------------------------------------------------- newsletter form (footer) */
-
 /**
  * Hidden bot-trap field. Never shown to a human, so any value at all means the
- * submitter is automated. It is `optional()` and never fails validation — the
+ * submitter is automated. It is `optional()` and never fails validation, the
  * server actions decide what to do with it, so a bot gets a normal-looking
  * success rather than a signal that it was detected.
  */
 const honeypot = z.string().optional();
-
-export const newsletterSchema = z.object({
-  email: z.email("Enter a valid email address").max(254),
-  hp: honeypot,
-});
-
-export type NewsletterValues = z.infer<typeof newsletterSchema>;
 
 /* ------------------------------------------------ submit-a-tool form */
 
