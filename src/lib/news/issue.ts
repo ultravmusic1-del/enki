@@ -15,6 +15,7 @@ export type IssueStoryInput = {
   featured: boolean;
   /** Source names, one per source row, the story's own first. */
   sources: string[];
+  imageUrl: string | null;
 };
 
 export type IssueStory = {
@@ -24,6 +25,7 @@ export type IssueStory = {
   beatName: string;
   outlets: string[];
   takeaway: string;
+  imageUrl: string | null;
 };
 
 export type Issue = {
@@ -122,6 +124,7 @@ export function buildIssue(inputs: IssueStoryInput[], now: Date): Issue | null {
       beatName: s.beatName,
       outlets: [...new Set(s.sources)],
       takeaway: extractTakeaway(s.body, s.summary),
+      imageUrl: s.imageUrl,
     })),
     lead: { slug: lead.slug, headline: lead.headline, founderMarkdown: founderMarkdown(lead.body) },
   };

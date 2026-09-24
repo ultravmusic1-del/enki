@@ -20,6 +20,7 @@ function story(over: Partial<IssueStoryInput> = {}): IssueStoryInput {
     publishedAt: "2026-09-23T08:00:00Z",
     featured: false,
     sources: ["The Verge"],
+    imageUrl: null,
     ...over,
   };
 }
@@ -134,6 +135,11 @@ describe("buildIssue", () => {
     )!;
     expect(issue.totalCount).toBe(4);
     expect(issue.minutes).toBe(8); // 1800 / 230 = 7.8
+  });
+
+  it("carries each story's image through", () => {
+    const issue = buildIssue([story({ slug: "a", imageUrl: "https://img.example/a.jpg" }), story({ slug: "b", imageUrl: null })], NOW)!;
+    expect(issue.stories.map((s) => s.imageUrl)).toEqual(["https://img.example/a.jpg", null]);
   });
 
   it("gives the lead's founder markdown for the anatomy section", () => {

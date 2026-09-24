@@ -27,6 +27,7 @@ export async function getHomeIssueData(now: Date): Promise<{ issue: Issue | null
         publishedAt: s.publishedAt,
         featured: s.featured,
         sources: sources.length > 0 ? sources.map((x) => x.name) : [s.sourceName],
+        imageUrl: s.imageUrl,
       };
     }),
   );

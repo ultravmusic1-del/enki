@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { BeatSlug } from "@/data/beats";
 import type { Issue } from "@/lib/news/issue";
+import { StoryImage } from "@/components/front-page/story-image";
 
 const BEAT_COLOUR: Record<BeatSlug, string> = {
   "models-labs": "#7c9cff",
@@ -36,12 +37,17 @@ export function TodaysIssue({ issue }: { issue: Issue | null }) {
               <li key={story.slug} className="border-b border-border last:border-b-0">
                 <Link
                   href={`/news/${story.slug}`}
-                  className="group grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-4 px-5 py-5 transition-colors hover:bg-white/[0.02] sm:grid-cols-[3rem_minmax(0,1fr)_auto] sm:px-6"
+                  className="group grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-4 gap-y-4 px-5 py-5 transition-colors hover:bg-white/[0.02] sm:grid-cols-[3rem_minmax(0,1fr)_11rem] sm:gap-x-5 sm:px-6"
                 >
-                  <span aria-hidden="true" className="font-display text-2xl font-semibold text-transparent [-webkit-text-stroke:1px_#3b4552] group-hover:[-webkit-text-stroke:1px_#35e4ec]">
+                  <StoryImage
+                    src={story.imageUrl}
+                    label={story.beatName}
+                    className="col-span-2 w-full sm:col-span-1 sm:col-start-3 sm:row-start-1 sm:self-start"
+                  />
+                  <span aria-hidden="true" className="font-display text-2xl font-semibold text-transparent [-webkit-text-stroke:1px_#3b4552] group-hover:[-webkit-text-stroke:1px_#35e4ec] sm:col-start-1 sm:row-start-1">
                     {pad(i + 1)}
                   </span>
-                  <span className="min-w-0">
+                  <span className="min-w-0 sm:col-start-2 sm:row-start-1">
                     <span className="inline-flex items-center gap-2 font-mono text-[0.65rem] tracking-[0.14em] text-muted-foreground uppercase">
                       <i aria-hidden="true" className="inline-block size-1.5 rounded-[2px]" style={{ background: BEAT_COLOUR[story.beat] }} />
                       {story.beatName}
@@ -53,16 +59,11 @@ export function TodaysIssue({ issue }: { issue: Issue | null }) {
                       <b className="font-semibold text-teal-bright">For founders &rarr; </b>
                       <span>{story.takeaway}</span>
                     </span>
-                    <span className="mt-3 flex flex-wrap gap-1.5 sm:hidden">
+                    <span className="mt-3 flex flex-wrap gap-1.5">
                       {story.outlets.map((o) => (
                         <span key={o} className="rounded-md border border-border px-1.5 py-0.5 text-[0.65rem] text-muted-foreground">{o}</span>
                       ))}
                     </span>
-                  </span>
-                  <span className="hidden flex-col items-end gap-1 sm:flex">
-                    {story.outlets.map((o) => (
-                      <span key={o} className="rounded-md border border-border px-1.5 py-0.5 text-[0.65rem] text-muted-foreground">{o}</span>
-                    ))}
                   </span>
                 </Link>
               </li>
