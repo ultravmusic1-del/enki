@@ -51,13 +51,35 @@ function Blocks({ blocks, headingId }: { blocks: Block[]; headingId?: string }) 
   );
 }
 
-/** A story body in Enki's restricted Markdown. Renders data, never HTML. */
-export function ArticleBody({ body }: { body: string }) {
+/**
+ * The founder section on its own, as a callout for the top of a story page,
+ * where readers meet Enki's analysis before the recap. Null when the body has
+ * no founder heading.
+ */
+export function FounderSection({ body }: { body: string }) {
+  const { founders } = splitFounderSection(parseArticleBody(body));
+  if (!founders) return null;
+  return (
+    <section
+      aria-labelledby="founders-heading"
+      className="flex flex-col gap-4 rounded-2xl border border-teal/30 bg-teal/[0.06] p-5 text-base text-foreground/90 ring-hairline sm:p-6"
+    >
+      <Blocks blocks={founders} headingId="founders-heading" />
+    </section>
+  );
+}
+
+/**
+ * A story body in Enki's restricted Markdown. Renders data, never HTML.
+ * `includeFounders={false}` leaves the founder section out, for pages that
+ * show it first with FounderSection.
+ */
+export function ArticleBody({ body, includeFounders = true }: { body: string; includeFounders?: boolean }) {
   const { main, founders } = splitFounderSection(parseArticleBody(body));
   return (
     <div className="flex flex-col gap-5 text-base text-foreground/90">
       <Blocks blocks={main} />
-      {founders ? (
+      {founders && includeFounders ? (
         <section aria-labelledby="founders-heading" className="flex flex-col gap-4 border-l-2 border-teal/60 pl-5">
           <Blocks blocks={founders} headingId="founders-heading" />
         </section>

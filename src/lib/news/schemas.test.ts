@@ -8,6 +8,9 @@ import {
   newsSourceInputSchema,
   normalizeBody,
   storyPublishSchema,
+  storyAdvice,
+  HEADLINE_TARGET_MAX,
+  BODY_TARGET_MAX_WORDS,
 } from "@/lib/news/schemas";
 
 // Built from char codes: the editing tools decode escape sequences into the real characters.
@@ -180,5 +183,44 @@ describe("newsSourceInputSchema", () => {
 
   it("requires a name", () => {
     expect(newsSourceInputSchema.safeParse({ ...source, name: " " }).success).toBe(false);
+  });
+});
+
+describe("storyAdvice", () => {
+  const words = (n: number) => Array.from({ length: n }, () => "word").join(" ");
+  const tight = [
+    words(250),
+    "",
+    "## What we don't know yet",
+    "",
+    words(40),
+    "",
+    "## What it means for founders",
+    "",
+    `- **Watch the vote.** ${words(90)}`,
+  ].join("\n");
+
+  it("has nothing to say about a tight story with a short headline", () => {
+    expect(storyAdvice({ headline: "Short headline", body: tight })).toEqual([]);
+  });
+
+  it("asks for a shorter headline over the target", () => {
+    const advice = storyAdvice({ headline: "x".repeat(HEADLINE_TARGET_MAX + 1), body: "" });
+    expect(advice).toHaveLength(1);
+    expect(advice[0]).toMatch(/Shorten the headline/);
+  });
+
+  it("flags length, a thin founder section, missing uncertainty and nothing to watch", () => {
+    const body = [words(BODY_TARGET_MAX_WORDS + 10), "", "## What it means for founders", "", "- **Costs fall.** Plan."].join("\n");
+    const advice = storyAdvice({ headline: "Fine", body }).join("\n");
+    expect(advice).toMatch(/Aim for 600 words or fewer/);
+    expect(advice).toMatch(/founder section is \d+%/);
+    expect(advice).toMatch(/still uncertain/);
+    expect(advice).toMatch(/watch next/);
+  });
+
+  it("flags a story that keeps recapping other outlets", () => {
+    const recap = Array.from({ length: 6 }, () => "The Verge reported that it happened.").join(" ");
+    expect(storyAdvice({ headline: "Fine", body: `${recap}\n\n${tight}` }).join("\n")).toMatch(/reads as a recap/);
   });
 });

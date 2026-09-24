@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatAge } from "@/lib/news/format-age";
+import { formatAge, formatDay, formatExactTime } from "@/lib/news/format-age";
 
 const NOW = new Date("2026-09-19T12:00:00Z");
 
@@ -20,5 +20,21 @@ describe("formatAge", () => {
   it("reports unknown for missing or invalid input", () => {
     expect(formatAge(null, NOW)).toBe("unknown");
     expect(formatAge("not a date", NOW)).toBe("unknown");
+  });
+});
+
+describe("formatExactTime", () => {
+  it("states the exact UTC time", () => {
+    expect(formatExactTime("2026-09-24T12:43:50.811Z")).toBe("24 Sep 2026, 12:43 UTC");
+    expect(formatExactTime("2026-01-05T03:07:00Z")).toBe("5 Jan 2026, 03:07 UTC");
+  });
+  it("says unknown for a bad date", () => {
+    expect(formatExactTime("nope")).toBe("unknown");
+  });
+});
+
+describe("formatDay", () => {
+  it("names the UTC day", () => {
+    expect(formatDay("2026-09-24T23:30:00Z")).toBe("Thu 24 Sep");
   });
 });

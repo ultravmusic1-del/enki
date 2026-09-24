@@ -1,7 +1,9 @@
 import type { BeatSlug } from "@/data/beats";
-import { parseArticleBody, splitFounderSection, type Inline } from "@/lib/news/article-body";
 import { FOUNDER_HEADING } from "@/lib/news/schemas";
 import { LEAD_WINDOW_HOURS } from "@/lib/news/home-feed";
+import { extractTakeaway } from "@/lib/news/takeaway";
+
+export { extractTakeaway };
 
 export type IssueStoryInput = {
   slug: string;
@@ -40,46 +42,12 @@ export type MakingStats = { stories: number; outlets: number; sources: number };
 
 const ISSUE_SIZE = 3;
 const WORDS_PER_MINUTE = 230;
-const TAKEAWAY_MAX = 160;
-const ELLIPSIS = String.fromCharCode(0x2026);
 const DAY_MS = 24 * 60 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;
 
 /** A story counts as featured for the issue only within LEAD_WINDOW_HOURS, matching /news. */
 export function isFeaturedInWindow(publishedAt: string, now: Date): boolean {
   return now.getTime() - new Date(publishedAt).getTime() <= LEAD_WINDOW_HOURS * HOUR_MS;
-}
-
-function plain(inlines: Inline[]): string {
-  return inlines.map((p) => p.text).join("").replace(/\s+/g, " ").trim();
-}
-
-function firstSentence(text: string): string {
-  const match = text.match(/^.*?[.!?](?=\s|$)/);
-  return (match ? match[0] : text).trim();
-}
-
-function cap(text: string): string {
-  if (text.length <= TAKEAWAY_MAX) return text;
-  const cut = text.slice(0, TAKEAWAY_MAX - 1);
-  const atSpace = cut.lastIndexOf(" ");
-  return `${(atSpace > 0 ? cut.slice(0, atSpace) : cut).replace(/[\s,;:]+$/, "")}${ELLIPSIS}`;
-}
-
-/** One line for "For founders": the first founder bullet's bold lead plus its first sentence. */
-export function extractTakeaway(body: string, summary: string): string {
-  const { founders } = splitFounderSection(parseArticleBody(body));
-  const list = founders?.find((b) => b.type === "list");
-  const item = list && list.type === "list" ? list.items[0] : undefined;
-  if (!item) return cap(summary.trim());
-
-  if (item[0]?.type === "bold") {
-    const lead = item[0].text.trim();
-    const rest = firstSentence(plain(item.slice(1)));
-    const joined = /[.:!?]$/.test(lead) ? `${lead} ${rest}` : `${lead}: ${rest}`;
-    return cap(joined.trim());
-  }
-  return cap(firstSentence(plain(item)));
 }
 
 /** The founder section as Markdown (heading and everything after), or null. */

@@ -2,15 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { beats } from "@/data/beats";
+import { beats, type BeatSlug } from "@/data/beats";
 import { Icon } from "@/components/shared/icon";
 import { activeBeatFor } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
-const ITEMS = [
-  { key: "latest", name: "Latest", href: "/news" },
-  ...beats.map((beat) => ({ key: beat.slug, name: beat.name, href: `/news/beat/${beat.slug}` })),
-];
+function itemsFor(available: readonly BeatSlug[] | null | undefined) {
+  const shown = available ? beats.filter((beat) => available.includes(beat.slug)) : beats;
+  return [
+    { key: "latest", name: "Latest", href: "/news" },
+    ...shown.map((beat) => ({ key: beat.slug, name: beat.name, href: `/news/beat/${beat.slug}` })),
+  ];
+}
 
 const pill = "inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-3 py-1 text-xs transition-colors";
 
@@ -18,13 +21,18 @@ const pill = "inline-flex items-center gap-1 whitespace-nowrap rounded-full bord
  * The news beat row (spec §7.1). A client component only for usePathname,
  * which renders identically on the server and client. It scrolls sideways on
  * narrow screens, so it is exempt from the visual sweep's clipping check.
+ *
+ * `available` lists the beats that have published stories; empty beats are
+ * left out so the row never leads to an empty page. Omitted or null (the read
+ * failed) shows every beat.
  */
-export function BeatRow({ className }: { className?: string }) {
+export function BeatRow({ className, available }: { className?: string; available?: readonly BeatSlug[] | null }) {
   const active = activeBeatFor(usePathname());
+  const items = itemsFor(available);
   return (
     <nav aria-label="News beats" data-sweep-ignore className={cn("-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0", className)}>
       <ul className="flex w-max gap-2 sm:w-auto sm:flex-wrap">
-        {ITEMS.map((item) => {
+        {items.map((item) => {
           const current = active === item.key;
           return (
             <li key={item.key}>

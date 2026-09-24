@@ -36,6 +36,12 @@ const PAGES: { label: string; href: string; icon: string; keywords: string }[] =
   [
     { label: "Home", href: "/", icon: "House", keywords: "home start" },
     {
+      label: "News",
+      href: "/news",
+      icon: "BookOpen",
+      keywords: "news brief today stories daily",
+    },
+    {
       label: "Directory",
       href: "/tools",
       icon: "LayoutGrid",
@@ -188,12 +194,12 @@ export function CommandMenuProvider({
         open={open}
         onOpenChange={setOpen}
         title="Search Enki"
-        description="Search AI tools and categories"
+        description="Search AI tools, categories and news"
         className="max-w-xl"
       >
         <Command shouldFilter={false}>
           <CommandInput
-            placeholder="Search tools, categories…"
+            placeholder="Search tools, categories, news…"
             value={query}
             onValueChange={setQuery}
           />
@@ -203,6 +209,21 @@ export function CommandMenuProvider({
                 No results for “{query}”.
               </span>
             </CommandEmpty>
+
+            {query.trim().length >= 2 && (
+              <CommandGroup heading="News">
+                <CommandItem
+                  value="news-search"
+                  onSelect={() => go(`/news/search?q=${encodeURIComponent(query.trim())}`)}
+                  className="gap-3 py-2"
+                >
+                  <span className="grid size-8 place-items-center rounded-lg bg-muted text-muted-foreground">
+                    <Icon name="Search" className="size-4" />
+                  </span>
+                  <span className="min-w-0 truncate font-medium">Search stories for “{query.trim()}”</span>
+                </CommandItem>
+              </CommandGroup>
+            )}
 
             {pages.length > 0 && (
               <CommandGroup heading="Go to">

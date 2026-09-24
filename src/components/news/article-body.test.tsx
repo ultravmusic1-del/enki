@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { ArticleBody } from "@/components/news/article-body";
+import { ArticleBody, FounderSection } from "@/components/news/article-body";
 
 const BODY = [
   "The lede, with a [source](https://techcrunch.com/a).",
@@ -35,5 +35,22 @@ describe("ArticleBody", () => {
     const section = container.querySelector("section[aria-labelledby]");
     expect(section?.textContent).toContain("Costs fall.");
     expect(section?.textContent).not.toContain("The lede");
+  });
+
+  it("can leave the founder section out of the body", () => {
+    const { container } = render(<ArticleBody body={BODY} includeFounders={false} />);
+    expect(container.textContent).toContain("The lede");
+    expect(container.textContent).not.toContain("Costs fall.");
+  });
+
+  it("renders the founder section alone for the top of the page", () => {
+    const { container } = render(<FounderSection body={BODY} />);
+    expect(screen.getByRole("heading", { name: "What it means for founders" })).toBeTruthy();
+    expect(container.textContent).not.toContain("The lede");
+  });
+
+  it("renders no founder section when the body has none", () => {
+    const { container } = render(<FounderSection body="Just a lede." />);
+    expect(container.innerHTML).toBe("");
   });
 });

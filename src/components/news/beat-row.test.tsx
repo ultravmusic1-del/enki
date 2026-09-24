@@ -23,6 +23,21 @@ describe("BeatRow", () => {
     ]);
   });
 
+  it("leaves out beats with no published stories", () => {
+    render(<BeatRow available={["products-launches", "research"]} />);
+    expect(screen.getAllByRole("link").map((l) => l.getAttribute("href"))).toEqual([
+      "/news",
+      "/news/beat/products-launches",
+      "/news/beat/research",
+      "/tools",
+    ]);
+  });
+
+  it("shows every beat when availability is unknown", () => {
+    render(<BeatRow available={null} />);
+    expect(screen.getAllByRole("link")).toHaveLength(7);
+  });
+
   it("marks the current beat, and only it", () => {
     render(<BeatRow />);
     const current = screen.getAllByRole("link").filter((l) => l.getAttribute("aria-current") === "page");

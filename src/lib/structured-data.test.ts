@@ -119,6 +119,7 @@ describe("newsArticleJsonLd", () => {
     sourcePublishedAt: "2026-09-19T15:25:00Z",
     publishedAt: "2026-09-21T10:01:35Z",
     featured: false,
+    takeaway: null,
   };
 
   const sources = [
@@ -133,6 +134,12 @@ describe("newsArticleJsonLd", () => {
     expect(ld.isBasedOn).toEqual(sources.map((s) => s.url));
     expect(ld.wordCount).toBe(400);
     expect(ld.datePublished).toBe(story.publishedAt);
+    expect(ld.dateModified).toBe(story.publishedAt);
+  });
+
+  it("dates a corrected story's modification to its last correction", () => {
+    const ld = newsArticleJsonLd(story, sources, "2026-09-22T08:00:00Z") as Record<string, unknown>;
+    expect(ld.dateModified).toBe("2026-09-22T08:00:00Z");
   });
 
   it("truncates the headline to the 110 characters search engines accept", () => {

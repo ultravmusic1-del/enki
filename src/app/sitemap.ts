@@ -3,7 +3,8 @@ import { siteConfig } from "@/lib/site";
 import { getAllTools, getCategories } from "@/lib/content";
 import { versusPairs, versusSlug } from "@/lib/seo";
 import { beats } from "@/data/beats";
-import { listIndexableStories } from "@/lib/news/stories";
+import { listActiveBeats, listIndexableStories } from "@/lib/news/stories";
+import { lastUpdatedAt } from "@/data/newsroom";
 
 // Hourly: stories are published daily, and only indexable ones are listed.
 export const revalidate = 3600;
@@ -68,10 +69,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   );
 
+  // Empty beats 404, so only beats with stories are listed (all of them if the read failed).
+  const activeBeats = await listActiveBeats();
   const news: MetadataRoute.Sitemap = [
     { url: `${base}/news`, lastModified: now, changeFrequency: "hourly", priority: 0.9 },
     { url: `${base}/news/about`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
-    ...beats.map((beat) => ({
+    { url: `${base}/news/corrections`, lastModified: now, changeFrequency: "weekly", priority: 0.3 },
+    ...beats.filter((beat) => !activeBeats || activeBeats.includes(beat.slug)).map((beat) => ({
       url: `${base}/news/beat/${beat.slug}`,
       lastModified: now,
       changeFrequency: "daily" as const,
@@ -83,7 +87,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // noindex, so they are not listed.
   const stories: MetadataRoute.Sitemap = (await listIndexableStories()).map((story) => ({
     url: `${base}/news/${story.slug}`,
-    lastModified: new Date(story.publishedAt),
+    lastModified: new Date(lastUpdatedAt(story.slug) ?? story.publishedAt),
     changeFrequency: "weekly",
     priority: 0.6,
   }));
