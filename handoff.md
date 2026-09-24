@@ -11,55 +11,52 @@ Single source of truth for continuing work in a fresh session.
 - **§2** covers env vars and admin access.
 - **§4** is the database.
 - **§1 and §3–§12** describe the directory, which is unchanged since the pivot.
-- **§IN-FLIGHT: Enki Daily home** (directly below) is work paused mid-way.
-  Read it before anything else.
+- **§IN-FLIGHT: Enki Daily home** (directly below) is built and live; only
+  the beehiiv wiring (Task 7) remains. Read it first.
 - **§DONE: full stories** is the previous build, live since 2026-09-23. Its
   traps still apply.
 
 ---
 
-## IN-FLIGHT: Enki Daily home (paused 2026-09-23, evening)
+## IN-FLIGHT: Enki Daily home (built and reviewed 2026-09-24; waiting on beehiiv)
 
 ### Status
-`/` is being turned into a funnel for the **Enki Daily** newsletter (a free
-email every weekday morning for founders), with the old front page moved to
-`/news`. Signups go through **beehiiv's embedded form** (free plan, no API).
+`/` is a funnel for the **Enki Daily** newsletter (a free email every weekday
+morning for founders), with the old front page at `/news`. Signups go through
+**beehiiv's embedded form** (free plan, no API).
 - **Spec:** `docs/superpowers/specs/2026-09-23-enki-daily-home-design.md`
 - **Plan:** `docs/superpowers/plans/2026-09-23-enki-daily-home.md` (7 tasks)
-- **Tasks 1 to 6:** built, task-reviewed and browser-checked. Each of Tasks 2,
-  4, 5 and 6 took one fix round. `pnpm verify` passes (606 tests);
-  `tests/e2e/home.spec.ts` passes 3/3; `pnpm sweep` passes on `/`, `/news`,
-  `/welcome`, `/unsubscribe`, `/tools` and a full story at 390px and 1440px.
-- **Not done:** the final whole-branch review, pushing, and Task 7.
-- **Nothing from this build is pushed or deployed.** The live site still shows
-  the old home. Check with `git log --oneline origin/main..HEAD`.
+- **Tasks 1 to 6:** built, task-reviewed and browser-checked.
+- **Final whole-branch review:** done 2026-09-24, "ready with fixes". Its fix
+  wave is `9ca7b6a`, re-reviewed clean. `pnpm verify` passes (608 tests);
+  `tests/e2e/home.spec.ts` passes 3/3; `pnpm sweep` passes at 390px and 1440px.
+- **Only Task 7 remains**, and it waits on the owner's beehiiv forms. Until
+  then every embed shows **"Signups open soon."**, so the page is safe live.
 
 ### Next session, in order
-1. **Final whole-branch review** on the most capable model, per
-   `superpowers:subagent-driven-development`. Package the branch with
-   `bash ~/.claude/plugins/cache/superpowers-dev/superpowers/6.4.1/skills/subagent-driven-development/scripts/review-package docs/superpowers/plans/2026-09-23-enki-daily-home.md 970c365 HEAD`
-   and point the reviewer at the deferred minors below. One fix wave, one
-   scoped re-review.
-2. **Owner pushes** (or says "push it"). Confirm it landed with
-   `git ls-remote origin refs/heads/main`, then wait for the Vercel production
-   build of that commit and check that `https://enkitools.com/llms.txt` still
-   serves and `/` shows "AI news for founders."
-3. **Owner, in beehiiv (spec §4 and §9):** create the publication "Enki Daily";
+1. **Owner, in beehiiv (spec §4 and §9):** create the publication "Enki Daily";
    create three forms named "Enki Daily: Home", "Enki Daily: Story end" and
    "Enki Daily: Footer", each redirecting to
    `https://enkitools.com/welcome?from=home|story|footer`, styled per spec §4;
    write the welcome email; decide on double opt-in. Paste the three embed codes
    into the session.
-4. **Task 7:** put each iframe `src` and the hosted subscribe URL into
+2. **Task 7:** put each iframe `src` and the hosted subscribe URL into
    `src/lib/newsletter.ts`; check the script URLs and CSP hosts in
-   `next.config.ts` against the real embed codes; measure the form heights at
+   `next.config.ts` against the real embed codes (and add beehiiv to
+   `connect-src` if `attribution.js` calls it); measure the form heights at
    390px and 1440px and set `height`/`mobileHeight`; sweep; submit one real
    address only with the owner's go-ahead, and confirm the redirect to
    `/welcome?from=home`.
-5. Until step 4, every embed shows **"Signups open soon."**, so the page can
-   ship before beehiiv exists.
+3. **Before the 31st published story:** fix the `/news` pagination gap (final
+   review Important 4). `/news/page/2` starts at story 31, but `/news` only shows
+   the lead, 5 in the rail, 5 latest and 7-day beat sections, so older stories
+   ranked about 12 to 30 appear on neither page (they stay reachable through
+   beat pages and the sitemap). Offset page 2 by what `/news` shows, or list the
+   remainder on `/news`. 13 stories are published today.
+4. When Task 7 is done and swept, delete
+   `.superpowers/sdd/2026-09-23-enki-daily-home/` (the plan is finished).
 
-### What changed (local commits `f266017..c9bdb4b` on `main`)
+### What changed (commits `f266017..9ca7b6a` on `main`)
 - `src/lib/news/issue.ts`, `issue-data.ts`: today's issue (3 newest full
   stories, featured first; masthead date and count from the newest day;
   founder takeaway parsed from each body) and the 7-day "how it's made" figures.
@@ -80,6 +77,14 @@ email every weekday morning for founders), with the old front page moved to
 - **Retired:** the `subscribe()` and unsubscribe server actions, the
   unsubscribe form and `newsletterSchema`. The `subscribers` table (0 rows) is
   untouched.
+- **Final-review fixes (`9ca7b6a`):** a featured story only leads today's
+  brief within `LEAD_WINDOW_HOURS` (48h, shared with `/news`); the iframe gets
+  its `src` after mount so its load is never missed; Enki Daily share cards on
+  `/`; `llms.txt` describes `/` and `/news` correctly; honest copy (tools
+  sub-line "Featured picks from the Enki directory, each one vetted.", closing
+  band "The brief to read before the day starts.", figures "sources" not
+  "sources merged"); merges revalidate `/`; a Subscribe link in the mobile
+  menu; the lead story has `data-testid="lead-story"` for e2e.
 
 ### Decisions (settled with the owner; do not re-litigate)
 - The newsletter is **Enki Daily**, "every weekday morning", free. It replaces
@@ -92,7 +97,19 @@ email every weekday morning for founders), with the old front page moved to
   newsletter yet.
 - Sending the daily email and an issue archive are a separate, later project.
 
-### Deferred minors, for the final review
+### Deferred, triaged by the final review (fine to leave)
+- `/news` pagination gap past 30 stories: see Next session, step 3.
+- Dates on the issue masthead use UTC; the site defines no time zone.
+- `firstSentence` would cut after an abbreviation such as "U.S."; no current
+  body triggers it.
+- `/admin` still counts rows in the retired `subscribers` table (always 0).
+- The retired list leaves an anon-insert policy on `subscribers`, the
+  `unsubscribe_email` RPC and the `newsletter`/`unsubscribe` rate-limit keys;
+  schedule a cleanup migration.
+- `/news` keeps the title "AI news" with a new founder description (spec §5.6
+  said it would inherit the old home title).
+- The mobile menu now has two identical primary pills ("Explore tools" and
+  "Subscribe to Enki Daily").
 - `getHomeIssueData` makes one `story_sources` RPC per needed story (up to about
   30), acceptable under the 5-minute revalidation.
 - Each Issue row is one link, so its accessible name includes beat, headline,
