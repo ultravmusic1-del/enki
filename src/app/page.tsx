@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/shared/container";
 import { HomeHero } from "@/components/home/home-hero";
+import { HomeBenefits } from "@/components/home/home-benefits";
 import { TodaysIssue } from "@/components/home/todays-issue";
 import { HowItsMade } from "@/components/home/how-its-made";
 import { TakeawayAnatomy } from "@/components/home/takeaway-anatomy";
@@ -33,8 +34,9 @@ export default async function Home() {
   return (
     <>
       <Container className="flex flex-col gap-20 pt-28 pb-24 sm:gap-24">
-        <div className="flex flex-col gap-10">
+        <div className="flex flex-col gap-12 sm:gap-16">
           <HomeHero />
+          <HomeBenefits />
           <TodaysIssue issue={issue} />
         </div>
         <HowItsMade stats={stats} />

@@ -63,6 +63,7 @@ describe("site-wide brand copy", () => {
   it("keeps Enki Daily copy free of dashes and reader counts", () => {
     const files = [
       "src/components/home/home-hero.tsx",
+      "src/components/home/home-benefits.tsx",
       "src/components/home/todays-issue.tsx",
       "src/components/home/how-its-made.tsx",
       "src/components/home/takeaway-anatomy.tsx",

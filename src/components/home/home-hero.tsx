@@ -1,22 +1,16 @@
 import { BeehiivEmbed } from "@/components/newsletter/beehiiv-embed";
 
-const BENEFITS = [
-  { k: "01 · Build better", t: "Insight you can act on", d: "Every story ends with what it means for your company: costs, risks and openings." },
-  { k: "02 · Stay current", t: "The tools worth knowing", d: "New models and products, judged on whether they deserve a place in your stack." },
-  { k: "03 · Spend less", t: "Cut the tools that don't earn it", d: "Know when a cheaper model or a feature you already pay for does the job." },
-];
-
 const TRUST = ["Free", "One email, weekday mornings", "Unsubscribe in one click"];
 
 export function HomeHero() {
   return (
-    <section id="subscribe" className="relative scroll-mt-28 overflow-hidden rounded-[1.75rem] border border-border px-5 pt-16 pb-12 text-center sm:px-10 sm:pt-20">
+    <section id="subscribe" className="relative scroll-mt-28 overflow-hidden rounded-[1.75rem] border border-border px-5 pt-14 pb-12 text-center sm:px-10 sm:pt-16 sm:pb-14">
       <div aria-hidden="true" className="pointer-events-none absolute top-16 left-1/2 h-[360px] w-[640px] max-w-[140%] -translate-x-1/2 rounded-full bg-teal/25 blur-[80px]" />
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_60%_55%_at_50%_30%,#000_30%,transparent_75%)]"
       />
-      <div className="relative mx-auto flex max-w-3xl flex-col items-center motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-700">
+      <div className="relative mx-auto flex max-w-5xl flex-col items-center motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-700">
         <p className="inline-flex items-center gap-2 rounded-full border border-teal-bright/20 bg-teal/[0.07] py-1.5 pr-3 pl-2">
           <span aria-hidden="true" className="size-[7px] rounded-full bg-teal-bright shadow-[0_0_0_4px_rgba(53,228,236,0.15)]" />
           <span className="font-mono text-[0.6rem] tracking-[0.12em] whitespace-nowrap text-[#cfe9ea] uppercase sm:text-[0.65rem] sm:tracking-[0.18em]">Enki Daily · every weekday morning</span>
@@ -39,15 +33,6 @@ export function HomeHero() {
             </li>
           ))}
         </ul>
-      </div>
-      <div className="relative mx-auto mt-10 grid max-w-3xl border-t border-border text-left sm:grid-cols-3">
-        {BENEFITS.map((b, i) => (
-          <div key={b.k} className={i > 0 ? "border-t border-border pt-4 sm:border-t-0 sm:border-l sm:pl-5" : "pt-4 sm:pr-5"}>
-            <p className="font-mono text-[0.65rem] tracking-[0.16em] text-teal uppercase">{b.k}</p>
-            <p className="mt-1.5 text-sm font-semibold">{b.t}</p>
-            <p className="mt-1 pb-4 text-[0.8rem] leading-relaxed text-muted-foreground">{b.d}</p>
-          </div>
-        ))}
       </div>
     </section>
   );
