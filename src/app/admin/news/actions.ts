@@ -117,6 +117,7 @@ export async function mergeStory(id: string, intoId: string): Promise<{ ok: true
   revalidatePath("/admin/news");
   // Merging into a published story changes its public Sources list.
   revalidatePath("/news", "layout");
+  revalidatePath("/");
   return { ok: true };
 }
 

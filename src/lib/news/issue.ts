@@ -1,6 +1,7 @@
 import type { BeatSlug } from "@/data/beats";
 import { parseArticleBody, splitFounderSection, type Inline } from "@/lib/news/article-body";
 import { FOUNDER_HEADING } from "@/lib/news/schemas";
+import { LEAD_WINDOW_HOURS } from "@/lib/news/home-feed";
 
 export type IssueStoryInput = {
   slug: string;
@@ -40,6 +41,12 @@ const WORDS_PER_MINUTE = 230;
 const TAKEAWAY_MAX = 160;
 const ELLIPSIS = String.fromCharCode(0x2026);
 const DAY_MS = 24 * 60 * 60 * 1000;
+const HOUR_MS = 60 * 60 * 1000;
+
+/** A story counts as featured for the issue only within LEAD_WINDOW_HOURS, matching /news. */
+export function isFeaturedInWindow(publishedAt: string, now: Date): boolean {
+  return now.getTime() - new Date(publishedAt).getTime() <= LEAD_WINDOW_HOURS * HOUR_MS;
+}
 
 function plain(inlines: Inline[]): string {
   return inlines.map((p) => p.text).join("").replace(/\s+/g, " ").trim();
@@ -92,10 +99,10 @@ function dateLabel(iso: string): string {
   return `${weekday} ${day} ${month}`;
 }
 
-export function buildIssue(inputs: IssueStoryInput[]): Issue | null {
+export function buildIssue(inputs: IssueStoryInput[], now: Date): Issue | null {
   if (inputs.length === 0) return null;
   const newest = [...inputs].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
-  const featured = newest.find((s) => s.featured);
+  const featured = newest.find((s) => s.featured && isFeaturedInWindow(s.publishedAt, now));
   const ordered = featured ? [featured, ...newest.filter((s) => s !== featured)] : newest;
   const shown = ordered.slice(0, ISSUE_SIZE);
   const lead = shown[0];

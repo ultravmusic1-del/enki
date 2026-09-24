@@ -100,7 +100,7 @@ Heading: **Every story, read across the outlets.** Three steps:
 3. **What it means for you.** "Each story ends with what it means for founders:
    costs, platform risk, openings and what to watch."
 
-Live figures line (§6.2): `{s} stories · {o} outlets · {n} sources merged in
+Live figures line (§6.2): `{s} stories · {o} outlets · {n} sources in
 the last 7 days`. Omitted when `s < 3`. Copy never says who or what writes.
 
 ### 3.4 `TakeawayAnatomy`
@@ -116,10 +116,10 @@ they are not attached to individual bullets.
 (lazy).
 
 ### 3.6 `TrendingTools`
-Heading: **Tools worth knowing.** Sub: "The products our stories keep coming
-back to." Six tools from `getFeaturedTools()`, reusing the directory card
-component. Link: `Browse all tools →` to `/tools`. No sponsored or affiliate
-labels in this section.
+Heading: **Tools worth knowing.** Sub: "Featured picks from the Enki
+directory, each one vetted." Six tools from `getFeaturedTools()`, reusing the
+directory card component. Link: `Browse all tools →` to `/tools`. No sponsored
+or affiliate labels in this section.
 
 ### 3.7 `HomeFaq`
 Native `<details>` items:
@@ -133,8 +133,8 @@ Native `<details>` items:
   bottom.
 
 ### 3.8 `SubscribeBand` (variant `large`)
-Closing band with a strong bloom: `h2` **The brief founders read before the
-day starts.** Sub: "Free, every weekday morning." `BeehiivEmbed form="home"`
+Closing band with a strong bloom: `h2` **The brief to read before the day
+starts.** Sub: "Free, every weekday morning." `BeehiivEmbed form="home"`
 (lazy).
 
 ### 3.9 `StickySubscribeBar` (mobile only, below 768px)

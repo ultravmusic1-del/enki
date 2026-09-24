@@ -4,7 +4,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* =========================================================================
-   ENKI — Design tokens
+   ENKI: Design tokens
    Oracle-meets-AI. Deep charcoal canvas, single teal accent, mist type.
    Brand palette: #222831 #393E46 #00ADB5 #EEEEEE
    ========================================================================= */
@@ -179,7 +179,7 @@
    Atmosphere utilities
    ========================================================================= */
 
-/* Fine film grain overlay — apply to a fixed full-bleed layer */
+/* Fine film grain overlay, apply to a fixed full-bleed layer */
 @utility grain {
   position: fixed;
   inset: 0;
@@ -314,9 +314,9 @@
 }
 
 /* =========================================================================
-   Dimensional cards — 3D "shape system" (home showcase only)
+   Dimensional cards: 3D "shape system" (home showcase only)
    Adapted from a neon 3D-card lab: layered glass plane with a scooped corner,
-   depth-stacked corner discs, forward-projected content, and a hover tilt —
+   depth-stacked corner discs, forward-projected content, and a hover tilt,
    retinted to Enki (teal, dark, no neon).
    ========================================================================= */
 .dim {
@@ -403,7 +403,7 @@
   );
 }
 
-/* Depth-stacked corner discs — hold the monogram / category icon */
+/* Depth-stacked corner discs, hold the monogram / category icon */
 .dim__orbit {
   position: absolute;
   top: 0;
@@ -454,7 +454,7 @@
   transform: translate3d(0, 0, 84px);
 }
 
-/* Featured-card logo chip — large and legible, the front of the depth stack.
+/* Featured-card logo chip: large and legible, the front of the depth stack.
    Tinted discs sit behind it as a glowing accent halo. */
 .dim__logo {
   position: absolute;
@@ -517,7 +517,7 @@
 }
 
 /* =========================================================================
-   Hero tagline pill — a defined chip that pops off the 3D model behind it
+   Hero tagline pill: a defined chip that pops off the 3D model behind it
    ========================================================================= */
 .tagline-pill {
   background: color-mix(in oklab, var(--brand-void) 58%, transparent);
@@ -584,7 +584,7 @@
   to { transform: translateX(-50%); }
 }
 
-/* Editor score dial — the teal arc sweeps in from empty on load */
+/* Editor score dial: the teal arc sweeps in from empty on load */
 @keyframes score-draw {
   from {
     stroke-dashoffset: var(--dash-start);
@@ -602,7 +602,7 @@
    it fired only after hydration and, being a `.from({opacity: 0})`, it *hid
    content the visitor was already reading* before fading it back in. On a cold
    cache the measured gap was four seconds of correct hero followed by a blank
-   one — the slower the connection, the worse it looked.
+   one, the slower the connection, the worse it looked.
 
    A CSS animation runs at first paint instead, so the reveal happens once, in
    the right place, and never un-paints anything. Same `from`-only keyframe and
@@ -613,7 +613,7 @@
    LCP, so a long pre-delay would postpone the largest paint; the headline
    starts at 140ms.
 
-   `prefers-reduced-motion` needs no special case — the universal block below
+   `prefers-reduced-motion` needs no special case: the universal block below
    collapses every animation to 0.001ms.
    ========================================================================= */
 @keyframes hero-rise {
@@ -649,7 +649,7 @@
 }
 
 /* =========================================================================
-   Route transition — every client navigation fades + lifts its page in,
+   Route transition: every client navigation fades + lifts its page in,
    reusing the Reveal easing so the whole site shares one entrance language.
    A `from`-only keyframe leaves NO lingering transform once it settles, so
    sticky sidebars and the home hero's ScrollTrigger parallax stay intact.
@@ -663,7 +663,7 @@
 }
 .page-transition {
   /* `backwards` fill applies the from-frame at t=0 (no first-paint flash) but,
-     unlike `both`, does NOT hold a transform after settling — the resting state
+     unlike `both`, does NOT hold a transform after settling: the resting state
      reverts to `transform: none`, so the page tree isn't left permanently
      promoted to a compositor layer above the WebGL hero. */
   animation: page-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
@@ -682,7 +682,7 @@
 }
 
 /* =========================================================================
-   Accessibility affordances — skip link + a universal keyboard focus ring
+   Accessibility affordances: skip link + a universal keyboard focus ring
    ========================================================================= */
 .skip-link {
   position: fixed;
@@ -718,7 +718,7 @@
   outline-offset: 2px;
   border-radius: 2px;
 }
-/* main receives focus only programmatically via the skip link — don't ring it. */
+/* main receives focus only programmatically via the skip link, don't ring it. */
 main:focus,
 main:focus-visible {
   outline: none;

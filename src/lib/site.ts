@@ -4,7 +4,7 @@
  * Committed rather than left to configuration on purpose. An unset
  * `NEXT_PUBLIC_SITE_URL` is exactly how every canonical, sitemap entry, robots
  * directive and JSON-LD `@id` came to point at the Vercel subdomain while the
- * site was already serving from this domain — telling search engines the real
+ * site was already serving from this domain, telling search engines the real
  * page lived somewhere else. A production build is now correct with no
  * dashboard configuration at all.
  */
@@ -20,15 +20,15 @@ const stripTrailingSlash = (value: string) => value.replace(/\/+$/, "");
  * identifiers, and the `/go/[slug]` fallback redirect.
  *
  * Order of preference:
- *  1. `NEXT_PUBLIC_SITE_URL` — an explicit override, e.g. a staging origin.
- *  2. Vercel preview deployments — their own origin, so a preview can never
+ *  1. `NEXT_PUBLIC_SITE_URL`: an explicit override, e.g. a staging origin.
+ *  2. Vercel preview deployments: their own origin, so a preview can never
  *     claim the production canonical.
- *  3. Any production build — the committed canonical above.
+ *  3. Any production build: the committed canonical above.
  *  4. Local development.
  *
  * Step 3 keys off `NODE_ENV`, not `VERCEL_ENV`, deliberately. This module is
  * imported by `site-footer.tsx`, a client component, so it is evaluated in the
- * browser bundle as well as on the server — and Next only inlines `NEXT_PUBLIC_*`
+ * browser bundle as well as on the server, and Next only inlines `NEXT_PUBLIC_*`
  * variables there. A bare `VERCEL_ENV` read would be `undefined` client-side and
  * resolve a different origin than the server did, which is a hydration mismatch.
  * `NODE_ENV` is inlined identically on both sides.

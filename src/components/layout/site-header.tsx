@@ -298,6 +298,15 @@ export function SiteHeader() {
                   Explore tools
                   <Icon name="ArrowRight" className="size-3.5" />
                 </Link>
+
+                <Link
+                  href="/#subscribe"
+                  onClick={() => setMobileOpen(false)}
+                  className="mt-2 inline-flex items-center justify-center gap-1.5 rounded-lg bg-mist px-4 py-2.5 text-sm font-medium text-[#16191d]"
+                >
+                  Subscribe to Enki Daily
+                  <Icon name="ArrowRight" className="size-3.5" />
+                </Link>
               </div>
             </SheetContent>
           </Sheet>

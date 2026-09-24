@@ -23,7 +23,7 @@ export function SubscribeBand({ variant, id }: { variant: "compact" | "large"; i
         {large ? (
           <>
             <h2 className="font-display text-3xl font-semibold text-balance uppercase sm:text-4xl">
-              The brief founders read before the day starts.
+              The brief to read before the day starts.
             </h2>
             <p className="text-muted-foreground">Free, every weekday morning.</p>
           </>

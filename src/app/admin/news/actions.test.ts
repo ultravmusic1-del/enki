@@ -249,6 +249,7 @@ describe("mergeStory", () => {
     expect(stub.rpc).toHaveBeenCalledWith("admin_merge_story", { p_story_id: ID, p_into_id: INTO });
     expect(revalidatePath).toHaveBeenCalledWith("/admin/news");
     expect(revalidatePath).toHaveBeenCalledWith("/news", "layout");
+    expect(revalidatePath).toHaveBeenCalledWith("/");
   });
 
   it("reports a merge the database refused", async () => {

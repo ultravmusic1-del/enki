@@ -1,4 +1,4 @@
-import { buildIssue, makingStats, type Issue, type IssueStoryInput, type MakingStats } from "@/lib/news/issue";
+import { buildIssue, isFeaturedInWindow, makingStats, type Issue, type IssueStoryInput, type MakingStats } from "@/lib/news/issue";
 import { getStorySources, listRecentFullStories } from "@/lib/news/stories";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -7,7 +7,12 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export async function getHomeIssueData(now: Date): Promise<{ issue: Issue | null; stats: MakingStats }> {
   const stories = await listRecentFullStories(30);
   const since = now.getTime() - 7 * DAY_MS;
-  const needed = stories.filter((s, i) => i < 3 || s.featured || new Date(s.publishedAt).getTime() >= since);
+  const needed = stories.filter(
+    (s, i) =>
+      i < 3 ||
+      (s.featured && isFeaturedInWindow(s.publishedAt, now)) ||
+      new Date(s.publishedAt).getTime() >= since,
+  );
   const inputs: IssueStoryInput[] = await Promise.all(
     needed.map(async (s) => {
       const sources = await getStorySources(s.id);
@@ -25,5 +30,5 @@ export async function getHomeIssueData(now: Date): Promise<{ issue: Issue | null
       };
     }),
   );
-  return { issue: buildIssue(inputs), stats: makingStats(inputs, now) };
+  return { issue: buildIssue(inputs, now), stats: makingStats(inputs, now) };
 }

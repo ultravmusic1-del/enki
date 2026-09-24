@@ -10,7 +10,7 @@ export function TrendingTools({ tools }: { tools: Tool[] }) {
         <div className="flex flex-col gap-2">
           <p className="font-mono text-xs tracking-[0.3em] text-teal uppercase">Stay current</p>
           <h2 id="trending-tools" className="font-display text-3xl font-semibold uppercase">Tools worth knowing.</h2>
-          <p className="text-sm text-muted-foreground">The products our stories keep coming back to.</p>
+          <p className="text-sm text-muted-foreground">Featured picks from the Enki directory, each one vetted.</p>
         </div>
         <Link href="/tools" className="text-sm font-semibold text-teal hover:text-teal-bright">Browse all tools &rarr;</Link>
       </div>

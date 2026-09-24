@@ -16,7 +16,7 @@ export function HowItsMade({ stats }: { stats: MakingStats }) {
         </h2>
         {stats.stories >= 3 ? (
           <p className="font-mono text-xs tracking-[0.08em] text-muted-foreground uppercase">
-            {`${stats.stories} stories · ${stats.outlets} outlets · ${stats.sources} sources merged in the last 7 days`}
+            {`${stats.stories} stories · ${stats.outlets} outlets · ${stats.sources} sources in the last 7 days`}
           </p>
         ) : null}
       </div>

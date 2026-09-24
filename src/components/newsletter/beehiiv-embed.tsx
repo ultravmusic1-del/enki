@@ -29,6 +29,18 @@ export function BeehiivEmbed({ form, lazy = false, className }: { form: Newslett
   const [loaded, setLoaded] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // The iframe is rendered with no `src` on the server and on first client
+  // render, and only assigned one imperatively here, after mount. That
+  // guarantees the `onLoad` prop (attached when the node is created, before
+  // this effect runs) is always listening before the request can start: a
+  // server-rendered `src` lets a fast cache hit fire `load` before React
+  // attaches the listener, and `loaded` never flips.
+  useEffect(() => {
+    if (iframeRef.current) iframeRef.current.src = config.src;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once, on mount
+  }, []);
 
   useEffect(() => {
     if (!config.src || loaded) return;
@@ -90,7 +102,7 @@ export function BeehiivEmbed({ form, lazy = false, className }: { form: Newslett
         />
       ) : null}
       <iframe
-        src={config.src}
+        ref={iframeRef}
         title="Subscribe to Enki Daily"
         loading={lazy ? "lazy" : "eager"}
         onLoad={() => setLoaded(true)}
@@ -100,9 +112,11 @@ export function BeehiivEmbed({ form, lazy = false, className }: { form: Newslett
         )}
         scrolling="no"
       />
-      <noscript>
-        <a href={NEWSLETTER.hostedUrl || "/"}>Subscribe to Enki Daily</a>
-      </noscript>
+      {NEWSLETTER.hostedUrl ? (
+        <noscript>
+          <a href={NEWSLETTER.hostedUrl}>Subscribe to Enki Daily</a>
+        </noscript>
+      ) : null}
     </div>
   );
 }

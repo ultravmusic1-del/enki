@@ -48,6 +48,15 @@ describe("BeehiivEmbed", () => {
     expect(screen.getByTestId("embed-skeleton")).toBeTruthy();
   });
 
+  it("sets the iframe src only after mount, so the onLoad listener is always attached first", () => {
+    config.NEWSLETTER.forms.home.src = "https://subscribe-forms.beehiiv.com/abc";
+    render(<BeehiivEmbed form="home" />);
+    // After render (and its effects) flush, src is set: a real browser
+    // cannot have started (or finished) the request before this point.
+    const frame = screen.getByTitle("Subscribe to Enki Daily");
+    expect(frame.getAttribute("src")).toBe("https://subscribe-forms.beehiiv.com/abc");
+  });
+
   it("hides the skeleton once the iframe loads", () => {
     config.NEWSLETTER.forms.home.src = "https://subscribe-forms.beehiiv.com/abc";
     render(<BeehiivEmbed form="home" />);
