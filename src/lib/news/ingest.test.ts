@@ -278,7 +278,22 @@ describe("og:image for imageless items", () => {
     expect(inserted[0].imageUrl).toBe("https://img.example/fresh.jpg");
   });
 
-  it("skips items older than 24 hours and items without a date", async () => {
+  it("still fetches items up to 36 hours old, because the daily cron can run late", async () => {
+    const { store, inserted } = fakeStore([source]);
+    const fetchImage = vi.fn(async () => "https://img.example/late.jpg");
+    await ingestAll({
+      store,
+      tools,
+      now: NOW,
+      fetchFeed: async () => rssWith([{ title: "Late", link: "https://tc.example/late", date: hoursAgo(30) }, { title: "Stale", link: "https://tc.example/stale", date: hoursAgo(40) }]),
+      fetchImage,
+    });
+    expect(fetchImage).toHaveBeenCalledTimes(1);
+    expect(fetchImage).toHaveBeenCalledWith("https://tc.example/late");
+    expect(inserted.find((s) => s.sourceUrl === "https://tc.example/late")?.imageUrl).toBe("https://img.example/late.jpg");
+  });
+
+  it("skips items older than 36 hours and items without a date", async () => {
     const { store, inserted } = fakeStore([source]);
     const fetchImage = vi.fn(async () => "https://img.example/x.jpg");
     await ingestAll({
@@ -287,7 +302,7 @@ describe("og:image for imageless items", () => {
       now: NOW,
       fetchFeed: async () =>
         rssWith([
-          { title: "Old", link: "https://tc.example/old", date: hoursAgo(30) },
+          { title: "Old", link: "https://tc.example/old", date: hoursAgo(40) },
           { title: "Undated", link: "https://tc.example/undated" },
         ]),
       fetchImage,

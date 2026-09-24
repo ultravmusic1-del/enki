@@ -8,8 +8,12 @@ export const MAX_ITEMS_PER_SOURCE = 30;
 export const FEED_TIMEOUT_MS = 10_000;
 const MAX_FEED_CHARS = 2_000_000;
 
-/** The cron runs daily, so items newer than this are the ones not seen before. */
-export const OG_WINDOW_HOURS = 24;
+/**
+ * The cron runs daily but can fire up to an hour late, so a 24h window would
+ * miss items published just after the previous run. 36h covers that slack; an
+ * item seen twice costs one extra bounded fetch.
+ */
+export const OG_WINDOW_HOURS = 36;
 export const MAX_OG_FETCHES_PER_SOURCE = 10;
 export const OG_CONCURRENCY = 4;
 

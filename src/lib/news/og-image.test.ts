@@ -97,3 +97,46 @@ describe("fetchOgImage", () => {
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 });
+
+
+describe("fetchOgImage redirects", () => {
+  const redirect = (location: string) => new Response(null, { status: 301, headers: { location } });
+  const page = (html: string) => htmlResponse(html);
+  const og = '<meta property="og:image" content="https://cdn.example.com/r.jpg">';
+
+  function sequence(...responses: Response[]) {
+    const calls: string[] = [];
+    const fetchImpl = (async (url: string, init?: RequestInit) => {
+      calls.push(url);
+      expect(init?.redirect).toBe("manual");
+      return responses[calls.length - 1];
+    }) as unknown as typeof fetch;
+    return { fetchImpl, calls };
+  }
+
+  it("follows up to 3 https redirects and resolves against the final URL", async () => {
+    const { fetchImpl, calls } = sequence(redirect("https://techcrunch.com/b"), redirect("/c"), page(og));
+    expect(await fetchOgImage(PAGE, fetchImpl)).toBe("https://cdn.example.com/r.jpg");
+    expect(calls).toEqual([PAGE, "https://techcrunch.com/b", "https://techcrunch.com/c"]);
+  });
+
+  it("refuses a redirect to http, localhost or an IP address", async () => {
+    for (const target of ["http://techcrunch.com/x", "https://localhost/x", "https://127.0.0.1/x", "https://169.254.169.254/latest", "https://[::1]/x"]) {
+      const { fetchImpl, calls } = sequence(redirect(target), page(og));
+      expect(await fetchOgImage(PAGE, fetchImpl), target).toBeNull();
+      expect(calls, target).toHaveLength(1);
+    }
+  });
+
+  it("gives up after 3 redirects", async () => {
+    const { fetchImpl } = sequence(redirect("https://a.example/1"), redirect("https://a.example/2"), redirect("https://a.example/3"), redirect("https://a.example/4"), page(og));
+    expect(await fetchOgImage(PAGE, fetchImpl)).toBeNull();
+  });
+
+  it("refuses a starting URL on localhost or an IP address", async () => {
+    const fetchImpl = vi.fn();
+    expect(await fetchOgImage("https://10.0.0.5/story", fetchImpl as unknown as typeof fetch)).toBeNull();
+    expect(await fetchOgImage("https://localhost/story", fetchImpl as unknown as typeof fetch)).toBeNull();
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+});
