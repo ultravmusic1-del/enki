@@ -18,6 +18,26 @@ Single source of truth for continuing work in a fresh session.
 
 ---
 
+## DONE 2026-09-24: story images and five new sources
+- **Display fix (`dbbd627`):** every story image sits in a 16:9 frame
+  (`StoryImage`, crop anchored above centre); the `/news` lead stacks image over
+  text; no-image stories get an Enki placeholder.
+- **Images (`b4f077f..8389c24`, spec and plan `2026-09-24-story-images`):**
+  ingest fills a missing feed image from the article's `og:image`
+  (`src/lib/news/og-image.ts`: 36h window, 10 per source, 4 at a time, 4s,
+  1 MB, every redirect hop https and no localhost or IP literal). Today's brief
+  rows show thumbnails. Backfill wrote 70 rows (all 9 published stories now have
+  images). **openai.com returns 403 to Node's fetch**, so OpenAI stories keep
+  the placeholder; not worked around.
+- **Sources added (production rows, no code):** Crunchbase News (AI section),
+  WIRED (AI), The Decoder, IEEE Spectrum (AI), Google AI. 12 active sources.
+  Probed and rejected: VentureBeat (429), Axios (timeout), Anthropic (no feed),
+  Microsoft (410), The Information (paywalled), SiliconANGLE (too noisy).
+- **Deferred:** Today's brief reads make one `story_sources` call per story and
+  sometimes hit the 2.5s timeout; batch it and throw on timeout so ISR keeps the
+  last good page. Minor `og-image` polish (hyphenated attribute names, stop at
+  `</head>`, a timeout test).
+
 ## IN-FLIGHT: Enki Daily home (built and reviewed 2026-09-24; waiting on beehiiv)
 
 ### Status
