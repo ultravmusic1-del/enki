@@ -39,7 +39,8 @@ overflow.
   it is an `https:` URL that passes the existing `isHttpUrl` check. Otherwise
   `null`.
 - `fetchOgImage(url: string, fetchPage?): Promise<string | null>`: GET the
-  article with a browser-like `user-agent` and `accept: text/html`, a **4 s**
+  article with the feed fetcher's honest `EnkiNewsBot/1.0` user-agent (all four
+  checked sites answer it) and `accept: text/html`, a **4 s**
   timeout, reading at most **1 MB** of the body (the `<head>` is enough).
   Non-2xx, timeout, non-HTML or any error resolves `null`; it never throws.
 
