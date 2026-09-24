@@ -10,6 +10,7 @@ import { StoryList } from "@/components/news/story-list";
 import { StoryViewPing } from "@/components/news/story-view-ping";
 import { BeatRow } from "@/components/news/beat-row";
 import { ArticleBody } from "@/components/news/article-body";
+import { StoryImage } from "@/components/front-page/story-image";
 import { BeehiivEmbed } from "@/components/newsletter/beehiiv-embed";
 import { BeehiivScripts } from "@/components/newsletter/beehiiv-scripts";
 import { breadcrumbJsonLd, newsArticleJsonLd } from "@/lib/structured-data";
@@ -128,6 +129,8 @@ export default async function StoryPage({ params }: Props) {
             )}
           </p>
         </header>
+
+        {story.imageUrl ? <StoryImage src={story.imageUrl} priority className="w-full" /> : null}
 
         <p className="text-lg leading-relaxed text-pretty">{story.summary}</p>
 
