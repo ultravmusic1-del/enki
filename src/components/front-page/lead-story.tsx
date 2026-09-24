@@ -9,10 +9,11 @@ export function LeadStory({ story, tools, now }: { story: PublicStory; tools: To
   return (
     <article
       data-testid="lead-story"
-      className="grid gap-5 rounded-2xl border border-border bg-card/60 p-5 ring-hairline sm:p-6 md:grid-cols-2"
+      className="flex flex-col gap-5 rounded-2xl border border-border bg-card/60 p-5 ring-hairline sm:p-6"
     >
-      {story.imageUrl ? <StoryImage src={story.imageUrl} priority className="aspect-video w-full md:aspect-auto md:min-h-56" /> : null}
-      <div className={story.imageUrl ? "flex flex-col gap-3" : "flex flex-col gap-3 md:col-span-2"}>
+      {/* Stacked at every width: the lead column is too narrow to set image and text side by side. */}
+      <StoryImage src={story.imageUrl} label={story.beatName} priority className="w-full" />
+      <div className="flex flex-col gap-3">
         <p className="font-mono text-xs tracking-wide text-teal uppercase">{story.beatName}</p>
         <h2 className="font-display text-2xl leading-tight font-semibold break-words text-balance sm:text-3xl">
           <Link href={`/news/${story.slug}`} className="hover:text-teal">

@@ -25,7 +25,8 @@ export function BeatSection({
           <Icon name="ChevronRight" className="size-4" />
         </Link>
       </h2>
-      {first.imageUrl ? <StoryImage src={first.imageUrl} className="aspect-video w-full" /> : null}
+      {/* Always a 16:9 frame, so the beat columns line up whether or not a story has an image. */}
+      <StoryImage src={first.imageUrl} className="w-full" />
       <Link
         href={`/news/${first.slug}`}
         className="font-display text-lg leading-snug font-semibold break-words text-pretty hover:text-teal"
