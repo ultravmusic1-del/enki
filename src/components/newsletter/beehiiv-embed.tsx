@@ -111,6 +111,10 @@ export function BeehiivEmbed({ form, lazy = false, className }: { form: Newslett
           !loaded && "opacity-0",
         )}
         scrolling="no"
+        // The page is color-scheme: dark and beehiiv's form document is not;
+        // on that mismatch Chrome paints an opaque white backdrop behind the
+        // frame. Matching the form's scheme keeps it transparent.
+        style={{ colorScheme: "normal" }}
       />
       {NEWSLETTER.hostedUrl ? (
         <noscript>

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 const STEPS = [
-  { t: "Check your inbox", d: "If you don't see a confirmation email, check Promotions or Spam." },
+  { t: "Check your inbox", d: "Your welcome email is on its way. If you don't see it, check Promotions or Spam." },
   { t: "Add us to your contacts", d: "It keeps Enki Daily out of the spam folder." },
   { t: "Read today's stories", d: "The full articles are already on Enki.", href: "/news" },
 ];

@@ -15,11 +15,11 @@ type FormConfig = { src: string; height: number; mobileHeight: number };
 export const NEWSLETTER: { name: "Enki Daily"; hostedUrl: string; forms: Record<NewsletterForm, FormConfig> } = {
   name: "Enki Daily",
   /** beehiiv's hosted subscribe page, e.g. https://<publication>.beehiiv.com/subscribe. */
-  hostedUrl: "",
+  hostedUrl: "https://enki-tools-f421fc.beehiiv.com/subscribe",
   forms: {
-    home: { src: "", height: 56, mobileHeight: 112 },
-    story: { src: "", height: 56, mobileHeight: 112 },
-    footer: { src: "", height: 56, mobileHeight: 112 },
+    home: { src: "https://subscribe-forms.beehiiv.com/c82cbe13-e840-4ee4-bda4-390ab6c05806", height: 72, mobileHeight: 72 },
+    story: { src: "https://subscribe-forms.beehiiv.com/6a795064-6c33-43d1-8572-2a53a7948d1e", height: 72, mobileHeight: 72 },
+    footer: { src: "https://subscribe-forms.beehiiv.com/8dd4b800-9334-4514-a479-7213d9ececcc", height: 72, mobileHeight: 72 },
   },
 };
 

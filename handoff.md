@@ -59,6 +59,25 @@ Single source of truth for continuing work in a fresh session.
   last good page. Minor `og-image` polish (hyphenated attribute names, stop at
   `</head>`, a timeout test).
 
+## 2026-09-24: beehiiv wired (Task 7), one real signup test left
+- **beehiiv (via the connector):** publication renamed "Enki Daily"
+  (`pub_73e586a1-…`, hosted at `enki-tools-f421fc.beehiiv.com`), single
+  opt-in (owner's choice). Three inline forms, published by the owner: Home
+  `c82cbe13-…`, Story end `6a795064-…`, Footer `8dd4b800-…`, each redirecting
+  to `/welcome?from=<key>`. Welcome email automation "Enki Daily: Welcome"
+  (signup trigger) is live.
+- **Publishing a form:** the connector only writes drafts. In the builder the
+  owner's "Save changes" published a never-published form; there was no
+  separate Publish item. Confirm with `get_subscribe_form_diff`.
+- **Traps:** (1) the page is `color-scheme: dark`, beehiiv's form document is
+  not, and Chrome then paints a white backdrop behind the iframe; the iframe
+  sets `color-scheme: normal`. (2) Do **not** add the `beehiiv-embed` class:
+  `embed.js` then resizes the iframe to 5000x2000 for measuring and can stick
+  there (page went 1560px wide at 390px). Heights are fixed instead: the form
+  is 72px at both 335px and 448px wide, measured on the form URL itself.
+- **Left:** one real signup on the home form to confirm the redirect (owner's
+  go-ahead needed). The button label wraps to two lines at phone width.
+
 ## IN-FLIGHT: Enki Daily home (built and reviewed 2026-09-24; waiting on beehiiv)
 
 ### Status
