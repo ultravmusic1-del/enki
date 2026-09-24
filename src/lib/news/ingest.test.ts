@@ -1,4 +1,10 @@
-import { describe, it, expect, vi } from "vitest";
+import { beforeEach, describe, it, expect, vi } from "vitest";
+const fetchOgImageMock = vi.hoisted(() => vi.fn<(url: string) => Promise<string | null>>(async () => null));
+vi.mock("@/lib/news/og-image", () => ({ fetchOgImage: fetchOgImageMock }));
+
+beforeEach(() => {
+  fetchOgImageMock.mockReset().mockResolvedValue(null);
+});
 import {
   ingestAll,
   MAX_ITEMS_PER_SOURCE,
@@ -251,5 +257,88 @@ describe("ingestAll", () => {
     const headline = inserted[0]!.headline;
     expect(headline.isWellFormed()).toBe(true);
     expect(Array.from(headline)).toHaveLength(300);
+  });
+});
+
+describe("og:image for imageless items", () => {
+  const source = { id: "s1", name: "TechCrunch", feedUrl: "https://tc.example/feed" };
+  const hoursAgo = (h: number) => new Date(NOW.getTime() - h * 3_600_000).toUTCString();
+
+  it("fills a recent imageless item from its article's og:image", async () => {
+    const { store, inserted } = fakeStore([source]);
+    const fetchImage = vi.fn(async (url: string) => `https://img.example/${url.split("/").pop()}.jpg`);
+    await ingestAll({
+      store,
+      tools,
+      now: NOW,
+      fetchFeed: async () => rssWith([{ title: "Fresh", link: "https://tc.example/fresh", date: hoursAgo(2) }]),
+      fetchImage,
+    });
+    expect(fetchImage).toHaveBeenCalledWith("https://tc.example/fresh");
+    expect(inserted[0].imageUrl).toBe("https://img.example/fresh.jpg");
+  });
+
+  it("skips items older than 24 hours and items without a date", async () => {
+    const { store, inserted } = fakeStore([source]);
+    const fetchImage = vi.fn(async () => "https://img.example/x.jpg");
+    await ingestAll({
+      store,
+      tools,
+      now: NOW,
+      fetchFeed: async () =>
+        rssWith([
+          { title: "Old", link: "https://tc.example/old", date: hoursAgo(30) },
+          { title: "Undated", link: "https://tc.example/undated" },
+        ]),
+      fetchImage,
+    });
+    expect(fetchImage).not.toHaveBeenCalled();
+    expect(inserted.every((s) => s.imageUrl === null)).toBe(true);
+  });
+
+  it("never fetches for an item that already has a feed image", async () => {
+    const { store, inserted } = fakeStore([source]);
+    const fetchImage = vi.fn(async () => "https://img.example/og.jpg");
+    const feed = `<rss version="2.0"><channel><title>t</title><item><title>Pic</title><link>https://tc.example/pic</link><pubDate>${hoursAgo(1)}</pubDate><enclosure url="https://img.example/feed.jpg" type="image/jpeg" /></item></channel></rss>`;
+    await ingestAll({ store, tools, now: NOW, fetchFeed: async () => feed, fetchImage });
+    expect(fetchImage).not.toHaveBeenCalled();
+    expect(inserted[0].imageUrl).toBe("https://img.example/feed.jpg");
+  });
+
+  it("fetches at most 10 per source", async () => {
+    const { store } = fakeStore([source]);
+    const fetchImage = vi.fn(async () => null);
+    const items = Array.from({ length: 15 }, (_, i) => ({ title: `T${i}`, link: `https://tc.example/${i}`, date: hoursAgo(1) }));
+    await ingestAll({ store, tools, now: NOW, fetchFeed: async () => rssWith(items), fetchImage });
+    expect(fetchImage).toHaveBeenCalledTimes(10);
+  });
+
+  it("still inserts the story when the image fetch rejects", async () => {
+    const { store, inserted } = fakeStore([source]);
+    const fetchImage = vi.fn(async () => {
+      throw new Error("network down");
+    });
+    const summary = await ingestAll({
+      store,
+      tools,
+      now: NOW,
+      fetchFeed: async () => rssWith([{ title: "Fresh", link: "https://tc.example/fresh", date: hoursAgo(2) }]),
+      fetchImage,
+    });
+    expect(inserted).toHaveLength(1);
+    expect(inserted[0].imageUrl).toBeNull();
+    expect(summary.failed).toEqual([]);
+  });
+
+  it("uses the real og:image fetcher by default (mocked in this file)", async () => {
+    const { store } = fakeStore([source]);
+    fetchOgImageMock.mockResolvedValue("https://img.example/default.jpg");
+    await ingestAll({
+      store,
+      tools,
+      now: NOW,
+      fetchFeed: async () => rssWith([{ title: "Fresh", link: "https://tc.example/fresh", date: hoursAgo(2) }]),
+    });
+    expect(fetchOgImageMock).toHaveBeenCalledWith("https://tc.example/fresh");
   });
 });

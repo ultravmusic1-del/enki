@@ -1,11 +1,17 @@
 import { siteConfig } from "@/lib/site";
 import { matchTools, type MatchableTool } from "@/lib/news/match-tools";
 import { parseFeed, type FeedItem } from "@/lib/news/parse-feed";
+import { fetchOgImage } from "@/lib/news/og-image";
 
 export const INGEST_WINDOW_HOURS = 72;
 export const MAX_ITEMS_PER_SOURCE = 30;
 export const FEED_TIMEOUT_MS = 10_000;
 const MAX_FEED_CHARS = 2_000_000;
+
+/** The cron runs daily, so items newer than this are the ones not seen before. */
+export const OG_WINDOW_HOURS = 24;
+export const MAX_OG_FETCHES_PER_SOURCE = 10;
+export const OG_CONCURRENCY = 4;
 
 export type IngestSource = { id: string; name: string; feedUrl: string };
 
@@ -31,6 +37,8 @@ export type IngestDeps = {
   store: IngestStore;
   tools: readonly MatchableTool[];
   fetchFeed?: (url: string) => Promise<string>;
+  /** The article page's og:image for feed items without an image. */
+  fetchImage?: (url: string) => Promise<string | null>;
   now?: Date;
   report?: (error: unknown, source: IngestSource) => void;
 };
@@ -98,6 +106,36 @@ function safeReport(
 }
 
 /**
+ * Fill `imageUrl` from each article's og:image for recent items whose feed
+ * carried no image. Bounded (count, concurrency, per-fetch timeout inside the
+ * fetcher) and never throws: a failed fetch leaves the item imageless.
+ */
+export async function withOgImages(
+  items: FeedItem[],
+  now: Date,
+  fetchImage: (url: string) => Promise<string | null>,
+): Promise<FeedItem[]> {
+  const cutoff = now.getTime() - OG_WINDOW_HOURS * 3_600_000;
+  const candidates = items
+    .filter((item) => item.imageUrl === null && item.publishedAt !== null && item.publishedAt.getTime() >= cutoff)
+    .slice(0, MAX_OG_FETCHES_PER_SOURCE);
+  const found = new Map<string, string>();
+  for (let i = 0; i < candidates.length; i += OG_CONCURRENCY) {
+    await Promise.all(
+      candidates.slice(i, i + OG_CONCURRENCY).map(async (item) => {
+        try {
+          const url = await fetchImage(item.url);
+          if (url) found.set(item.url, url);
+        } catch {
+          // An image is a nice-to-have; the story is still queued without one.
+        }
+      }),
+    );
+  }
+  return found.size === 0 ? items : items.map((item) => (found.has(item.url) ? { ...item, imageUrl: found.get(item.url)! } : item));
+}
+
+/**
  * Fetch every active source and queue its recent items as pending stories.
  *
  * One broken feed never fails the run: it is reported, recorded on the source,
@@ -108,6 +146,7 @@ export async function ingestAll({
   store,
   tools,
   fetchFeed = fetchFeedText,
+  fetchImage = fetchOgImage,
   now = new Date(),
   report = () => {},
 }: IngestDeps): Promise<IngestSummary> {
@@ -117,7 +156,7 @@ export async function ingestAll({
   await Promise.all(
     sources.map(async (source) => {
       try {
-        const items = selectRecent(parseFeed(await fetchFeed(source.feedUrl)), now);
+        const items = await withOgImages(selectRecent(parseFeed(await fetchFeed(source.feedUrl)), now), now, fetchImage);
         summary.fetched += items.length;
         let insertErrors = 0;
         let firstInsertError: string | null = null;
