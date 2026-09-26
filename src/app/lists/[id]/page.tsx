@@ -7,6 +7,7 @@ import { ToolCard } from "@/components/shared/tool-card";
 import { createClient } from "@/lib/supabase/server";
 import { getAllTools, getCategories } from "@/lib/content";
 import { siteConfig } from "@/lib/site";
+import { pageMetadata } from "@/lib/metadata";
 
 export const dynamic = "force-dynamic";
 
@@ -52,11 +53,11 @@ export async function generateMetadata({
   const { id } = await params;
   const list = await loadList(id);
   if (!list) return { title: "List not found" };
-  return {
+  return pageMetadata({
     title: `${list.name} — an AI tool collection`,
     description: `${list.name}: a curated collection of AI tools on ${siteConfig.name}.`,
-    alternates: { canonical: `/lists/${id}` },
-  };
+    path: `/lists/${id}`,
+  });
 }
 
 export default async function ListPage({

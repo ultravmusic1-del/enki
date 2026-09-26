@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/lib/site";
-import { getAllTools, getCategories } from "@/lib/content";
+import { getAllTools, getAlternativesSlugs, getCategories } from "@/lib/content";
 import { versusPairs, versusSlug } from "@/lib/seo";
 import { beats } from "@/data/beats";
 import { listActiveBeats, listIndexableStories } from "@/lib/news/stories";
@@ -53,8 +53,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  const alternatives: MetadataRoute.Sitemap = allTools.map((t) => ({
-    url: `${base}/alternatives/${t.slug}`,
+  // Only tools with enough genuine peers have an alternatives page; the rest 404.
+  const alternatives: MetadataRoute.Sitemap = (await getAlternativesSlugs()).map((slug) => ({
+    url: `${base}/alternatives/${slug}`,
     lastModified: now,
     changeFrequency: "monthly",
     priority: 0.5,

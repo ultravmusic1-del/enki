@@ -27,6 +27,7 @@ import {
   type StorySource,
 } from "@/lib/news/stories";
 import { safeExternalHref } from "@/lib/safe-url";
+import { pageMetadata } from "@/lib/metadata";
 
 // Rendered on demand and cached; admin publish/unpublish revalidates /news.
 export const revalidate = 300;
@@ -41,19 +42,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const story = await getPublishedStory(slug);
   if (!story) return { title: "Story not found", robots: { index: false, follow: false } };
-  return {
+  return pageMetadata({
     title: story.headline,
     description: story.summary,
-    alternates: { canonical: `/news/${story.slug}` },
+    path: `/news/${story.slug}`,
+    socialTitle: story.headline,
+    type: "article",
+    ownImage: true,
     robots: storyRobots(story.bodyWords),
     openGraph: {
-      type: "article",
-      title: story.headline,
-      description: story.summary,
       publishedTime: story.publishedAt,
       ...(lastUpdatedAt(story.slug) ? { modifiedTime: lastUpdatedAt(story.slug) ?? undefined } : {}),
     },
-  };
+  });
 }
 
 export default async function StoryPage({ params }: Props) {

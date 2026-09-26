@@ -33,4 +33,15 @@ describe("sitemap", () => {
     const urls = (await sitemap()).map((entry) => entry.url);
     expect(urls.some((u) => u.includes("/news/page/"))).toBe(false);
   });
+
+  it("lists only the alternatives pages that are published", async () => {
+    const { getAlternativesSlugs } = await import("@/lib/content");
+    const published = new Set(await getAlternativesSlugs());
+    const listed = (await sitemap())
+      .map((entry) => entry.url)
+      .filter((u) => u.includes("/alternatives/"))
+      .map((u) => u.split("/").pop());
+    expect(listed.length).toBe(published.size);
+    for (const slug of listed) expect(published.has(slug!)).toBe(true);
+  });
 });

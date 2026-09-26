@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Container } from "@/components/shared/container";
 import { NEWS_DESK_EMAIL, NEWS_EDITOR } from "@/data/newsroom";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "How Enki covers news",
   description:
     "Where Enki's AI news comes from, how stories are written and edited, how corrections work, and how tool links work.",
-  alternates: { canonical: "/news/about" },
-};
+  path: "/news/about",
+});
 
 export default function NewsAboutPage() {
   return (

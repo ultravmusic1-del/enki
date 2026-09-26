@@ -3,12 +3,14 @@ import Link from "next/link";
 import { Container } from "@/components/shared/container";
 import { corrections, NEWS_DESK_EMAIL } from "@/data/newsroom";
 import { formatExactTime } from "@/lib/news/format-age";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
-  title: "Corrections",
-  description: "Every correction Enki has made to a published story, with the date and what changed.",
-  alternates: { canonical: "/news/corrections" },
-};
+export const metadata: Metadata = pageMetadata({
+  title: "News corrections",
+  description:
+    "Every correction Enki has made to a published story, with the date and what changed.",
+  path: "/news/corrections",
+});
 
 export default function CorrectionsPage() {
   const all = [...corrections].sort((a, b) => b.at.localeCompare(a.at));

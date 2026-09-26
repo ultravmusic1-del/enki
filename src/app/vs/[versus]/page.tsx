@@ -10,6 +10,7 @@ import { breadcrumbJsonLd, faqJsonLd } from "@/lib/structured-data";
 import { getAllTools, getToolBySlug, getCategoryBySlug } from "@/lib/content";
 import { parseVersusSlug, versusPairs, versusSlug } from "@/lib/seo";
 import type { Tool } from "@/lib/schemas";
+import { pageMetadata } from "@/lib/metadata";
 
 export async function generateStaticParams() {
   return versusPairs(await getAllTools()).map(([a, b]) => ({
@@ -28,11 +29,11 @@ export async function generateMetadata({
   const a = await getToolBySlug(parsed[0]);
   const b = await getToolBySlug(parsed[1]);
   if (!a || !b) return { title: "Not found" };
-  return {
+  return pageMetadata({
     title: `${a.name} vs ${b.name}: which is better? (2026)`,
     description: `${a.name} vs ${b.name} compared on editor score, pricing, and features. My verdict on which AI tool to choose in 2026.`,
-    alternates: { canonical: `/vs/${versusSlug(a.slug, b.slug)}` },
-  };
+    path: `/vs/${versusSlug(a.slug, b.slug)}`,
+  });
 }
 
 export default async function VersusPage({

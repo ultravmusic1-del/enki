@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { NewsArchive } from "@/components/news/news-archive";
 import { beats, getBeat } from "@/data/beats";
 import { listActiveBeats, listPublishedStories } from "@/lib/news/stories";
+import { pageMetadata } from "@/lib/metadata";
 
 export const revalidate = 300;
 export function generateStaticParams() {
@@ -14,11 +15,11 @@ type Props = { params: Promise<{ beat: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const beat = getBeat((await params).beat);
   if (!beat) return { title: "Beat not found" };
-  return {
+  return pageMetadata({
     title: `${beat.name} news`,
     description: `The latest AI news on ${beat.name.toLowerCase()}, summarised, with what each story means for founders.`,
-    alternates: { canonical: `/news/beat/${beat.slug}` },
-  };
+    path: `/news/beat/${beat.slug}`,
+  });
 }
 
 export default async function BeatPage({ params }: Props) {

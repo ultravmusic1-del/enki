@@ -16,6 +16,7 @@ import {
   getToolsByCategory,
 } from "@/lib/content";
 import type { Tool } from "@/lib/schemas";
+import { pageMetadata } from "@/lib/metadata";
 
 const YEAR = 2026;
 
@@ -39,14 +40,14 @@ export async function generateMetadata({
   const cat = await getCategoryBySlug(category);
   if (!cat) return { title: "Not found" };
   const tools = await ranked(category);
-  return {
+  return pageMetadata({
     title: `The ${tools.length} best ${cat.name} AI tools (${YEAR})`,
     description: `My ranked pick of the best ${cat.name.toLowerCase()} AI tools in ${YEAR}, tested and scored. ${tools
       .slice(0, 3)
       .map((t) => t.name)
       .join(", ")} and more.`,
-    alternates: { canonical: `/best/${category}` },
-  };
+    path: `/best/${category}`,
+  });
 }
 
 export default async function BestCategoryPage({

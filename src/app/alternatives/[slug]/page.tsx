@@ -13,6 +13,7 @@ import {
   getCategoryBySlug,
   MIN_ALTERNATIVES,
 } from "@/lib/content";
+import { pageMetadata } from "@/lib/metadata";
 
 export async function generateStaticParams() {
   return (await getAlternativesSlugs()).map((slug) => ({ slug }));
@@ -27,14 +28,14 @@ export async function generateMetadata({
   const tool = await getToolBySlug(slug);
   if (!tool) return { title: "Not found" };
   const alts = await getAlternatives(tool, 6);
-  return {
+  return pageMetadata({
     title: `The best ${tool.name} alternatives (2026)`,
     description: `Looking for an alternative to ${tool.name}? My tested picks: ${alts
       .slice(0, 3)
       .map((t) => t.name)
       .join(", ")}.`,
-    alternates: { canonical: `/alternatives/${slug}` },
-  };
+    path: `/alternatives/${slug}`,
+  });
 }
 
 export default async function AlternativesPage({

@@ -15,14 +15,16 @@ import { listActiveBeats, listPublishedStories } from "@/lib/news/stories";
 import { pageCount } from "@/lib/news/story-meta";
 import { getAllTools, getFeaturedTools, getStats } from "@/lib/content";
 import type { Tool } from "@/lib/schemas";
+import { pageMetadata } from "@/lib/metadata";
 
 export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title: "AI news",
-  description: "The day's AI stories for founders, written in full from the best reporting, with what each one means for your company.",
-  alternates: { canonical: "/news" },
-};
+export const metadata: Metadata = pageMetadata({
+  title: "AI news for founders",
+  description:
+    "The day's AI stories for founders, written in full from the best reporting, with what each one means for your company.",
+  path: "/news",
+});
 
 export default async function NewsFrontPage() {
   const now = new Date();

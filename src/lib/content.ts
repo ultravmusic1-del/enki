@@ -228,12 +228,18 @@ export async function getAlternatives(tool: Tool, n = 6): Promise<Tool[]> {
 export const MIN_ALTERNATIVES = 3;
 
 /**
- * Slugs whose alternatives page is worth publishing.
+ * Whether `tool` has a published /alternatives page.
  *
  * A page listing one alternative is a thin page: it is the shape Google's
  * scaled-content guidance targets, and it reads as automation to a human. Tools
- * below the threshold simply have no alternatives page, and 404.
+ * below the threshold simply have no alternatives page, and 404, so nothing may
+ * link to it or list it in the sitemap.
  */
+export async function hasAlternativesPage(tool: Tool): Promise<boolean> {
+  return categoryPeers(await loadTools(), tool).length >= MIN_ALTERNATIVES;
+}
+
+/** Slugs whose alternatives page is published (see `hasAlternativesPage`). */
 export async function getAlternativesSlugs(): Promise<string[]> {
   const all = await loadTools();
   const out: string[] = [];
