@@ -33,8 +33,7 @@ No database change: everything is code or git-versioned data.
 - **Empty beats:** `listActiveBeats()` hides them from the beat row and sitemap,
   and their pages 404. A failed read (null) falls back to every beat.
 - **Trust:** exact UTC publish time on every story; `src/data/newsroom.ts` holds
-  `NEWS_EDITOR` (**null until the owner names the editor**; pages say "Checked by
-  the Enki news desk" meanwhile) and `corrections` (add an entry to publish a
+  `NEWS_EDITOR` (**VK, Editor**, owner's choice 2026-09-26) and `corrections` (add an entry to publish a
   correction: story footer, "Updated" time, JSON-LD `dateModified`, sitemap
   `lastModified`, `/news/corrections`). Sources split into "Primary sources"
   (company, lab, paper and government hosts in `primary-sources.ts`, from source
@@ -48,7 +47,7 @@ No database change: everything is code or git-versioned data.
 - **Tighter articles:** the admin editor shows non-blocking advice
   (`storyAdvice`): headline over 80 chars, body over 600 words, founder section
   under 20%, no uncertainty section, nothing to watch, more than 5 attributions.
-- **Not done, needs the owner:** name the editor; rewriting the 15 live stories
+- **Not done, needs the owner:** rewriting the 15 live stories
   (shorter headlines, less recap) is a production content change, so it waits
   for approval.
 - **Verified:** `pnpm verify` green; sweep 22/22 PASS at 390 and 1440 (run in a

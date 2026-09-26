@@ -14,14 +14,13 @@ export type Editor = {
   email: string;
 };
 
-/**
- * The named editor responsible for every story. Owner decision pending: set
- * the name the site should print. While it is null, pages say "Edited by the
- * Enki news desk" and point to the corrections email.
- */
-export const NEWS_EDITOR: Editor | null = null;
-
 export const NEWS_DESK_EMAIL = "enkidirectory@gmail.com";
+
+/**
+ * The named editor responsible for every story (owner's choice, 2026-09-26).
+ * Set to null to fall back to "Checked by the Enki news desk".
+ */
+export const NEWS_EDITOR: Editor | null = { name: "VK", role: "Editor", email: NEWS_DESK_EMAIL };
 
 export type Correction = {
   /** The corrected story's slug. */
