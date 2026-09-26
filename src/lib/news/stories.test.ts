@@ -23,6 +23,8 @@ const {
   listRecentStories,
   getToolSlugsForStories,
   getPopularStoryViews,
+  listActiveBeats,
+  searchStories,
   dbTimeoutMs,
 } = await import("@/lib/news/stories");
 
@@ -244,5 +246,50 @@ describe("getPopularStoryViews", () => {
   it("degrades to no popular stories on error", async () => {
     rpc.mockResolvedValue({ data: null, error: { message: "paused" } });
     expect(await getPopularStoryViews()).toEqual([]);
+  });
+});
+
+describe("takeaways on public stories", () => {
+  it("carries the founder takeaway from the body, never the body itself", () => {
+    const body = "Lede.\n\n## What it means for founders\n\n- **Budget for agents.** Tokens cost money. More.";
+    const story = toPublicStory({ ...row, body });
+    expect(story?.takeaway).toBe("Budget for agents. Tokens cost money.");
+    expect(story).not.toHaveProperty("body");
+  });
+  it("is null for legacy stories without a body", () => {
+    expect(toPublicStory(row)?.takeaway).toBeNull();
+  });
+});
+
+describe("listActiveBeats", () => {
+  it("lists beats with published stories in the fixed beat order", async () => {
+    respond({ data: [{ beat: "research" }, { beat: "policy-safety" }, { beat: "research" }], error: null });
+    expect(await listActiveBeats()).toEqual(["policy-safety", "research"]);
+    expect(builder().eq).toHaveBeenCalledWith("status", "published");
+  });
+  it("is null when the read fails, so callers can show every beat", async () => {
+    respond({ data: null, error: { message: "paused" } });
+    expect(await listActiveBeats()).toBeNull();
+  });
+});
+
+describe("searchStories", () => {
+  it("requires every sanitised term in the headline, summary or body of a published story", async () => {
+    respond({ data: [row], error: null });
+    const found = await searchStories("Gemini (hack),");
+    expect(found.map((s) => s.slug)).toEqual([row.slug]);
+    expect(builder().eq).toHaveBeenCalledWith("status", "published");
+    expect(builder().or).toHaveBeenCalledTimes(2);
+    expect(builder().or).toHaveBeenCalledWith("headline.ilike.*gemini*,summary.ilike.*gemini*,body.ilike.*gemini*");
+    expect(builder().or).toHaveBeenCalledWith("headline.ilike.*hack*,summary.ilike.*hack*,body.ilike.*hack*");
+  });
+  it("does not query for an empty or unsearchable query", async () => {
+    respond();
+    expect(await searchStories(" ., ")).toEqual([]);
+    expect(from).not.toHaveBeenCalled();
+  });
+  it("degrades to no results on failure", async () => {
+    respond({ data: null, error: { message: "down" } });
+    expect(await searchStories("gemini")).toEqual([]);
   });
 });

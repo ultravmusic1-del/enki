@@ -10,8 +10,14 @@ test.describe("Enki Daily home and news", () => {
 
   test("/news shows the front page", async ({ page }) => {
     await page.goto("/news");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("AI news, curated by Enki");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Today's brief");
     await expect(page.getByTestId("lead-story").locator('a[href^="/news/"]').first()).toBeVisible();
+  });
+
+  test("/news/search finds past stories", async ({ page }) => {
+    await page.goto("/news/search?q=ai");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Search the news");
+    await expect(page.getByRole("searchbox", { name: "Search the news" })).toHaveValue("ai");
   });
 
   test("/welcome confirms the signup", async ({ page }) => {

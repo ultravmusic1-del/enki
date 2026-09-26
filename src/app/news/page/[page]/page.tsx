@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { NewsArchive } from "@/components/news/news-archive";
-import { listPublishedStories } from "@/lib/news/stories";
+import { listActiveBeats, listPublishedStories } from "@/lib/news/stories";
 import { pageCount, parsePageParam } from "@/lib/news/story-meta";
 
 export const revalidate = 300;
@@ -27,7 +27,7 @@ export default async function NewsArchivePage({ params }: Props) {
   const page = parsePageParam((await params).page);
   if (!page) notFound();
 
-  const { stories, total } = await listPublishedStories({ page });
+  const [{ stories, total }, activeBeats] = await Promise.all([listPublishedStories({ page }), listActiveBeats()]);
   const pages = pageCount(total);
   if (page > pages || stories.length === 0) notFound();
 
@@ -39,6 +39,7 @@ export default async function NewsArchivePage({ params }: Props) {
       emptyMessage=""
       page={page}
       pageCount={pages}
+      availableBeats={activeBeats}
     />
   );
 }

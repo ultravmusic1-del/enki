@@ -158,7 +158,7 @@ export function breadcrumbJsonLd(crumbs: { name: string; path: string }[]) {
 }
 
 /** NewsArticle, emitted only on story pages that are indexable (full-stories spec §6). */
-export function newsArticleJsonLd(story: PublicStoryDetail, sources: StorySource[]) {
+export function newsArticleJsonLd(story: PublicStoryDetail, sources: StorySource[], updatedAt: string | null = null) {
   const url = abs(`/news/${story.slug}`);
   const org = { "@type": "Organization", name: siteConfig.name, url: BASE };
   return {
@@ -167,7 +167,7 @@ export function newsArticleJsonLd(story: PublicStoryDetail, sources: StorySource
     headline: story.headline.slice(0, 110),
     description: story.summary,
     datePublished: story.publishedAt,
-    dateModified: story.publishedAt,
+    dateModified: updatedAt ?? story.publishedAt,
     url,
     mainEntityOfPage: url,
     ...(story.imageUrl ? { image: [story.imageUrl] } : {}),

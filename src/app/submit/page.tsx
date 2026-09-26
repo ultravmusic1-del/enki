@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import { Container } from "@/components/shared/container";
 import { SubmitForm } from "@/components/submit/submit-form";
 import { getCategories } from "@/lib/content";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Submit a tool",
   description:
     "Know an AI tool worth vetting? Submit it and I will review it for the Enki directory.",
-  alternates: { canonical: "/submit" },
-};
+  path: "/submit",
+});
 
 export default async function SubmitPage() {
   const categories = (await getCategories()).map((c) => ({ slug: c.slug, name: c.name }));

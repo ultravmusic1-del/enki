@@ -5,13 +5,14 @@ import { CategoryCard } from "@/components/shared/category-card";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { Reveal } from "@/components/shared/reveal";
 import { getCategories, getStats } from "@/lib/content";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
-  title: "Categories",
+export const metadata: Metadata = pageMetadata({
+  title: "AI tool categories",
   description:
     "Browse Enki's AI tools by category: writing, image, coding, productivity, video, audio, research, and marketing.",
-  alternates: { canonical: "/categories" },
-};
+  path: "/categories",
+});
 
 export default async function CategoriesPage() {
   const categories = await getCategories();

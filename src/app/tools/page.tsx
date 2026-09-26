@@ -10,13 +10,14 @@ import { Reveal } from "@/components/shared/reveal";
 import { Icon } from "@/components/shared/icon";
 import { getAllTools, getCategories, getFeaturedTools, getStats } from "@/lib/content";
 import { getAllTags } from "@/lib/filters";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "AI Tool Directory",
   description:
     "Browse and filter Enki's curated directory of human-vetted AI tools: search by name, use case, category, pricing, and rating.",
-  alternates: { canonical: "/tools" },
-};
+  path: "/tools",
+});
 
 const vetSteps = [
   {

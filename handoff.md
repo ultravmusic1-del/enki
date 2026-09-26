@@ -18,6 +18,52 @@ Single source of truth for continuing work in a fresh session.
 
 ---
 
+## IN REVIEW 2026-09-24: news improvements (branch `claude/elegant-cray-jypo99`)
+Built on a branch at the owner's request; **merge only on the owner's approval.**
+No database change: everything is code or git-versioned data.
+- **Founder takeaway everywhere:** `PublicStory.takeaway` (first founder bullet,
+  `src/lib/news/takeaway.ts`) shows on brief rows, beat sections, archive, beat,
+  search and "More in" lists. Story pages open with the founder section as a
+  callout (`FounderSection`), then "The story" (`ArticleBody includeFounders={false}`).
+  Lists now select `body` so cards can compute it.
+- **/news is a daily brief:** `buildHomeFeed` returns `brief` (stories within 24h
+  of the newest, topped up to 3, max 6, featured first), `mostRead` (Popular gate
+  unchanged, never repeats the brief) and "Earlier this week" beats. **A story
+  appears once per page.** `rail`/`latest` and `LeadStory` are gone.
+- **Empty beats:** `listActiveBeats()` hides them from the beat row and sitemap,
+  and their pages 404. A failed read (null) falls back to every beat.
+- **Trust:** exact UTC publish time on every story; `src/data/newsroom.ts` holds
+  `NEWS_EDITOR` (**VK, Editor**, owner's choice 2026-09-26) and `corrections` (add an entry to publish a
+  correction: story footer, "Updated" time, JSON-LD `dateModified`, sitemap
+  `lastModified`, `/news/corrections`). Sources split into "Primary sources"
+  (company, lab, paper and government hosts in `primary-sources.ts`, from source
+  rows and body links) and "Reporting". "Report an error" mailto on every story.
+- **Readability:** the display font (Cardot) is caps-only and applies to every
+  h1 to h4, so story headlines now set `font-sans` explicitly; section labels keep
+  the display face. Brief rows are denser, beat sections lost their images.
+- **Search:** `/news/search?q=` (noindex, dynamic): every sanitised term
+  (`src/lib/news/search.ts`) must match headline, summary or body. A search box
+  sits on /news and every archive page; the command menu offers "Search stories".
+- **Tighter articles:** the admin editor shows non-blocking advice
+  (`storyAdvice`): headline over 80 chars, body over 600 words, founder section
+  under 20%, no uncertainty section, nothing to watch, more than 5 attributions.
+- **Not done, needs the owner:** rewriting the 15 live stories
+  (shorter headlines, less recap) is a production content change, so it waits
+  for approval.
+- **Verified:** `pnpm verify` green; sweep 22/22 PASS at 390 and 1440 (run in a
+  cloud container against a local mock of PostgREST fed with the live published
+  rows, external hosts blocked).
+
+### Per-story workflow additions (apply from now on)
+- Headline 80 characters or fewer.
+- 400 to 600 words. Spend them on consequences, not on recapping outlets: cite
+  each source once.
+- Include a "## What we don't know yet" section and, in the founder section,
+  what to watch next (a date, decision or signal).
+- Link the primary source (company post, filing, paper) in the body whenever it
+  exists; it is then listed first under Sources.
+- A factual fix to a live story gets an entry in `src/data/newsroom.ts`.
+
 ## DONE 2026-09-24 (afternoon): first intake from the five new sources
 - **Manual ingest run:** the new sources were added after the 05:00 UTC cron,
   so ingest was run locally against production with

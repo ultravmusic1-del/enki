@@ -1,7 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
+  BRIEF_MAX,
+  BRIEF_MIN,
+  briefMinutes,
   buildHomeFeed,
-  LATEST_COUNT,
   POPULAR_MIN_TOP_VIEWS,
   STORIES_PER_BEAT,
   TICKER_MAX_TOOLS,
@@ -31,6 +33,7 @@ function story(
     sourcePublishedAt: published,
     publishedAt: published,
     featured: opts.featured ?? false,
+    takeaway: null,
   };
 }
 
@@ -49,18 +52,17 @@ describe("buildHomeFeed: sparse states", () => {
   it("is empty everywhere with no stories", () => {
     const feed = build();
     expect(feed.lead).toBeNull();
-    expect(feed.rail).toEqual({ title: "Latest", stories: [] });
+    expect(feed.brief).toEqual([]);
+    expect(feed.mostRead).toEqual([]);
     expect(feed.beats).toEqual([]);
-    expect(feed.latest).toEqual([]);
     expect(feed.ticker).toEqual([]);
   });
 
-  it("shows one story as the lead and nothing else", () => {
+  it("shows one story as the lead of the brief and nothing else", () => {
     const feed = build({ stories: [story("a")] });
     expect(feed.lead?.id).toBe("a");
-    expect(feed.rail.stories).toEqual([]);
+    expect(feed.brief.map((s) => s.id)).toEqual(["a"]);
     expect(feed.beats).toEqual([]);
-    expect(feed.latest).toEqual([]);
   });
 });
 
@@ -84,71 +86,93 @@ describe("buildHomeFeed: lead", () => {
   });
 });
 
-describe("buildHomeFeed: rail", () => {
-  const many = Array.from({ length: 12 }, (_, i) => story(`s${i}`, { hoursAgo: i + 1 }));
-
-  it("falls back to Latest below the view threshold", () => {
-    const feed = build({ stories: many, popular: [{ storyId: "s5", views: POPULAR_MIN_TOP_VIEWS - 1 }] });
-    expect(feed.rail.title).toBe("Latest");
-    expect(feed.rail.stories.map((s) => s.id)).toEqual(["s1", "s2", "s3", "s4", "s5"]);
+describe("buildHomeFeed: brief", () => {
+  it("takes the stories from the newest story's day, newest first", () => {
+    const stories = [
+      story("a", { hoursAgo: 1 }),
+      story("b", { hoursAgo: 5 }),
+      story("c", { hoursAgo: 20 }),
+      story("d", { hoursAgo: 24 }),
+      story("e", { hoursAgo: 30 }),
+    ];
+    expect(build({ stories }).brief.map((s) => s.id)).toEqual(["a", "b", "c", "d"]);
   });
 
-  it("shows Popular by views once the top story reaches the threshold, excluding the lead", () => {
+  it("tops a thin day up to the minimum with the next newest stories", () => {
+    const stories = [story("a", { hoursAgo: 1 }), story("b", { hoursAgo: 40 }), story("c", { hoursAgo: 60 }), story("d", { hoursAgo: 80 })];
+    const brief = build({ stories }).brief;
+    expect(brief).toHaveLength(BRIEF_MIN);
+    expect(brief.map((s) => s.id)).toEqual(["a", "b", "c"]);
+  });
+
+  it("caps a busy day", () => {
+    const stories = Array.from({ length: 12 }, (_, i) => story(`s${i}`, { hoursAgo: i + 1 }));
+    expect(build({ stories }).brief).toHaveLength(BRIEF_MAX);
+  });
+
+  it("puts a featured story first even when it is older than the day", () => {
+    const stories = [story("a", { hoursAgo: 1 }), story("b", { hoursAgo: 2 }), story("f", { hoursAgo: 40, featured: true })];
+    expect(build({ stories }).brief.map((s) => s.id)).toEqual(["f", "a", "b"]);
+  });
+
+  it("estimates reading time from what the brief shows", () => {
+    const words = (n: number) => Array.from({ length: n }, () => "word").join(" ");
+    const s = { ...story("a"), headline: words(10), summary: words(200), takeaway: words(50) };
+    expect(briefMinutes([s])).toBe(2);
+    expect(briefMinutes([])).toBe(1);
+  });
+});
+
+describe("buildHomeFeed: most read", () => {
+  const many = Array.from({ length: 12 }, (_, i) => story(`s${i}`, { hoursAgo: i * 10 + 1 }));
+
+  it("stays hidden below the view threshold", () => {
+    const feed = build({ stories: many, popular: [{ storyId: "s8", views: POPULAR_MIN_TOP_VIEWS - 1 }] });
+    expect(feed.mostRead).toEqual([]);
+  });
+
+  it("lists popular stories not already in the brief", () => {
     const feed = build({
       stories: many,
       popular: [
         { storyId: "s0", views: 40 },
         { storyId: "s7", views: 25 },
-        { storyId: "s3", views: 12 },
+        { storyId: "s5", views: 12 },
       ],
     });
-    expect(feed.rail.title).toBe("Popular");
-    expect(feed.rail.stories.map((s) => s.id)).toEqual(["s7", "s3"]);
-  });
-
-  it("never repeats the rail in the Latest column", () => {
-    const feed = build({ stories: many });
-    const railIds = new Set(feed.rail.stories.map((s) => s.id));
-    expect(feed.latest.some((s) => railIds.has(s.id))).toBe(false);
-    expect(feed.latest.some((s) => s.id === feed.lead?.id)).toBe(false);
-    expect(feed.latest).toHaveLength(LATEST_COUNT);
-  });
-
-  it("falls back to Latest when only the lead is popular", () => {
-    const feed = build({
-      stories: many,
-      popular: [
-        { storyId: "s0", views: 50 },
-        { storyId: "s2", views: 2 },
-        { storyId: "s4", views: 1 },
-      ],
-    });
-    expect(feed.rail.title).toBe("Latest");
+    const briefIds = new Set(feed.brief.map((s) => s.id));
+    expect(briefIds.has("s0")).toBe(true);
+    expect(feed.mostRead.map((s) => s.id)).toEqual(["s7", "s5"]);
   });
 
   it("ignores a popular id that is not among the loaded stories", () => {
-    const feed = build({
-      stories: many,
-      popular: [
-        { storyId: "ghost", views: 99 },
-        { storyId: "s2", views: 3 },
-      ],
-    });
-    expect(feed.rail.title).toBe("Latest");
+    const feed = build({ stories: many, popular: [{ storyId: "ghost", views: 99 }] });
+    expect(feed.mostRead).toEqual([]);
+  });
+});
+
+describe("buildHomeFeed: no repeated stories", () => {
+  it("shows every story at most once across brief, most read and beats", () => {
+    const beatsCycle: BeatSlug[] = ["research", "policy-safety", "products-launches"];
+    const stories = Array.from({ length: 30 }, (_, i) => story(`s${i}`, { hoursAgo: i * 5 + 1, beat: beatsCycle[i % 3] }));
+    const feed = build({ stories, popular: [{ storyId: "s12", views: 50 }, { storyId: "s0", views: 40 }] });
+    const ids = [...feed.brief, ...feed.mostRead, ...feed.beats.flatMap((b) => b.stories)].map((s) => s.id);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 });
 
 describe("buildHomeFeed: beats", () => {
-  it("omits empty beats, caps each, excludes the lead and anything older than 7 days", () => {
+  it("omits empty beats, caps each, excludes the brief and anything older than 7 days", () => {
     const stories = [
       story("lead", { hoursAgo: 1, beat: "research" }),
-      ...Array.from({ length: 6 }, (_, i) => story(`r${i}`, { hoursAgo: i + 2, beat: "research" })),
+      ...Array.from({ length: 8 }, (_, i) => story(`r${i}`, { hoursAgo: 30 + i, beat: "research" })),
       story("old", { hoursAgo: 24 * 8, beat: "policy-safety" }),
     ];
     const feed = build({ stories });
     expect(feed.beats.map((b) => b.slug)).toEqual(["research"]);
     expect(feed.beats[0].stories).toHaveLength(STORIES_PER_BEAT);
-    expect(feed.beats[0].stories.some((s) => s.id === "lead")).toBe(false);
+    const briefIds = new Set(feed.brief.map((s) => s.id));
+    expect(feed.beats[0].stories.some((s) => briefIds.has(s.id))).toBe(false);
   });
 });
 

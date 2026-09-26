@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import { Container } from "@/components/shared/container";
 import { CompareView } from "@/components/compare/compare-view";
 import { getCompareTools } from "@/lib/content";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Compare AI tools",
   description:
     "Put AI tools side by side — editor scores, community ratings, pricing, platforms, and the trade-offs — and decide which one to trust.",
-  alternates: { canonical: "/compare" },
-};
+  path: "/compare",
+});
 
 export default async function ComparePage() {
   const tools = await getCompareTools();

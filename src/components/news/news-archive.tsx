@@ -2,6 +2,7 @@ import { Container } from "@/components/shared/container";
 import { StoryList } from "@/components/news/story-list";
 import { NewsPagination } from "@/components/news/news-pagination";
 import { BeatRow } from "@/components/news/beat-row";
+import { NewsSearchForm } from "@/components/news/news-search-form";
 import type { BeatSlug } from "@/data/beats";
 import type { PublicStory } from "@/lib/news/stories";
 
@@ -14,6 +15,8 @@ export function NewsArchive({
   activeBeat,
   page = 1,
   pageCount = 1,
+  availableBeats,
+  searchQuery,
 }: {
   title: string;
   description: string;
@@ -22,6 +25,10 @@ export function NewsArchive({
   activeBeat?: BeatSlug;
   page?: number;
   pageCount?: number;
+  /** Beats with published stories, for the beat row (null or omitted: all). */
+  availableBeats?: readonly BeatSlug[] | null;
+  /** Set on the search page, to prefill the search box. */
+  searchQuery?: string;
 }) {
   const now = new Date();
   return (
@@ -31,7 +38,8 @@ export function NewsArchive({
           <p className="font-mono text-xs tracking-[0.3em] text-teal uppercase">Enki news</p>
           <h1 className="font-display text-4xl font-semibold text-balance">{title}</h1>
           <p className="text-pretty text-muted-foreground">{description}</p>
-          <BeatRow className="pt-2" />
+          <BeatRow className="pt-2" available={availableBeats} />
+          <NewsSearchForm defaultValue={searchQuery} className="max-w-md" />
         </header>
 
         {stories.length > 0 ? (

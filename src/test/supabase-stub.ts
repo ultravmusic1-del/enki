@@ -22,6 +22,8 @@ export function queryStub(result: StubResult) {
     "range",
     "neq",
     "gte",
+    "or",
+    "not",
     "single",
     "maybeSingle",
   ];

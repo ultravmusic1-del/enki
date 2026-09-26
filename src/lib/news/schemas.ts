@@ -64,6 +64,55 @@ export function bodyProblems(body: string): string[] {
   return problems;
 }
 
+/** Editorial targets. Advisory only: the editor shows them, nothing enforces them. */
+export const HEADLINE_TARGET_MAX = 80;
+export const BODY_TARGET_MAX_WORDS = 600;
+/** The founder section should carry at least this share of the story's words. */
+export const FOUNDER_TARGET_SHARE = 0.2;
+/** More attributions than this and the story is recapping other outlets. */
+const RECAP_ATTRIBUTIONS_MAX = 5;
+
+const UNCERTAINTY = /^##\s.*\b(don't know|do not know|unknown|uncertain|unclear|open questions?|unanswered)\b/im;
+const WATCH_NEXT = /\b(watch|next|expect|deadline|decision due|timeline)\b/i;
+const ATTRIBUTION = /\b(reported|according to|told [A-Z]|said in an interview)\b/g;
+
+/**
+ * Advice for a tighter story: fewer words recapping other outlets, more on
+ * consequences, uncertainty and what to watch. Never blocks publishing; the
+ * hard rules are in bodyProblems.
+ */
+export function storyAdvice({ headline, body }: { headline: string; body: string }): string[] {
+  const advice: string[] = [];
+  const title = headline.trim();
+  if (title.length > HEADLINE_TARGET_MAX) {
+    advice.push(`Shorten the headline to ${HEADLINE_TARGET_MAX} characters or fewer so cards stay scannable (it has ${title.length}).`);
+  }
+  const normalized = normalizeBody(body).trim();
+  if (!normalized) return advice;
+
+  const words = countWords(normalized);
+  if (words > BODY_TARGET_MAX_WORDS) {
+    advice.push(`Aim for ${BODY_TARGET_MAX_WORDS} words or fewer (it has ${words}). Cut recap before consequences.`);
+  }
+  const at = normalized.search(FOUNDER_LINE);
+  const founderPart = at === -1 ? "" : normalized.slice(at);
+  if (at !== -1 && words > 0 && countWords(founderPart) / words < FOUNDER_TARGET_SHARE) {
+    const share = Math.round((countWords(founderPart) / words) * 100);
+    advice.push(`The founder section is ${share}% of the story. Give it at least ${Math.round(FOUNDER_TARGET_SHARE * 100)}%.`);
+  }
+  if (!UNCERTAINTY.test(normalized)) {
+    advice.push(`Say what is still uncertain, for example in a "## What we don't know yet" section.`);
+  }
+  if (at !== -1 && !WATCH_NEXT.test(founderPart)) {
+    advice.push("Name what founders should watch next: a date, a decision or a signal.");
+  }
+  const attributions = (normalized.match(ATTRIBUTION) ?? []).length;
+  if (attributions > RECAP_ATTRIBUTIONS_MAX) {
+    advice.push(`${attributions} attributions to other outlets reads as a recap. Cite each source once and move to what it means.`);
+  }
+  return advice;
+}
+
 const toolSlug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
 
 export const storyPublishSchema = z.object({

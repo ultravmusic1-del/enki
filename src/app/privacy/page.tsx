@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/shared/container";
 import { siteConfig } from "@/lib/site";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Privacy Policy",
-  description: `How ${siteConfig.name} handles your data.`,
-  alternates: { canonical: "/privacy" },
-};
+  description:
+    `How ${siteConfig.name} handles your data: what an account stores, cookieless analytics, anonymous story views, affiliate links, and how to delete it all.`,
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (

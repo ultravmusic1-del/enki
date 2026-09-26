@@ -9,8 +9,10 @@ import {
   FOUNDER_HEADING,
   SUMMARY_MAX,
   SUMMARY_MIN,
+  HEADLINE_TARGET_MAX,
   bodyProblems,
   countWords,
+  storyAdvice,
 } from "@/lib/news/schemas";
 import { safeExternalHref } from "@/lib/safe-url";
 import { cn } from "@/lib/utils";
@@ -48,6 +50,8 @@ export function StoryEditor({
   const words = countWords(body);
   const problems = body.trim() ? bodyProblems(body) : [];
   const wordsOk = words >= BODY_MIN_WORDS && words <= BODY_MAX_WORDS;
+  const advice = storyAdvice({ headline, body });
+  const headlineLong = headline.trim().length > HEADLINE_TARGET_MAX;
 
   const secondary = () =>
     startTransition(async () => {
@@ -88,7 +92,12 @@ export function StoryEditor({
       }}
     >
       <label className="flex flex-col gap-1.5 text-xs text-muted-foreground">
-        Headline
+        <span className="flex justify-between">
+          Headline
+          <span className={cn("tabular-nums", headlineLong ? "text-amber-400" : "text-muted-foreground")}>
+            {headline.trim().length}/{HEADLINE_TARGET_MAX}
+          </span>
+        </span>
         <input className={field} value={headline} onChange={(e) => setHeadline(e.target.value)} />
       </label>
 
@@ -136,7 +145,7 @@ export function StoryEditor({
 
       <label className="flex flex-col gap-1.5 text-xs text-muted-foreground">
         <span className="flex flex-wrap justify-between gap-2">
-          Story ({BODY_MIN_WORDS} to {BODY_MAX_WORDS} words, ending with &ldquo;## {FOUNDER_HEADING}&rdquo;)
+          Story ({BODY_MIN_WORDS} to {BODY_MAX_WORDS} words, aim under 600, with &ldquo;## {FOUNDER_HEADING}&rdquo;)
           <span className={cn("tabular-nums", body.trim() === "" || wordsOk ? "text-muted-foreground" : "text-destructive")}>
             {words} words
           </span>
@@ -146,6 +155,13 @@ export function StoryEditor({
           <ul className="flex flex-col gap-0.5 text-destructive">
             {problems.map((p) => (
               <li key={p}>{p}</li>
+            ))}
+          </ul>
+        ) : null}
+        {advice.length > 0 ? (
+          <ul aria-label="Editing advice" className="flex flex-col gap-0.5 text-amber-400">
+            {advice.map((a) => (
+              <li key={a}>{a}</li>
             ))}
           </ul>
         ) : null}

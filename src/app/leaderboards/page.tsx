@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import { Container } from "@/components/shared/container";
 import { LeaderboardsView } from "@/components/leaderboard/leaderboards-view";
 import { getLeaderboards } from "@/lib/content";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
-  title: "Leaderboards",
+export const metadata: Metadata = pageMetadata({
+  title: "AI tool leaderboards",
   description:
-    "The top AI tools on Enki, ranked by my editorial scores.",
-  alternates: { canonical: "/leaderboards" },
-};
+    "The top AI tools on Enki, ranked by editor score across writing, image, coding, video, audio, research and more.",
+  path: "/leaderboards",
+});
 
 export default async function LeaderboardsPage() {
   const { editor } = await getLeaderboards(15);

@@ -9,13 +9,14 @@ import { itemListJsonLd } from "@/lib/structured-data";
 import { getActiveDeals } from "@/lib/deals";
 import { getAllTools } from "@/lib/content";
 import { outboundHref, resolveOutboundTarget } from "@/lib/outbound";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "AI tool deals & discounts (2026)",
   description:
     "Live discounts and coupon codes on the best AI tools, vetted by Enki. Save on the tools worth your trust.",
-  alternates: { canonical: "/deals" },
-};
+  path: "/deals",
+});
 
 export default async function DealsPage() {
   const deals = getActiveDeals(await getAllTools(), new Date());

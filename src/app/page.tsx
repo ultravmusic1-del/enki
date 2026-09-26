@@ -12,6 +12,7 @@ import { StickySubscribeBar } from "@/components/home/sticky-subscribe-bar";
 import { BeehiivScripts } from "@/components/newsletter/beehiiv-scripts";
 import { getHomeIssueData } from "@/lib/news/issue-data";
 import { getFeaturedTools } from "@/lib/content";
+import { pageMetadata } from "@/lib/metadata";
 
 // Publishing a story revalidates "/" (admin actions), so today's issue stays current.
 export const revalidate = 300;
@@ -20,11 +21,8 @@ const TITLE = "Enki Daily: AI news for founders, five minutes a day";
 const DESCRIPTION = "The AI stories that matter to your company, with what to do next. Free, every weekday morning.";
 
 export const metadata: Metadata = {
+  ...pageMetadata({ title: TITLE, description: DESCRIPTION, path: "/", socialTitle: TITLE }),
   title: { absolute: TITLE },
-  description: DESCRIPTION,
-  alternates: { canonical: "/" },
-  openGraph: { title: TITLE, description: DESCRIPTION },
-  twitter: { title: TITLE, description: DESCRIPTION },
 };
 
 export default async function Home() {

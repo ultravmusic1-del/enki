@@ -12,6 +12,7 @@ import {
   getToolsByCategory,
 } from "@/lib/content";
 import { sortTools, pinSponsored } from "@/lib/filters";
+import { pageMetadata } from "@/lib/metadata";
 
 export async function generateStaticParams() {
   return (await getCategories()).map((c) => ({ slug: c.slug }));
@@ -26,11 +27,11 @@ export async function generateMetadata({
   const category = await getCategoryBySlug(slug);
   if (!category) return { title: "Category not found" };
 
-  return {
-    title: `${category.name}: AI tools`,
+  return pageMetadata({
+    title: `${category.name} AI tools`,
     description: category.description,
-    alternates: { canonical: `/categories/${slug}` },
-  };
+    path: `/categories/${slug}`,
+  });
 }
 
 export default async function CategoryDetailPage({
